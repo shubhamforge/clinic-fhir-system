@@ -1,0 +1,42 @@
+version: "3.9"
+
+services:
+
+  postgres:
+    image: postgres:15
+    container_name: clinic-postgres
+    environment:
+      POSTGRES_DB: hapi
+      POSTGRES_USER: hapi
+      POSTGRES_PASSWORD: hapi
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hapi"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  hapi-fhir:
+    image: hapiproject/hapi:latest
+    container_name: clinic-hapi-fhir
+    ports:
+      - "8080:8080"
+    environment:
+      spring.datasource.url: jdbc:postgresql://postgres:5432/hapi
+      spring.datasource.username: hapi
+      spring.datasource.password: hapi
+      spring.datasource.driverClassName: org.postgresql.Driver
+      spring.jpa.properties.hibernate.dialect: ca.uhn.fhir.jpa.model.dialect.HapiFhirPostgres94Dialect
+      hapi.fhir.default_encoding: JSON
+      hapi.fhir.fhir_version: R4
+      hapi.fhir.allow_external_references: "true"
+      hapi.fhir.reuse_cached_search_results_millis: "-1"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres-data:
