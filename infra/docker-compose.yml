@@ -34,6 +34,12 @@ services:
       hapi.fhir.fhir_version: R4
       hapi.fhir.allow_external_references: "true"
       hapi.fhir.reuse_cached_search_results_millis: "-1"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/fhir/metadata > /dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
     depends_on:
       postgres:
         condition: service_healthy

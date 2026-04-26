@@ -62,12 +62,27 @@ docker compose up -d
 ```
 
 This starts:
-- HAPI FHIR JPA Server at `http://localhost:8080/fhir`
-- PostgreSQL at `localhost:5432`
+- **PostgreSQL 15** at `localhost:5432` — persistent data stored in Docker volume `infra_postgres-data`
+- **HAPI FHIR JPA Server (R4)** at `http://localhost:8080/fhir` — stateless, all data lives in Postgres
 
-Verify FHIR server is up:
+Both services have healthchecks configured. HAPI FHIR takes ~60 seconds to fully initialize on first boot. Check container health with:
+
+```bash
+docker compose ps
+```
+
+Verify FHIR server is ready (returns a CapabilityStatement JSON):
 ```
 GET http://localhost:8080/fhir/metadata
+```
+
+**Data persistence:** stopping containers with `docker compose down` preserves all data. Use `docker compose down -v` only if you want to wipe the database.
+
+**To stop the infrastructure:**
+```bash
+cd infra
+docker compose down        # stop, keep data
+docker compose down -v     # stop and delete all data
 ```
 
 ### 2. Run the backend
