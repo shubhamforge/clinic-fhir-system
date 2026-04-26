@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: clinic-api
+
+server:
+  port: 9090
+
+fhir:
+  server:
+    url: http://localhost:8080/fhir
+
+logging:
+  level:
+    io.github.shubhamforge.clinic: DEBUG
+    ca.uhn.fhir: WARN
