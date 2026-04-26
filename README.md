@@ -23,6 +23,35 @@ PostgreSQL  (managed entirely by HAPI)
 | `infra/` | Docker Compose | HAPI FHIR server + PostgreSQL |
 | `docs/` | Markdown | Architecture and design docs |
 
+## Development Setup
+
+### Prerequisites
+
+- Java 21
+- Docker
+- Node.js 18+ (required for Husky pre-commit hooks)
+
+### Clone and install hooks
+
+```bash
+git clone <repo-url>
+cd clinic-fhir-system
+npm install        # installs Husky and registers the pre-commit hook
+```
+
+The pre-commit hook runs automatically on every `git commit`. It:
+- Formats staged `.java` files using **Spotless** (google-java-format, GOOGLE style)
+- Formats staged Angular files (`.ts`, `.html`, `.scss`) using **Prettier** — activates once `clinic-web/` is initialized
+
+To format Java manually at any time:
+```bash
+cd clinic-api
+./mvnw spotless:apply   # format
+./mvnw spotless:check   # check only (useful in CI)
+```
+
+---
+
 ## Quick Start
 
 ### 1. Start infrastructure

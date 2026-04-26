@@ -1,0 +1,30 @@
+#!/usr/bin/env sh
+# Pre-commit: format staged Java and Angular files, re-stage, then proceed.
+
+ROOT=$(git rev-parse --show-toplevel)
+
+# ── Java (Spotless via Maven) ─────────────────────────────────────────────────
+JAVA_STAGED=$(git diff --cached --name-only --diff-filter=ACM | grep '\.java$' || true)
+
+if [ -n "$JAVA_STAGED" ]; then
+  echo "[pre-commit] Formatting Java files with Spotless..."
+  (cd "$ROOT/clinic-api" && ./mvnw spotless:apply -q)
+  echo "$JAVA_STAGED" | while IFS= read -r file; do
+    git add "$ROOT/$file"
+  done
+  echo "[pre-commit] Java formatting done."
+fi
+
+# ── Angular (Prettier) ────────────────────────────────────────────────────────
+WEB_DIR="$ROOT/clinic-web"
+WEB_STAGED=$(git diff --cached --name-only --diff-filter=ACM \
+  | grep '^clinic-web/.*\.\(ts\|html\|scss\|css\|json\)$' || true)
+
+if [ -n "$WEB_STAGED" ] && [ -f "$WEB_DIR/package.json" ]; then
+  echo "[pre-commit] Formatting Angular files with Prettier..."
+  (cd "$WEB_DIR" && npx prettier --write $WEB_STAGED)
+  echo "$WEB_STAGED" | while IFS= read -r file; do
+    git add "$ROOT/$file"
+  done
+  echo "[pre-commit] Angular formatting done."
+fi
