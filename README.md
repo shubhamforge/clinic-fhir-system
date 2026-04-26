@@ -57,8 +57,7 @@ cd clinic-api
 ### 1. Start infrastructure
 
 ```bash
-cd infra
-docker compose up -d
+docker compose -f infra/docker-compose.yml up -d
 ```
 
 This starts:
@@ -78,11 +77,18 @@ GET http://localhost:8080/fhir/metadata
 
 **Data persistence:** stopping containers with `docker compose down` preserves all data. Use `docker compose down -v` only if you want to wipe the database.
 
+**To view live logs** (run from project root):
+```bash
+docker compose -f infra/docker-compose.yml logs -f              # both services
+docker compose -f infra/docker-compose.yml logs -f hapi-fhir   # HAPI FHIR only
+docker compose -f infra/docker-compose.yml logs -f postgres     # Postgres only
+```
+`Ctrl+C` stops following without stopping the containers.
+
 **To stop the infrastructure:**
 ```bash
-cd infra
-docker compose down        # stop, keep data
-docker compose down -v     # stop and delete all data
+docker compose -f infra/docker-compose.yml down        # stop, keep data
+docker compose -f infra/docker-compose.yml down -v     # stop and delete all data
 ```
 
 ### 2. Run the backend
