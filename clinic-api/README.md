@@ -20,17 +20,19 @@ Spring Boot backend for the Clinic FHIR System. Exposes a REST API for clinic op
 
 ## Running
 
+**Bash (Git Bash / macOS / Linux):**
 ```bash
 cd clinic-api
 ./mvnw spring-boot:run
 ```
 
-API is available at `http://localhost:9090`.
-
-On Windows without a Unix shell:
-```bash
+**Windows CMD / PowerShell:**
+```cmd
+cd clinic-api
 mvnw.cmd spring-boot:run
 ```
+
+API is available at `http://localhost:9090`.
 
 ## Configuration
 
@@ -46,14 +48,24 @@ fhir:
 ```
 
 To point at a different FHIR server (e.g. staging), override at runtime:
+
+**Bash:**
 ```bash
 ./mvnw spring-boot:run -Dfhir.server.url=http://staging-host:8080/fhir
+```
+
+**Windows CMD / PowerShell:**
+```cmd
+mvnw.cmd spring-boot:run -Dfhir.server.url=http://staging-host:8080/fhir
 ```
 
 ## Project Structure
 
 ```
-src/main/java/io/github/shubhamforge/clinic/
+clinic-api/
+├── integration-tests/   # Postman collection for end-to-end testing
+├── seed-data/           # Synthea data generation + HAPI FHIR loader
+└── src/main/java/io/github/shubhamforge/clinic/
 ├── config/        # Spring beans — FHIR client setup
 ├── controller/    # REST controllers (@RestController)
 ├── dto/           # Request/response POJOs
@@ -68,15 +80,26 @@ src/main/java/io/github/shubhamforge/clinic/
 |---|---|---|
 | `POST` | `/api/patients` | Register a new patient |
 | `GET` | `/api/patients/{id}` | Get patient by ID |
+| `GET` | `/api/patients?name=&dob=` | Search patients |
 | `POST` | `/api/encounters` | Create an encounter (visit) |
-| `POST` | `/api/observations` | Record vitals (BP, weight, SpO2) |
+| `GET` | `/api/encounters/{id}` | Get encounter by ID |
+| `GET` | `/api/encounters?patientId=` | List encounters for patient |
+| `POST` | `/api/vitals` | Record vitals (BP, weight, SpO2) |
+| `GET` | `/api/vitals?patientId=&type=` | Get vitals for patient |
 | `GET` | `/api/patients/{id}/summary` | Full patient summary |
 
 ## Building
 
+**Bash:**
 ```bash
-./mvnw clean package          # compile + test + package
-./mvnw clean package -DskipTests   # skip tests
+./mvnw clean package              # compile + test + package
+./mvnw clean package -DskipTests  # skip tests
+```
+
+**Windows CMD / PowerShell:**
+```cmd
+mvnw.cmd clean package
+mvnw.cmd clean package -DskipTests
 ```
 
 The fat JAR is output to `target/clinic-api-0.0.1-SNAPSHOT.jar`.
@@ -85,15 +108,28 @@ The fat JAR is output to `target/clinic-api-0.0.1-SNAPSHOT.jar`.
 
 This project uses **Spotless** with Google Java Format (GOOGLE style).
 
+**Bash:**
 ```bash
 ./mvnw spotless:apply   # format all Java files
 ./mvnw spotless:check   # check without modifying (used in CI)
+```
+
+**Windows CMD / PowerShell:**
+```cmd
+mvnw.cmd spotless:apply
+mvnw.cmd spotless:check
 ```
 
 The pre-commit hook at the repo root runs `spotless:apply` automatically on staged `.java` files before every commit. See the root [`README`](../README.md) for hook setup.
 
 ## Running Tests
 
+**Bash:**
 ```bash
 ./mvnw test
+```
+
+**Windows CMD / PowerShell:**
+```cmd
+mvnw.cmd test
 ```

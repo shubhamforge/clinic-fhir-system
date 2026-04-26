@@ -1,0 +1,518 @@
+{
+  "info": {
+    "name": "Clinic FHIR API",
+    "description": "End-to-end integration flow: Patient → Encounter → Vitals → Summary → Cleanup.\n\nRun requests in order. Collection variables are set automatically by test scripts.\n\nRequires: 'Clinic FHIR — Local' environment selected.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "patientId",   "value": "" },
+    { "key": "encounterId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Create Patient",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/patients",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "patients"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"firstName\": \"Integration\",\n  \"lastName\": \"Test\",\n  \"dateOfBirth\": \"1990-06-15\",\n  \"gender\": \"male\",\n  \"phone\": \"9876543210\",\n  \"email\": \"integration.test@example.com\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201 Created', () => pm.response.to.have.status(201));",
+              "",
+              "pm.test('Returns FHIR Patient resource', () => {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body.resourceType).to.eql('Patient');",
+              "    pm.expect(body.id).to.be.a('string').and.not.empty;",
+              "    pm.expect(body.name[0].family).to.eql('Test');",
+              "    pm.expect(body.name[0].given[0]).to.eql('Integration');",
+              "    pm.expect(body.birthDate).to.eql('1990-06-15');",
+              "    pm.collectionVariables.set('patientId', body.id);",
+              "    console.log('patientId set to:', body.id);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Patient by ID",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/patients/{{patientId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "patients", "{{patientId}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+              "",
+              "pm.test('Returns correct Patient', () => {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body.resourceType).to.eql('Patient');",
+              "    pm.expect(body.id).to.eql(pm.collectionVariables.get('patientId'));",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Search Patients by Name",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/patients?name=Integration",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "patients"],
+          "query": [{ "key": "name", "value": "Integration" }]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+              "",
+              "pm.test('Returns Bundle of type searchset', () => {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body.resourceType).to.eql('Bundle');",
+              "    pm.expect(body.type).to.eql('searchset');",
+              "});",
+              "",
+              "pm.test('Result contains our patient', () => {",
+              "    const body = pm.response.json();",
+              "    const ids = (body.entry || []).map(e => e.resource.id);",
+              "    pm.expect(ids).to.include(pm.collectionVariables.get('patientId'));",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create Encounter",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/encounters",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "encounters"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"patientId\": \"{{patientId}}\",\n  \"visitDate\": \"2025-04-25\",\n  \"reason\": \"Annual physical checkup\",\n  \"status\": \"finished\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201 Created', () => pm.response.to.have.status(201));",
+              "",
+              "pm.test('Returns FHIR Encounter resource', () => {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body.resourceType).to.eql('Encounter');",
+              "    pm.expect(body.id).to.be.a('string').and.not.empty;",
+              "    pm.expect(body.status).to.eql('finished');",
+              "    pm.expect(body.subject.reference).to.include(pm.collectionVariables.get('patientId'));",
+              "    pm.collectionVariables.set('encounterId', body.id);",
+              "    console.log('encounterId set to:', body.id);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Encounter by ID",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/encounters/{{encounterId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "encounters", "{{encounterId}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+              "",
+              "pm.test('Returns correct Encounter', () => {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body.resourceType).to.eql('Encounter');",
+              "    pm.expect(body.id).to.eql(pm.collectionVariables.get('encounterId'));",
+              "    pm.expect(body.reasonCode[0].text).to.eql('Annual physical checkup');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "List Encounters for Patient",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/encounters?patientId={{patientId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "encounters"],
+          "query": [{ "key": "patientId", "value": "{{patientId}}" }]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+              "",
+              "pm.test('Returns Bundle containing our encounter', () => {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body.resourceType).to.eql('Bundle');",
+              "    const ids = (body.entry || []).map(e => e.resource.id);",
+              "    pm.expect(ids).to.include(pm.collectionVariables.get('encounterId'));",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Record Vitals",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/vitals",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "vitals"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"patientId\": \"{{patientId}}\",\n  \"encounterId\": \"{{encounterId}}\",\n  \"effectiveDate\": \"2025-04-25\",\n  \"systolicBp\": 122,\n  \"diastolicBp\": 78,\n  \"weightKg\": 74.5,\n  \"spo2Percent\": 98.0\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201 Created', () => pm.response.to.have.status(201));",
+              "",
+              "pm.test('Returns Bundle of Observations', () => {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body.resourceType).to.eql('Bundle');",
+              "    pm.expect(body.type).to.eql('collection');",
+              "    pm.expect(body.entry).to.be.an('array').with.lengthOf(4);",
+              "    body.entry.forEach(e => pm.expect(e.resource.resourceType).to.eql('Observation'));",
+              "});",
+              "",
+              "pm.test('All observations linked to encounter', () => {",
+              "    const body = pm.response.json();",
+              "    const encounterId = pm.collectionVariables.get('encounterId');",
+              "    body.entry.forEach(e => {",
+              "        pm.expect(e.resource.encounter.reference).to.include(encounterId);",
+              "    });",
+              "});",
+              "",
+              "pm.test('Observations have correct LOINC codes', () => {",
+              "    const codes = pm.response.json().entry.map(e => e.resource.code.coding[0].code);",
+              "    pm.expect(codes).to.include.members(['8480-6', '8462-4', '29463-7', '59408-5']);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get All Vitals for Patient",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/vitals?patientId={{patientId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "vitals"],
+          "query": [{ "key": "patientId", "value": "{{patientId}}" }]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+              "",
+              "pm.test('Returns Bundle with at least 4 observations', () => {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body.resourceType).to.eql('Bundle');",
+              "    pm.expect(body.entry.length).to.be.at.least(4);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Vitals by Type - weight",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/vitals?patientId={{patientId}}&type=weight",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "vitals"],
+          "query": [
+            { "key": "patientId", "value": "{{patientId}}" },
+            { "key": "type", "value": "weight" }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+              "",
+              "pm.test('Returns only weight observations (LOINC 29463-7)', () => {",
+              "    (pm.response.json().entry || []).forEach(e => {",
+              "        pm.expect(e.resource.code.coding[0].code).to.eql('29463-7');",
+              "    });",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Vitals by Type - systolic",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/vitals?patientId={{patientId}}&type=systolic",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "vitals"],
+          "query": [
+            { "key": "patientId", "value": "{{patientId}}" },
+            { "key": "type", "value": "systolic" }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+              "",
+              "pm.test('Returns only systolic BP observations (LOINC 8480-6)', () => {",
+              "    (pm.response.json().entry || []).forEach(e => {",
+              "        pm.expect(e.resource.code.coding[0].code).to.eql('8480-6');",
+              "    });",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Patient Summary",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/patients/{{patientId}}/summary",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "patients", "{{patientId}}", "summary"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+              "",
+              "pm.test('Returns Bundle of type collection', () => {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body.resourceType).to.eql('Bundle');",
+              "    pm.expect(body.type).to.eql('collection');",
+              "});",
+              "",
+              "pm.test('Bundle contains Patient, Encounter and Observations', () => {",
+              "    const types = pm.response.json().entry.map(e => e.resource.resourceType);",
+              "    pm.expect(types).to.include('Patient');",
+              "    pm.expect(types).to.include('Encounter');",
+              "    pm.expect(types).to.include('Observation');",
+              "});",
+              "",
+              "pm.test('Patient in Bundle matches requested ID', () => {",
+              "    const body = pm.response.json();",
+              "    const patient = body.entry.find(e => e.resource.resourceType === 'Patient').resource;",
+              "    pm.expect(patient.id).to.eql(pm.collectionVariables.get('patientId'));",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Patient - Not Found",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/patients/nonexistent-id-00000",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "patients", "nonexistent-id-00000"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 404 Not Found', () => pm.response.to.have.status(404));",
+              "",
+              "pm.test('Error response has status and message', () => {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body.status).to.eql(404);",
+              "    pm.expect(body.message).to.be.a('string').and.not.empty;",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create Patient - Validation Error",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/patients",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "patients"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"firstName\": \"\",\n  \"lastName\": \"\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 400 Bad Request', () => pm.response.to.have.status(400));",
+              "",
+              "pm.test('Error response has status 400 and message', () => {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body.status).to.eql(400);",
+              "    pm.expect(body.message).to.be.a('string').and.not.empty;",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Delete Patient (cascade)",
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "{{fhirUrl}}/Patient/{{patientId}}?_cascade=delete",
+          "host": ["{{fhirUrl}}"],
+          "path": ["Patient", "{{patientId}}"],
+          "query": [{ "key": "_cascade", "value": "delete" }]
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const id = pm.collectionVariables.get('patientId');",
+              "if (!id) { throw new Error('patientId not set — run Create Patient first'); }"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Patient and all referenced resources deleted', () => {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+              "});",
+              "pm.collectionVariables.set('patientId', '');",
+              "pm.collectionVariables.set('encounterId', '');"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Verify Patient Gone",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/patients/{{patientId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "patients", "{{patientId}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Patient no longer exists', () => {",
+              "    pm.expect(pm.response.code).to.be.oneOf([404, 410]);",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

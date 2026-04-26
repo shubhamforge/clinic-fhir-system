@@ -71,3 +71,4 @@ infra/postgres-data/
 # Others
 # ===========================
 .claude
+.serena

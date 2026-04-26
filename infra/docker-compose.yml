@@ -32,6 +32,7 @@ services:
       hapi.fhir.fhir_version: R4
       hapi.fhir.allow_external_references: "true"
       hapi.fhir.reuse_cached_search_results_millis: "-1"
+      hapi.fhir.cascading_deletes_enabled: "true"
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:8080/fhir/metadata > /dev/null || exit 1"]
       interval: 30s

@@ -18,7 +18,7 @@ PostgreSQL  (managed entirely by HAPI)
 
 | Folder | Stack | Purpose |
 |---|---|---|
-| `clinic-api/` | Java 21, Spring Boot | Backend REST API + FHIR integration |
+| `clinic-api/` | Java 21, Spring Boot | Backend REST API + FHIR integration (includes `integration-tests/` and `seed-data/`) |
 | `clinic-web/` | Angular 21 | Frontend UI (future) |
 | `infra/` | Docker Compose | HAPI FHIR server + PostgreSQL |
 | `docs/` | Markdown | Architecture and design docs |
@@ -44,10 +44,19 @@ The pre-commit hook runs automatically on every `git commit`. It:
 - Formats staged Angular files (`.ts`, `.html`, `.scss`) using **Prettier** — activates once `clinic-web/` is initialized
 
 To format Java manually at any time:
+
+**Bash (Git Bash / macOS / Linux):**
 ```bash
 cd clinic-api
 ./mvnw spotless:apply   # format
 ./mvnw spotless:check   # check only (useful in CI)
+```
+
+**Windows CMD / PowerShell:**
+```cmd
+cd clinic-api
+mvnw.cmd spotless:apply
+mvnw.cmd spotless:check
 ```
 
 ---
@@ -93,9 +102,16 @@ docker compose -f infra/docker-compose.yml down -v     # stop and delete all dat
 
 ### 2. Run the backend
 
+**Bash (Git Bash / macOS / Linux):**
 ```bash
 cd clinic-api
 ./mvnw spring-boot:run
+```
+
+**Windows CMD / PowerShell:**
+```cmd
+cd clinic-api
+mvnw.cmd spring-boot:run
 ```
 
 API runs at `http://localhost:9090`

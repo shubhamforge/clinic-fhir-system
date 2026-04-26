@@ -6,7 +6,7 @@ All FHIR resources use **R4** (Release 4).
 
 ## Patient → FHIR Patient
 
-| Business Field | FHIR Path |
+| Request Field | FHIR Path |
 |---|---|
 | `firstName` + `lastName` | `Patient.name[0]` (`HumanName`: `family`, `given`) |
 | `dateOfBirth` | `Patient.birthDate` |
@@ -15,16 +15,15 @@ All FHIR resources use **R4** (Release 4).
 | `email` | `Patient.telecom[system=email]` |
 
 ```java
-public Patient toFhir(PatientRequest dto) {
+public Patient toFhir(PatientRequest request) {
     Patient patient = new Patient();
-    patient.addName()
-        .setFamily(dto.lastName())
-        .addGiven(dto.firstName());
-    patient.setBirthDateElement(new DateType(dto.dateOfBirth().toString()));
-    patient.setGender(Enumerations.AdministrativeGender.fromCode(dto.gender()));
-    patient.addTelecom()
-        .setSystem(ContactPoint.ContactPointSystem.PHONE)
-        .setValue(dto.phone());
+    patient.addName().setFamily(request.lastName()).addGiven(request.firstName());
+    patient.setBirthDateElement(new DateType(request.dateOfBirth().toString()));
+    patient.setGender(Enumerations.AdministrativeGender.fromCode(request.gender().toLowerCase()));
+    if (request.phone() != null)
+        patient.addTelecom().setSystem(ContactPoint.ContactPointSystem.PHONE).setValue(request.phone());
+    if (request.email() != null)
+        patient.addTelecom().setSystem(ContactPoint.ContactPointSystem.EMAIL).setValue(request.email());
     return patient;
 }
 ```
@@ -33,7 +32,7 @@ public Patient toFhir(PatientRequest dto) {
 
 ## Visit → FHIR Encounter
 
-| Business Field | FHIR Path |
+| Request Field | FHIR Path |
 |---|---|
 | `patientId` | `Encounter.subject` (Reference `Patient/{id}`) |
 | `visitDate` | `Encounter.period.start` |
@@ -59,31 +58,26 @@ LOINC system URI: `http://loinc.org`
 
 ### Field Mapping
 
-| Business Field | FHIR Path |
+| Request Field | FHIR Path |
 |---|---|
 | `patientId` | `Observation.subject` (Reference `Patient/{id}`) |
 | `encounterId` | `Observation.encounter` (Reference `Encounter/{id}`) |
-| `recordedAt` | `Observation.effectiveDateTime` |
-| `value` | `Observation.valueQuantity.value` |
-| unit | `Observation.valueQuantity.unit` + `system=http://unitsofmeasure.org` |
-| LOINC code | `Observation.code.coding[0]` |
+| `effectiveDate` | `Observation.effectiveDateTime` |
+| `systolicBp` / `weightKg` / etc. | `Observation.valueQuantity.value` |
+| unit (derived from LOINC code) | `Observation.valueQuantity.unit` + `system=http://unitsofmeasure.org` |
+| LOINC code (derived from field name) | `Observation.code.coding[0]` |
 | (always) | `Observation.status = "final"` |
 
 ```java
-public Observation toFhir(String patientId, String encounterId,
-                            String loincCode, double value, String unit) {
-    Observation obs = new Observation();
-    obs.setStatus(Observation.ObservationStatus.FINAL);
-    obs.setSubject(new Reference("Patient/" + patientId));
-    if (encounterId != null) obs.setEncounter(new Reference("Encounter/" + encounterId));
-    obs.getCode().addCoding()
-        .setSystem("http://loinc.org")
-        .setCode(loincCode);
-    obs.setValue(new Quantity()
-        .setValue(value)
-        .setUnit(unit)
-        .setSystem("http://unitsofmeasure.org"));
-    return obs;
+// ObservationMapper produces one Observation per non-null vital in the request
+public List<Observation> toFhirObservations(VitalsRequest request) {
+    List<Observation> observations = new ArrayList<>();
+    if (request.systolicBp() != null)
+        observations.add(build(request, "systolic", request.systolicBp().doubleValue(), effectiveDate));
+    if (request.weightKg() != null)
+        observations.add(build(request, "weight", request.weightKg(), effectiveDate));
+    // ... diastolicBp, spo2Percent
+    return observations;
 }
 ```
 
