@@ -1,50 +1,14 @@
-<mat-sidenav-container class="app-container">
+<a href="#main-content" class="cp-skip-link">Skip to main content</a>
 
-  <mat-sidenav mode="side" opened class="app-sidenav" role="navigation" aria-label="Main navigation">
-    <div class="app-sidenav__brand">
-      <mat-icon class="app-sidenav__logo-icon">local_hospital</mat-icon>
-      <span class="app-sidenav__logo-text">Care Platform</span>
-    </div>
+<div class="app-container">
 
-    <mat-nav-list class="app-sidenav__nav">
-      <a
-        mat-list-item
-        routerLink="/patients"
-        routerLinkActive="nav-item--active"
-        ariaCurrentWhenActive="page"
-      >
-        <mat-icon matListItemIcon>people</mat-icon>
-        <span matListItemTitle>Patients</span>
-      </a>
-      <a
-        mat-list-item
-        routerLink="/encounters"
-        routerLinkActive="nav-item--active"
-        ariaCurrentWhenActive="page"
-      >
-        <mat-icon matListItemIcon>event_note</mat-icon>
-        <span matListItemTitle>Encounters</span>
-      </a>
-      <a
-        mat-list-item
-        routerLink="/vitals"
-        routerLinkActive="nav-item--active"
-        ariaCurrentWhenActive="page"
-      >
-        <mat-icon matListItemIcon>monitor_heart</mat-icon>
-        <span matListItemTitle>Vitals</span>
-      </a>
-    </mat-nav-list>
-  </mat-sidenav>
+  <header class="app-header" role="banner">
+    <mat-icon class="app-header__logo-icon" aria-hidden="true">local_hospital</mat-icon>
+    <span class="app-header__logo-text">Care Platform</span>
+  </header>
 
-  <mat-sidenav-content>
-    <mat-toolbar class="app-toolbar" color="primary">
-      <span class="mat-body-strong">Clinician Dashboard</span>
-    </mat-toolbar>
+  <main id="main-content" class="app-main" tabindex="-1">
+    <router-outlet />
+  </main>
 
-    <main id="main-content" class="app-main" tabindex="-1">
-      <router-outlet />
-    </main>
-  </mat-sidenav-content>
-
-</mat-sidenav-container>
+</div>

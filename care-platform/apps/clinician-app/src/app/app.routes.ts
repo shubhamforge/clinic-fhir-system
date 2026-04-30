@@ -13,4 +13,11 @@ export const appRoutes: Route[] = [
         (m) => m.PatientRosterComponent,
       ),
   },
+  {
+    path: 'patients/:id',
+    loadComponent: () =>
+      import('./features/patients/patient-detail/patient-detail.component').then(
+        (m) => m.PatientDetailComponent,
+      ),
+  },
 ];

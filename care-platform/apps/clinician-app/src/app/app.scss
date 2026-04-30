@@ -1,29 +1,23 @@
-// Full-height app shell — mat-sidenav-container requires a defined height
-.app-container {
-  height: 100dvh;
+// App shell — layout only. Colors via var(--mat-sys-*).
 
-  // Make the content pane a flex column so toolbar + main share available
-  // height exactly — no hardcoded pixel math that breaks with density changes
-  ::ng-deep .mat-drawer-content {
-    display: flex !important;
-    flex-direction: column;
-  }
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
 }
 
-// Sidebar
-.app-sidenav {
-  width: 240px;
-  border-right: 1px solid var(--mat-sys-outline-variant);
+// ── Header ────────────────────────────────────────────────────────────────────
 
-  &__brand {
-    height: 56px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0 16px;
-    border-bottom: 1px solid var(--mat-sys-outline-variant);
-    background: var(--mat-sys-surface);
-  }
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 56px;
+  padding: 0 24px;
+  flex-shrink: 0;
+  background: var(--mat-sys-surface);
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+  z-index: 10;
 
   &__logo-icon {
     color: var(--mat-sys-primary);
@@ -39,36 +33,14 @@
     color: var(--mat-sys-on-surface);
     white-space: nowrap;
   }
-
-  &__nav {
-    padding: 8px 0;
-  }
 }
 
-// Active nav item highlight
-:host ::ng-deep .nav-item--active {
-   background: var(--mat-sys-secondary-container) !important;
-    color: var(--mat-sys-on-secondary-container) !important;
+// ── Main content ──────────────────────────────────────────────────────────────
 
-  .mat-icon {
-    color: var(--mat-sys-on-secondary-container) !important;
-  }
-}
-
-// Toolbar — flex-shrink:0 keeps it at its natural height; no sticky needed
-// because the content pane itself scrolls, not the viewport
-.app-toolbar {
-  flex-shrink: 0;
-  z-index: 10;
-}
-
-// Main content area — flex:1 + min-height:0 lets it fill exactly the
-// remaining height without overflowing, so mat-drawer-content never scrolls
 .app-main {
   flex: 1;
   min-height: 0;
   overflow: auto;
-  padding: 0;
 
   &:focus {
     outline: none;

@@ -1,0 +1,199 @@
+<div class="detail">
+
+  <!-- ── Loading state ────────────────────────────────────────────────────── -->
+  @if (loading()) {
+    <div class="detail__state" role="status" aria-label="Loading patient">
+      <mat-spinner diameter="36" />
+      <span class="mat-body-medium">Loading patient…</span>
+    </div>
+  }
+
+  <!-- ── Error state ──────────────────────────────────────────────────────── -->
+  @if (error()) {
+    <div class="detail__state detail__state--error" role="alert">
+      <mat-icon aria-hidden="true">error_outline</mat-icon>
+      <p class="mat-body-medium">{{ error() }}</p>
+      <button mat-stroked-button (click)="loadSummary()">
+        <mat-icon>refresh</mat-icon>
+        Try again
+      </button>
+    </div>
+  }
+
+  <!-- ── Main content ─────────────────────────────────────────────────────── -->
+  @if (!loading() && !error() && patient(); as p) {
+
+    <!-- ── Page header ────────────────────────────────────────────────────── -->
+    <header class="detail__header">
+      <button
+        mat-icon-button
+        (click)="goBack()"
+        aria-label="Back to patient list"
+        class="detail__back-btn"
+      >
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+
+      <div class="detail__header-title">
+        <h1 class="mat-headline-medium detail__name">{{ p.name }}</h1>
+        <span
+          class="cp-status-badge"
+          [class.cp-status-badge--success]="p.status === 'active'"
+          [class.cp-status-badge--info]="p.status === 'inactive'"
+        >
+          {{ p.status | titlecase }}
+        </span>
+      </div>
+    </header>
+
+    <!-- ── Top row: info + vitals ────────────────────────────────────────── -->
+    <div class="detail__top-row">
+
+      <!-- Patient info card -->
+      <mat-card appearance="outlined" class="detail__info-card">
+        <mat-card-header>
+          <mat-card-title class="mat-title-medium">Patient Information</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <dl class="detail__info-grid">
+            <dt class="mat-label-medium">Date of Birth</dt>
+            <dd class="cp-font-mono mat-body-medium">
+              {{ p.dob ? (p.dob | date : 'dd MMM yyyy') : '—' }}
+            </dd>
+
+            <dt class="mat-label-medium">Gender</dt>
+            <dd class="mat-body-medium">{{ p.gender | titlecase }}</dd>
+
+            <dt class="mat-label-medium">Phone</dt>
+            <dd class="mat-body-medium">{{ p.phone ?? '—' }}</dd>
+
+            <dt class="mat-label-medium">Email</dt>
+            <dd class="mat-body-medium">{{ p.email ?? '—' }}</dd>
+          </dl>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Latest vitals card -->
+      <mat-card appearance="outlined" class="detail__vitals-card">
+        <mat-card-header>
+          <mat-card-title class="mat-title-medium">Latest Vitals</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="detail__vitals-grid">
+
+            <div class="detail__vital-tile">
+              <span class="detail__vital-label mat-label-medium">Systolic BP</span>
+              @if (p.vitals.systolic; as v) {
+                <span class="detail__vital-value cp-font-mono mat-headline-small">{{ v.value }}</span>
+                <span class="detail__vital-unit mat-body-small">{{ v.unit }}</span>
+                <span class="detail__vital-date mat-body-small">{{ v.date | date : 'dd MMM yyyy' }}</span>
+              } @else {
+                <span class="detail__vital-empty mat-headline-small">—</span>
+              }
+            </div>
+
+            <div class="detail__vital-tile">
+              <span class="detail__vital-label mat-label-medium">Diastolic BP</span>
+              @if (p.vitals.diastolic; as v) {
+                <span class="detail__vital-value cp-font-mono mat-headline-small">{{ v.value }}</span>
+                <span class="detail__vital-unit mat-body-small">{{ v.unit }}</span>
+                <span class="detail__vital-date mat-body-small">{{ v.date | date : 'dd MMM yyyy' }}</span>
+              } @else {
+                <span class="detail__vital-empty mat-headline-small">—</span>
+              }
+            </div>
+
+            <div class="detail__vital-tile">
+              <span class="detail__vital-label mat-label-medium">Weight</span>
+              @if (p.vitals.weight; as v) {
+                <span class="detail__vital-value cp-font-mono mat-headline-small">{{ v.value }}</span>
+                <span class="detail__vital-unit mat-body-small">{{ v.unit }}</span>
+                <span class="detail__vital-date mat-body-small">{{ v.date | date : 'dd MMM yyyy' }}</span>
+              } @else {
+                <span class="detail__vital-empty mat-headline-small">—</span>
+              }
+            </div>
+
+            <div class="detail__vital-tile">
+              <span class="detail__vital-label mat-label-medium">SpO₂</span>
+              @if (p.vitals.spo2; as v) {
+                <span class="detail__vital-value cp-font-mono mat-headline-small">{{ v.value }}</span>
+                <span class="detail__vital-unit mat-body-small">{{ v.unit }}</span>
+                <span class="detail__vital-date mat-body-small">{{ v.date | date : 'dd MMM yyyy' }}</span>
+              } @else {
+                <span class="detail__vital-empty mat-headline-small">—</span>
+              }
+            </div>
+
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+    </div>
+
+    <!-- ── Encounters card (full width) ──────────────────────────────────── -->
+    <section class="detail__section" aria-label="Recent encounters">
+      <mat-card appearance="outlined" class="detail__encounters-card">
+        <mat-card-header>
+          <mat-card-title class="mat-title-medium">Recent Encounters</mat-card-title>
+          <mat-card-subtitle class="mat-body-small">Last 5 visits</mat-card-subtitle>
+        </mat-card-header>
+
+        @if (p.encounters.length === 0) {
+          <mat-card-content>
+            <div class="detail__empty" role="status">
+              <mat-icon aria-hidden="true">event_busy</mat-icon>
+              <p class="mat-body-medium">No encounters recorded for this patient.</p>
+            </div>
+          </mat-card-content>
+        } @else {
+          <mat-card-content class="detail__table-content">
+            <table
+              mat-table
+              [dataSource]="p.encounters"
+              class="detail__encounters-table"
+              aria-label="Patient encounters"
+            >
+
+              <!-- Date -->
+              <ng-container matColumnDef="date">
+                <th mat-header-cell *matHeaderCellDef>Date</th>
+                <td mat-cell *matCellDef="let e" class="cp-font-mono">
+                  {{ e.date ? (e.date | date : 'dd MMM yyyy') : '—' }}
+                </td>
+              </ng-container>
+
+              <!-- Reason -->
+              <ng-container matColumnDef="reason">
+                <th mat-header-cell *matHeaderCellDef>Reason</th>
+                <td mat-cell *matCellDef="let e">{{ e.reason }}</td>
+              </ng-container>
+
+              <!-- Status -->
+              <ng-container matColumnDef="status">
+                <th mat-header-cell *matHeaderCellDef>Status</th>
+                <td mat-cell *matCellDef="let e">
+                  <span
+                    class="cp-status-badge"
+                    [class.cp-status-badge--success]="e.status === 'finished'"
+                    [class.cp-status-badge--warning]="e.status === 'in-progress'"
+                    [class.cp-status-badge--info]="e.status !== 'finished' && e.status !== 'in-progress'"
+                  >
+                    {{ e.status | titlecase }}
+                  </span>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="encounterColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: encounterColumns" class="detail__encounter-row"></tr>
+
+            </table>
+          </mat-card-content>
+        }
+
+      </mat-card>
+    </section>
+
+  }
+
+</div>

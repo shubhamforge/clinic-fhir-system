@@ -1,0 +1,218 @@
+// Patient Detail — component styles only.
+// Layout/structure only. All colors via var(--mat-sys-*). No raw hex.
+
+:host {
+  display: block;
+}
+
+// ── Page layout ───────────────────────────────────────────────────────────────
+
+.detail {
+  padding: 24px;
+}
+
+// ── Loading / error state ─────────────────────────────────────────────────────
+
+.detail__state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 64px 24px;
+  color: var(--mat-sys-on-surface-variant);
+
+  mat-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+.detail__state--error mat-icon {
+  color: var(--mat-sys-error);
+}
+
+// ── Page header ───────────────────────────────────────────────────────────────
+
+.detail__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.detail__back-btn {
+  flex-shrink: 0;
+}
+
+.detail__header-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.detail__name {
+  margin: 0;
+  font-family: 'Lexend', sans-serif;
+  color: var(--mat-sys-on-surface);
+}
+
+// ── Top row (info + vitals side by side) ──────────────────────────────────────
+
+.detail__top-row {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 24px;
+  align-items: flex-start;
+}
+
+.detail__info-card {
+  flex: 1;
+  min-width: 0;
+}
+
+.detail__vitals-card {
+  flex: 1;
+  min-width: 0;
+}
+
+// ── Patient info grid (2-column dl) ───────────────────────────────────────────
+
+.detail__info-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px 24px;
+  margin: 0;
+  padding: 8px 0;
+
+  dt {
+    color: var(--mat-sys-on-surface-variant);
+    white-space: nowrap;
+  }
+
+  dd {
+    margin: 0;
+    color: var(--mat-sys-on-surface);
+    word-break: break-word;
+  }
+}
+
+// ── Vitals 2×2 grid ───────────────────────────────────────────────────────────
+
+.detail__vitals-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.detail__vital-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--mat-sys-surface-variant);
+}
+
+.detail__vital-label {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.detail__vital-value {
+  color: var(--mat-sys-on-surface);
+  line-height: 1.2;
+}
+
+.detail__vital-unit {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.detail__vital-date {
+  color: var(--mat-sys-on-surface-variant);
+  margin-top: 4px;
+}
+
+.detail__vital-empty {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+// ── Encounters card ───────────────────────────────────────────────────────────
+
+.detail__section {
+  margin-bottom: 24px;
+}
+
+.detail__encounters-card {
+  width: 100%;
+}
+
+.detail__table-content {
+  padding: 0 !important;
+}
+
+.detail__encounters-table {
+  width: 100%;
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────────
+
+.detail__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 48px 24px;
+  color: var(--mat-sys-on-surface-variant);
+
+  mat-icon {
+    font-size: 36px;
+    width: 36px;
+    height: 36px;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+// ── Encounter row ─────────────────────────────────────────────────────────────
+
+.detail__encounter-row {
+  // Removes hover pointer since rows aren't clickable on this page
+  cursor: default;
+}
+
+// ── Responsive ────────────────────────────────────────────────────────────────
+
+@media (max-width: 768px) {
+  .detail {
+    padding: 16px;
+  }
+
+  .detail__top-row {
+    flex-direction: column;
+  }
+
+  .detail__info-card,
+  .detail__vitals-card {
+    width: 100%;
+  }
+
+  .detail__vitals-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .detail__vitals-grid {
+    grid-template-columns: 1fr;
+  }
+}
