@@ -54,7 +54,8 @@
           "buildTarget": "clinician-app:build:production"
         },
         "development": {
-          "buildTarget": "clinician-app:build:development"
+          "buildTarget": "clinician-app:build:development",
+          "proxyConfig": "apps/clinician-app/proxy.conf.json"
         }
       },
       "defaultConfiguration": "development"

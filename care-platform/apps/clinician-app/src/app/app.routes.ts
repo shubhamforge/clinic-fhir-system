@@ -1,3 +1,16 @@
 import { Route } from '@angular/router';
 
-export const appRoutes: Route[] = [];
+export const appRoutes: Route[] = [
+  {
+    path: '',
+    redirectTo: 'patients',
+    pathMatch: 'full',
+  },
+  {
+    path: 'patients',
+    loadComponent: () =>
+      import('./features/patients/patient-roster/patient-roster.component').then(
+        (m) => m.PatientRosterComponent,
+      ),
+  },
+];

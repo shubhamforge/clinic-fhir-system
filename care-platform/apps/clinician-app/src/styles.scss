@@ -1,1 +1,156 @@
-/* You can add global styles to this file, and also import other style files */
+// ─── Angular Material M3 Theming ─────────────────────────────────────────────
+@use '@angular/material' as mat;
+
+// Must be called exactly once per application — includes overlay, ripple, etc.
+@include mat.core();
+
+// ─── Clinician App Theme ──────────────────────────────────────────────────────
+// density -1: compact rows/form fields (~4px reduction per level)
+// Cyan primary (trust/clinical) · Green tertiary (health/success actions)
+
+$clinician-light: mat.define-theme((
+  color: (
+    theme-type:  light,
+    primary:     mat.$cyan-palette,
+    tertiary:    mat.$green-palette,
+  ),
+  typography: (
+    brand-family:    'Lexend',
+    plain-family:    'Source Sans 3',
+    bold-weight:     700,
+    medium-weight:   500,
+    regular-weight:  400,
+  ),
+  density: (
+    scale: -1,
+  ),
+));
+
+$clinician-dark: mat.define-theme((
+  color: (
+    theme-type:  dark,
+    primary:     mat.$cyan-palette,
+    tertiary:    mat.$green-palette,
+  ),
+  typography: (
+    brand-family:   'Lexend',
+    plain-family:   'Source Sans 3',
+    bold-weight:    700,
+    medium-weight:  500,
+    regular-weight: 400,
+  ),
+  density: (
+    scale: -1,
+  ),
+));
+
+:root {
+  @include mat.all-component-themes($clinician-light);
+}
+
+[data-theme='dark'] {
+  @include mat.all-component-themes($clinician-dark);
+}
+
+// ─── Design Tokens (primitive — feed into Material system) ───────────────────
+
+$cp-blue-800:  #164E63;
+$cp-neutral-50: #F8FAFC;
+$cp-neutral-100: #F1F5F9;
+$cp-neutral-200: #E2E8F0;
+$cp-neutral-300: #CBD5E1;
+$cp-neutral-500: #64748B;
+
+// Status semantic colors (used only for cp-status-badge utility — not Material tokens)
+$cp-success-bg:     #F0FDF4;
+$cp-success-border: #86EFAC;
+$cp-success-text:   #047857;
+$cp-warning-bg:     #FFFBEB;
+$cp-warning-border: #FBBF24;
+$cp-warning-text:   #B45309;
+$cp-critical-bg:    #FFF1F2;
+$cp-critical-border:#FCA5A5;
+$cp-critical-text:  #B91C1C;
+$cp-info-bg:        #ECFEFF;
+$cp-info-border:    #A5F3FC;
+$cp-info-text:      #0E7490;
+
+// ─── Global Reset & Layout ────────────────────────────────────────────────────
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  background-color: $cp-neutral-50;
+}
+
+// Skip link (accessibility)
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 16px;
+  padding: 8px 16px;
+  background: #0891B2;
+  color: #fff;
+  border-radius: 4px;
+  z-index: 9999;
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 0.875rem;
+  text-decoration: none;
+
+  &:focus {
+    top: 16px;
+  }
+}
+
+// ─── Utility: Monospace for lab values, vital readings, IDs ──────────────────
+
+.cp-font-mono {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+// ─── Utility: Status badge (inline chip — supplements Material, not replaces) ─
+
+.cp-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+.cp-status-badge--success {
+  background: $cp-success-bg;
+  border-color: $cp-success-border;
+  color: $cp-success-text;
+}
+
+.cp-status-badge--warning {
+  background: $cp-warning-bg;
+  border-color: $cp-warning-border;
+  color: $cp-warning-text;
+}
+
+.cp-status-badge--critical {
+  background: $cp-critical-bg;
+  border-color: $cp-critical-border;
+  color: $cp-critical-text;
+}
+
+.cp-status-badge--info {
+  background: $cp-info-bg;
+  border-color: $cp-info-border;
+  color: $cp-info-text;
+}
