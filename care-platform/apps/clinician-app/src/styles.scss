@@ -92,13 +92,13 @@ body {
 }
 
 // Skip link (accessibility)
-.skip-link {
+.cp-skip-link {
   position: absolute;
   top: -100%;
   left: 16px;
   padding: 8px 16px;
-  background: #0891B2;
-  color: #fff;
+  background: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
   border-radius: 4px;
   z-index: 9999;
   font-family: 'Source Sans 3', sans-serif;
