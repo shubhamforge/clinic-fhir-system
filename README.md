@@ -1,133 +1,147 @@
 # Clinic FHIR System
 
-A production-style, FHIR-compliant clinical management system for a small clinic. Built for learning and portfolio purposes using Java 21, Spring Boot, HAPI FHIR, and Angular.
+A production-style, FHIR-compliant clinical management system for a small clinic. Built for learning and portfolio purposes using Java 21, Spring Boot, HAPI FHIR, and Angular 21.
 
 ## Architecture
 
 ```
-Client (Postman / Angular)
-        ↓  REST JSON
+Angular (care-platform/)
+        ↓  REST JSON  (proxy → localhost:9090)
 clinic-api  (Spring Boot — business logic, DTO↔FHIR mapping)
         ↓  FHIR REST (HTTP/JSON)
 HAPI FHIR JPA Server  (FHIR resource storage + validation)
         ↓  JPA/JDBC
-PostgreSQL  (managed entirely by HAPI)
+PostgreSQL 15  (managed entirely by HAPI)
 ```
 
-## Repositories
+## Repository Layout
 
 | Folder | Stack | Purpose |
 |---|---|---|
-| `clinic-api/` | Java 21, Spring Boot | Backend REST API + FHIR integration (includes `integration-tests/` and `seed-data/`) |
-| `clinic-web/` | Angular 21 | Frontend UI (future) |
-| `infra/` | Docker Compose | HAPI FHIR server + PostgreSQL |
-| `docs/` | Markdown | Architecture and design docs |
+| `clinic-api/` | Java 21, Spring Boot 3.5 | Backend REST API + FHIR integration |
+| `care-platform/` | Angular 21, Nx monorepo | `clinician-app` (active) · `patient-app` (scaffolded) |
+| `infra/` | Docker Compose | HAPI FHIR JPA Server + PostgreSQL 15 |
+| `docs/` | Markdown | Architecture, API reference, design docs |
 
-## Development Setup
+---
+
+## Quick Start
 
 ### Prerequisites
 
 - Java 21
-- Docker
-- Node.js 18+ (required for Husky pre-commit hooks)
+- Docker Desktop
+- Node.js 18+
 
 ### Clone and install hooks
 
 ```bash
 git clone <repo-url>
 cd clinic-fhir-system
-npm install        # installs Husky and registers the pre-commit hook
+npm install   # installs Husky pre-commit hooks
 ```
 
-The pre-commit hook runs automatically on every `git commit`. It:
-- Formats staged `.java` files using **Spotless** (google-java-format, GOOGLE style)
-- Formats staged Angular files (`.ts`, `.html`, `.scss`) using **Prettier** — activates once `clinic-web/` is initialized
+### Start everything
 
-To format Java manually at any time:
-
-**Bash (Git Bash / macOS / Linux):**
 ```bash
-cd clinic-api
-./mvnw spotless:apply   # format
-./mvnw spotless:check   # check only (useful in CI)
+./dev.sh           # restart (default) — stops anything running, then starts fresh
+./dev.sh start     # start only if nothing is running
+./dev.sh stop      # stop all services
+./dev.sh restart   # stop then start
 ```
 
-**Windows CMD / PowerShell:**
-```cmd
-cd clinic-api
-mvnw.cmd spotless:apply
-mvnw.cmd spotless:check
+Services start in the correct order, each waiting for the previous to be healthy:
+
+| Service | URL |
+|---|---|
+| PostgreSQL 15 | `localhost:5432` |
+| HAPI FHIR JPA Server | `http://localhost:8080/fhir` |
+| clinic-api (Spring Boot) | `http://localhost:9090` |
+| clinician-app (Angular) | `http://localhost:4200` |
+
+> **First boot:** HAPI FHIR takes up to ~5 minutes to initialize on a fresh volume. Subsequent starts are much faster.
+
+Logs are written to `./logs/` in plain text (no ANSI codes). Press **Ctrl+C** in the `dev.sh` terminal to stop all services cleanly — it kills background processes and runs `docker compose down`.
+
+To follow a service live, open a dedicated terminal for each one you care about:
+
+**Terminal 1 — HAPI FHIR (Docker)**
+```bash
+docker compose -f infra/docker-compose.yml logs -f hapi-fhir
+```
+
+**Terminal 2 — Spring Boot backend**
+```bash
+tail -f logs/clinic-api.log
+```
+
+**Terminal 3 — Angular clinician app**
+```bash
+tail -f logs/clinician-app.log
+```
+
+<!--
+**Terminal 4 — Angular patient app** (uncomment in dev.sh first)
+```bash
+tail -f logs/patient-app.log
+```
+-->
+
+---
+
+## Manual Start (alternative)
+
+If you prefer to start services individually:
+
+**1. Infrastructure**
+```bash
+docker compose -f infra/docker-compose.yml up -d
+```
+HAPI FHIR takes ~60–90s to initialize. Check health:
+```bash
+docker compose -f infra/docker-compose.yml ps
+```
+
+**2. Backend**
+```bash
+# Bash (Git Bash / macOS / Linux)
+cd clinic-api && ./mvnw spring-boot:run
+
+# Windows CMD / PowerShell
+cd clinic-api && mvnw.cmd spring-boot:run
+```
+
+**3. Frontend**
+```bash
+cd care-platform
+npx nx serve clinician-app --port=4200
+# npx nx serve patient-app --port=4201
+```
+
+**Stop infrastructure:**
+```bash
+docker compose -f infra/docker-compose.yml down      # stop, keep data
+docker compose -f infra/docker-compose.yml down -v   # stop and wipe data
 ```
 
 ---
 
-## Quick Start
+## Code Formatting
 
-### 1. Start infrastructure
+The pre-commit hook formats staged files automatically on every `git commit`.
 
-```bash
-docker compose -f infra/docker-compose.yml up -d
-```
-
-This starts:
-- **PostgreSQL 15** at `localhost:5432` — persistent data stored in Docker volume `infra_postgres-data`
-- **HAPI FHIR JPA Server (R4)** at `http://localhost:8080/fhir` — stateless, all data lives in Postgres
-
-Both services have healthchecks configured. HAPI FHIR takes ~60 seconds to fully initialize on first boot. Check container health with:
+To format manually:
 
 ```bash
-docker compose ps
+# Java (Google style via Spotless)
+cd clinic-api && ./mvnw spotless:apply      # Bash
+cd clinic-api && mvnw.cmd spotless:apply    # Windows
+
+# Angular (Prettier — run from care-platform/)
+npx nx run clinician-app:lint --fix
 ```
 
-Verify FHIR server is ready (returns a CapabilityStatement JSON):
-```
-GET http://localhost:8080/fhir/metadata
-```
-
-**Data persistence:** stopping containers with `docker compose down` preserves all data. Use `docker compose down -v` only if you want to wipe the database.
-
-**To view live logs** (run from project root):
-```bash
-docker compose -f infra/docker-compose.yml logs -f              # both services
-docker compose -f infra/docker-compose.yml logs -f hapi-fhir   # HAPI FHIR only
-docker compose -f infra/docker-compose.yml logs -f postgres     # Postgres only
-```
-`Ctrl+C` stops following without stopping the containers.
-
-**To stop the infrastructure:**
-```bash
-docker compose -f infra/docker-compose.yml down        # stop, keep data
-docker compose -f infra/docker-compose.yml down -v     # stop and delete all data
-```
-
-### 2. Run the backend
-
-**Bash (Git Bash / macOS / Linux):**
-```bash
-cd clinic-api
-./mvnw spring-boot:run
-```
-
-**Windows CMD / PowerShell:**
-```cmd
-cd clinic-api
-mvnw.cmd spring-boot:run
-```
-
-API runs at `http://localhost:9090`
-
-### 3. Test with Postman
-
-```
-POST http://localhost:9090/api/patients
-{
-  "firstName": "John",
-  "lastName": "Doe",
-  "dateOfBirth": "1990-05-15",
-  "gender": "male",
-  "phone": "9876543210"
-}
-```
+---
 
 ## Features
 
@@ -135,15 +149,20 @@ POST http://localhost:9090/api/patients
 - Record patient visits / encounters (FHIR `Encounter`)
 - Store vitals — Blood Pressure, Weight, SpO2 (FHIR `Observation` with LOINC codes)
 - Patient summary aggregation endpoint
+- Patient roster UI in `clinician-app`
 - Full FHIR R4 compliance via HAPI FHIR
 
 ## Tech Stack
 
-- **Backend:** Java 21, Spring Boot 3, HAPI FHIR Client 7.4
-- **FHIR Server:** HAPI FHIR JPA Server (R4)
-- **Database:** PostgreSQL 15
-- **Frontend:** Angular 21 (planned)
-- **Infra:** Docker Compose
+| Layer | Technology |
+|---|---|
+| Backend | Java 21, Spring Boot 3.5, HAPI FHIR Client 7.4 |
+| FHIR Server | HAPI FHIR JPA Server v7.4.0 (R4) |
+| Database | PostgreSQL 15 (owned by HAPI) |
+| Frontend | Angular 21, Angular Material M3, Nx monorepo |
+| Infra | Docker Compose |
+
+---
 
 ## Docs
 
@@ -157,3 +176,4 @@ See [`docs/`](./docs) for full system design:
 - [Database Internals](./docs/05-database.md)
 - [MVP Plan](./docs/06-mvp-plan.md)
 - [Best Practices](./docs/07-best-practices.md)
+- [Design System](./docs/08-design-system.md)

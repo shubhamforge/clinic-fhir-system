@@ -68,7 +68,18 @@ desktop.ini
 infra/postgres-data/
 
 # ===========================
+# Dev script logs + state
+# ===========================
+logs/
+.dev.pids
+
+# ===========================
 # Others
 # ===========================
 .claude
 .serena
+
+# ===========================
+# Personal study material
+# ===========================
+study/
