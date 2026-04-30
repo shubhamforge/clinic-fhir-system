@@ -1,0 +1,171 @@
+// Patient Roster — component styles only.
+// No Material component reimplementation here.
+// mat-table, mat-form-field, mat-card etc. are themed via styles.scss.
+
+:host {
+  display: block;
+}
+
+// ── Page layout ───────────────────────────────────────────────────────────────
+
+.roster {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+
+.roster__header {
+  margin-bottom: 16px;
+}
+
+.roster__title-group {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.roster__title {
+  margin: 0;
+  font-family: 'Lexend', sans-serif;
+  color: var(--mat-sys-on-surface);
+}
+
+.roster__count {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+// ── Search bar ────────────────────────────────────────────────────────────────
+
+.roster__toolbar {
+  margin-bottom: 16px;
+}
+
+.roster__search {
+  width: 320px;
+  max-width: 100%;
+}
+
+// ── Data card ─────────────────────────────────────────────────────────────────
+
+.roster__card {
+  padding: 0 !important; // mat-card has default padding; override for flush table
+
+  // Remove inner padding from mat-card-content so table fills edge-to-edge
+  ::ng-deep .mat-mdc-card-content {
+    padding: 0;
+  }
+}
+
+// ── Loading / error state ─────────────────────────────────────────────────────
+
+.roster__state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 64px 24px;
+  color: var(--mat-sys-on-surface-variant);
+
+  mat-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+  }
+}
+
+.roster__state--error mat-icon {
+  color: var(--mat-sys-error);
+}
+
+// ── Table wrapper (scrollable; sticky header works inside this) ───────────────
+
+.roster__table-wrapper {
+  overflow-x: auto;
+  overflow-y: auto;
+  // max-height relative to the scroll container (.app-main), not the viewport,
+  // so it doesn't need to know the toolbar height
+  max-height: calc(100% - 200px);
+}
+
+// ── Table ─────────────────────────────────────────────────────────────────────
+
+.roster__table {
+  width: 100%;
+  // Ensure table fills the card even when rows are few
+  min-width: 700px;
+}
+
+// ── Column widths ─────────────────────────────────────────────────────────────
+
+// Angular Material generates .mat-column-{name} classes from matColumnDef
+
+.mat-column-name          { min-width: 200px; width: auto; }
+.mat-column-gender        { width: 90px; }
+.mat-column-dob           { width: 130px; }
+.mat-column-lastEncounter { width: 140px; }
+.mat-column-status        { width: 100px; }
+.mat-column-actions       { width: 52px; text-align: right; }
+
+// ── Specific cell styles ──────────────────────────────────────────────────────
+
+.roster__cell-name {
+  font-weight: 500;
+}
+
+.roster__cell-actions {
+  text-align: right;
+  padding-right: 8px !important;
+}
+
+// ── Row interaction ───────────────────────────────────────────────────────────
+
+.roster__row {
+  cursor: pointer;
+  transition: background-color 150ms ease;
+
+  &:hover {
+    background: var(--mat-sys-surface-variant);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--mat-sys-primary);
+    outline-offset: -2px;
+  }
+}
+
+// ── Empty state (no-data row) ─────────────────────────────────────────────────
+
+.roster__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 48px 24px !important;
+  color: var(--mat-sys-on-surface-variant);
+
+  mat-icon {
+    font-size: 36px;
+    width: 36px;
+    height: 36px;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+// ── Responsive ────────────────────────────────────────────────────────────────
+
+@media (max-width: 768px) {
+  .roster {
+    padding: 16px;
+  }
+
+  .roster__search {
+    width: 100%;
+  }
+}
