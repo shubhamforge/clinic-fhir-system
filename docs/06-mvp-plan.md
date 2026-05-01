@@ -48,6 +48,19 @@ Target: 1–2 weeks. Single Spring Boot monolith. No microservices yet.
 - [x] Add `application.yaml` with configurable `fhir.server.url`
 - [x] Write `README.md` quick-start instructions
 - [x] Load synthetic seed data via Synthea pipeline
+- [x] Add `seed-demo-data` Nx app — Cucumber-driven, idempotent, relative-date seed data
+
+---
+
+## Phase 4 — Frontend (care-platform)
+
+- [x] Bootstrap Angular Material M3 shell + theme (clinician-app)
+- [x] Patient roster — searchable `mat-table` with live data from `/api/patients`
+- [x] Patient detail page — 3-panel layout with ApexCharts vitals timeline
+- [x] Top navigation header replacing sidebar
+- [ ] Encounter list in patient detail
+- [ ] CORS configuration (needed for any non-proxied deployment)
+- [ ] Auth / JWT
 
 ---
 
@@ -57,9 +70,8 @@ Target: 1–2 weeks. Single Spring Boot monolith. No microservices yet.
 |---|---|
 | Patient `PUT` update | Read-then-update pattern adds complexity |
 | Pagination on search | Not needed for demo data volume |
-| Spring Security / JWT | Adds significant setup without portfolio value at MVP stage |
-| Angular frontend | Separate concern; backend should be solid first |
-| CORS configuration | Needed once Angular frontend is scaffolded |
+| Spring Security / JWT | Adds significant setup without portfolio value at this stage |
+| patient-app features | Scaffolded; clinician-app is the active app |
 
 ---
 
@@ -90,4 +102,13 @@ Week 2
   ✓ README and docs complete
   ○ End-to-end Postman smoke test (pending infra start)
   ○ Push to GitHub
+
+Frontend (care-platform)
+  ✓ Angular Material M3 shell + theme (clinician-app)
+  ✓ Patient roster (mat-table, live API data)
+  ✓ Patient detail page (ApexCharts vitals timeline)
+  ✓ seed-demo-data app (Cucumber, idempotent, 5 patient profiles)
+  ○ Encounter list in patient detail
+  ○ CORS config
+  ○ Auth / JWT
 ```

@@ -149,7 +149,9 @@ npx nx run clinician-app:lint --fix
 - Record patient visits / encounters (FHIR `Encounter`)
 - Store vitals — Blood Pressure, Weight, SpO2 (FHIR `Observation` with LOINC codes)
 - Patient summary aggregation endpoint
-- Patient roster UI in `clinician-app`
+- Patient roster UI with search (`clinician-app`)
+- Patient detail page with ApexCharts vitals timeline (`clinician-app`)
+- Cucumber-driven seed data app — 5 idempotent patient profiles with relative dates (`seed-demo-data`)
 - Full FHIR R4 compliance via HAPI FHIR
 
 ## Tech Stack

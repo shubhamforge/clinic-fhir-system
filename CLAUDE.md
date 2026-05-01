@@ -251,21 +251,24 @@ color: #334155;
 - Will be replaced by `$cp-space-*` tokens when `libs/design-system` is created
 
 ### Status
-- **clinician-app**: M3 shell + theme bootstrapped; patient roster feature implemented.
+- **clinician-app**: M3 shell + theme bootstrapped; patient roster and patient detail page implemented.
 - **patient-app**: Scaffolded, no feature code yet.
 - **libs/design-system, libs/ui, libs/shared**: Defined in `docs/08-design-system.md` but not yet created on disk.
 
 ---
 
-## Project Status (as of 2026-04-30)
+## Project Status (as of 2026-05-02)
 
 **Backend (clinic-api):** MVP complete. All endpoints implemented and manually tested via Postman. Synthea seed data loaded.
 
-**Frontend (care-platform):** In progress. `clinician-app` has shell layout and patient roster. Next logical features: patient detail view, encounter list, vitals display.
+**Frontend (care-platform):** In progress. `clinician-app` has shell layout, patient roster, and patient detail page with ApexCharts vitals timeline. Next logical features: encounter list in patient detail, CORS config.
+
+**Seed data:** `apps/seed-demo-data` — Cucumber-driven app with 5 idempotent patient profiles (encounters + vitals, relative dates). Run: `npx nx run seed-demo-data:seed`.
 
 **Pending from MVP plan:**
 - End-to-end Postman smoke test (infra must be running)
-- Post-MVP: patient detail/encounter/vitals UI, CORS config, auth/JWT
+- Encounter list in patient detail view
+- CORS config, auth/JWT (post-MVP)
 
 ---
 
