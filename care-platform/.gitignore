@@ -46,3 +46,6 @@ Thumbs.db
 .angular
 
 __screenshots__/
+
+# seed-demo-data generated reports
+apps/seed-demo-data/reports/

@@ -1,17 +1,19 @@
 Feature: Seed development patient data
 
   Five realistic patient profiles for frontend development and demo use.
-  All encounter dates are relative to today so data stays recent across runs.
+  Each scenario deletes its own existing data (by fixed ID) before re-creating,
+  so every run is idempotent and only touches seed-owned resources.
 
-  Background: Default practitioner and organization exist
-    Given a default practitioner exists in HAPI FHIR
-    And a default organization exists in HAPI FHIR
+  Background: Default practitioner and organization are provisioned
+    Given practitioner "seed-default-practitioner" is provisioned
+    And organization "seed-default-org" is provisioned
 
   # ─────────────────────────────────────────────────────────────────────────
   # Patient 1 — Hypertensive male, ongoing BP monitoring, no SpO2 recorded
   # ─────────────────────────────────────────────────────────────────────────
   Scenario: Seed hypertensive patient — Marcus Webb
     Given a patient exists with the following details:
+      | id          | seed-marcus-webb        |
       | firstName   | Marcus                  |
       | lastName    | Webb                    |
       | dateOfBirth | 1965-03-12              |
@@ -48,12 +50,13 @@ Feature: Seed development patient data
   # ─────────────────────────────────────────────────────────────────────────
   Scenario: Seed healthy patient — Priya Nair
     Given a patient exists with the following details:
-      | firstName   | Priya                   |
-      | lastName    | Nair                    |
-      | dateOfBirth | 1992-07-28              |
-      | gender      | female                  |
-      | phone       | 5551002002              |
-      | email       | priya.nair@example.com  |
+      | id          | seed-priya-nair        |
+      | firstName   | Priya                  |
+      | lastName    | Nair                   |
+      | dateOfBirth | 1992-07-28             |
+      | gender      | female                 |
+      | phone       | 5551002002             |
+      | email       | priya.nair@example.com |
 
     When an encounter is recorded 38 days ago with reason "Annual wellness exam" and status "finished"
     And vitals are recorded for that encounter:
@@ -74,12 +77,13 @@ Feature: Seed development patient data
   # ─────────────────────────────────────────────────────────────────────────
   Scenario: Seed overweight low-SpO2 patient — Gerald Horton
     Given a patient exists with the following details:
-      | firstName   | Gerald                       |
-      | lastName    | Horton                       |
-      | dateOfBirth | 1974-11-04                   |
-      | gender      | male                         |
-      | phone       | 5551003003                   |
-      | email       | gerald.horton@example.com    |
+      | id          | seed-gerald-horton        |
+      | firstName   | Gerald                    |
+      | lastName    | Horton                    |
+      | dateOfBirth | 1974-11-04                |
+      | gender      | male                      |
+      | phone       | 5551003003                |
+      | email       | gerald.horton@example.com |
 
     When an encounter is recorded 45 days ago with reason "Fatigue and shortness of breath" and status "finished"
     And vitals are recorded for that encounter:
@@ -114,12 +118,13 @@ Feature: Seed development patient data
   # ─────────────────────────────────────────────────────────────────────────
   Scenario: Seed post-surgery patient — Sandra Okafor
     Given a patient exists with the following details:
-      | firstName   | Sandra                       |
-      | lastName    | Okafor                       |
-      | dateOfBirth | 1980-02-19                   |
-      | gender      | female                       |
-      | phone       | 5551004004                   |
-      | email       | sandra.okafor@example.com    |
+      | id          | seed-sandra-okafor        |
+      | firstName   | Sandra                    |
+      | lastName    | Okafor                    |
+      | dateOfBirth | 1980-02-19                |
+      | gender      | female                    |
+      | phone       | 5551004004                |
+      | email       | sandra.okafor@example.com |
 
     When an encounter is recorded 44 days ago with reason "Cholecystectomy — pre-op assessment" and status "finished"
     And vitals are recorded for that encounter:
@@ -154,12 +159,13 @@ Feature: Seed development patient data
   # ─────────────────────────────────────────────────────────────────────────
   Scenario: Seed diabetic monitoring patient — Ramon Castillo
     Given a patient exists with the following details:
-      | firstName   | Ramon                        |
-      | lastName    | Castillo                     |
-      | dateOfBirth | 1958-09-30                   |
-      | gender      | male                         |
-      | phone       | 5551005005                   |
-      | email       | ramon.castillo@example.com   |
+      | id          | seed-ramon-castillo        |
+      | firstName   | Ramon                      |
+      | lastName    | Castillo                   |
+      | dateOfBirth | 1958-09-30                 |
+      | gender      | male                       |
+      | phone       | 5551005005                 |
+      | email       | ramon.castillo@example.com |
 
     When an encounter is recorded 40 days ago with reason "Diabetes management — quarterly review" and status "finished"
     And vitals are recorded for that encounter:
