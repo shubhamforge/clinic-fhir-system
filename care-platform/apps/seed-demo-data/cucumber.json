@@ -1,0 +1,11 @@
+{
+  "default": {
+    "requireModule": ["@swc-node/register"],
+    "require": [
+      "src/support/**/*.ts",
+      "src/step-definitions/**/*.ts"
+    ],
+    "paths": ["src/features/**/*.feature"],
+    "format": ["progress", "html:reports/seed-data-report.html"]
+  }
+}
