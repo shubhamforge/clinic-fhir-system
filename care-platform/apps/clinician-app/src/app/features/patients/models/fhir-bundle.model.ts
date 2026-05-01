@@ -24,6 +24,21 @@ export interface FhirPatient extends FhirResource {
   gender?: 'male' | 'female' | 'other' | 'unknown';
   birthDate?: string; // YYYY-MM-DD
   telecom?: Array<{ system?: string; value?: string }>;
+  identifier?: Array<{
+    type?: { coding?: Array<{ system?: string; code?: string; display?: string }>; text?: string };
+    value?: string;
+  }>;
+  address?: Array<{
+    line?: string[];
+    city?: string;
+    state?: string;
+    postalCode?: string;
+    country?: string;
+  }>;
+  maritalStatus?: { coding?: Array<{ code?: string; display?: string }>; text?: string };
+  communication?: Array<{
+    language?: { coding?: Array<{ code?: string; display?: string }>; text?: string };
+  }>;
 }
 
 export interface FhirHumanName {

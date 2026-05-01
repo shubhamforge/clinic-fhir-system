@@ -1,17 +1,12 @@
-// Patient Detail — component styles only.
-// Layout/structure only. All colors via var(--mat-sys-*). No raw hex.
+// Patient Detail v2 — 3-panel layout. No colors in SCSS; all via var(--mat-sys-*).
 
 :host {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100dvh - 56px); // 56px = app header
 }
 
-// ── Page layout ───────────────────────────────────────────────────────────────
-
-.detail {
-  padding: 24px;
-}
-
-// ── Loading / error state ─────────────────────────────────────────────────────
+// ── Loading / error ───────────────────────────────────────────────────────────
 
 .detail__state {
   display: flex;
@@ -22,39 +17,32 @@
   padding: 64px 24px;
   color: var(--mat-sys-on-surface-variant);
 
-  mat-icon {
-    font-size: 40px;
-    width: 40px;
-    height: 40px;
-  }
-
-  p {
-    margin: 0;
-  }
+  mat-icon { font-size: 40px; width: 40px; height: 40px; }
+  p { margin: 0; }
 }
 
-.detail__state--error mat-icon {
-  color: var(--mat-sys-error);
-}
+.detail__state--error mat-icon { color: var(--mat-sys-error); }
 
-// ── Page header ───────────────────────────────────────────────────────────────
+// ── Panel 1: Banner ───────────────────────────────────────────────────────────
 
-.detail__header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 24px;
-}
-
-.detail__back-btn {
+.detail__banner {
   flex-shrink: 0;
+  padding: 10px 24px 14px;
+  background: var(--mat-sys-surface);
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
 }
 
-.detail__header-title {
+.detail__banner-top {
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.detail__banner-identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .detail__name {
@@ -63,69 +51,114 @@
   color: var(--mat-sys-on-surface);
 }
 
-// ── Top row (info + vitals side by side) ──────────────────────────────────────
-
-.detail__top-row {
+.detail__banner-meta {
   display: flex;
-  gap: 24px;
-  margin-bottom: 24px;
-  align-items: flex-start;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  padding-left: 40px; // aligns under name, past back button
 }
 
-.detail__info-card {
+.detail__meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.detail__meta-label {
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.detail__meta-value {
+  font-size: 0.8125rem;
+  color: var(--mat-sys-on-surface);
+}
+
+.detail__meta-divider {
+  width: 1px;
+  height: 28px;
+  background: var(--mat-sys-outline-variant);
+  align-self: center;
+}
+
+// ── Panels 2+3: Body ──────────────────────────────────────────────────────────
+
+.detail {
+  display: flex;
+  flex-direction: column;
   flex: 1;
-  min-width: 0;
 }
 
-.detail__vitals-card {
+.detail__body {
+  display: flex;
   flex: 1;
+  min-height: 0;
+}
+
+// ── Panel 2: Chart ────────────────────────────────────────────────────────────
+
+.detail__chart-panel {
+  flex: 3;
   min-width: 0;
+  padding: 20px 24px 24px;
+  border-right: 1px solid var(--mat-sys-outline-variant);
+  overflow: hidden;
 }
 
-// ── Patient info grid (2-column dl) ───────────────────────────────────────────
-
-.detail__info-grid {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 12px 24px;
-  margin: 0;
-  padding: 8px 0;
-
-  dt {
-    color: var(--mat-sys-on-surface-variant);
-    white-space: nowrap;
-  }
-
-  dd {
-    margin: 0;
-    color: var(--mat-sys-on-surface);
-    word-break: break-word;
-  }
+.detail__section-title {
+  margin: 0 0 2px;
+  color: var(--mat-sys-on-surface);
 }
 
-// ── Vitals 2×2 grid ───────────────────────────────────────────────────────────
+.detail__section-title--spaced {
+  margin-top: 16px;
+}
+
+.detail__chart-hint {
+  margin: 0 0 16px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+// ── Panel 3: Context ──────────────────────────────────────────────────────────
+
+.detail__context-panel {
+  flex: 2;
+  min-width: 260px;
+  padding: 20px 20px 24px;
+  overflow-y: auto;
+}
+
+// Default view — latest vitals grid
 
 .detail__vitals-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  padding: 8px 0;
+  gap: 8px;
+  margin: 12px 0 0;
 }
 
 .detail__vital-tile {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 12px;
+  padding: 10px 12px;
   border-radius: 8px;
   background: var(--mat-sys-surface-variant);
 }
 
 .detail__vital-label {
   color: var(--mat-sys-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .detail__vital-value {
+  font-size: 1.375rem;
+  font-weight: 600;
   color: var(--mat-sys-on-surface);
   line-height: 1.2;
 }
@@ -135,84 +168,165 @@
 }
 
 .detail__vital-date {
-  color: var(--mat-sys-on-surface-variant);
   margin-top: 4px;
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .detail__vital-empty {
+  font-size: 1.375rem;
   color: var(--mat-sys-on-surface-variant);
 }
 
-// ── Encounters card ───────────────────────────────────────────────────────────
+// Divider between vitals + encounters
 
-.detail__section {
-  margin-bottom: 24px;
+.detail__panel-divider {
+  margin: 16px 0 0;
 }
 
-.detail__encounters-card {
-  width: 100%;
-}
+// Encounter list
 
-.detail__table-content {
-  padding: 0 !important;
-}
-
-.detail__encounters-table {
-  width: 100%;
-}
-
-// ── Empty state ───────────────────────────────────────────────────────────────
-
-.detail__empty {
+.detail__enc-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 48px 24px;
-  color: var(--mat-sys-on-surface-variant);
+  gap: 4px;
+}
 
-  mat-icon {
-    font-size: 36px;
-    width: 36px;
-    height: 36px;
+.detail__enc-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--mat-sys-surface-variant);
   }
 
-  p {
-    margin: 0;
+  &:focus-visible {
+    outline: 2px solid var(--mat-sys-primary);
+    outline-offset: -2px;
   }
 }
 
-// ── Encounter row ─────────────────────────────────────────────────────────────
+.detail__enc-item-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
 
-.detail__encounter-row {
-  // Removes hover pointer since rows aren't clickable on this page
-  cursor: default;
+.detail__enc-reason {
+  color: var(--mat-sys-on-surface);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.detail__enc-date {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.detail__empty-list {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 0;
+  color: var(--mat-sys-on-surface-variant);
+
+  mat-icon { font-size: 18px; width: 18px; height: 18px; }
+}
+
+// Selected detail view
+
+.detail__selected-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 16px;
+  color: var(--mat-sys-on-surface);
+}
+
+.detail__obs-card,
+.detail__enc-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 8px;
+  background: var(--mat-sys-surface-variant);
+}
+
+.detail__obs-label {
+  color: var(--mat-sys-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.detail__obs-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.detail__obs-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--mat-sys-on-surface);
+  line-height: 1;
+}
+
+.detail__obs-unit {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.detail__obs-date {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.detail__obs-divider {
+  margin: 4px 0;
+}
+
+.detail__obs-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.detail__enc-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 // ── Responsive ────────────────────────────────────────────────────────────────
 
-@media (max-width: 768px) {
-  .detail {
-    padding: 16px;
-  }
-
-  .detail__top-row {
+@media (max-width: 900px) {
+  .detail__body {
     flex-direction: column;
   }
 
-  .detail__info-card,
-  .detail__vitals-card {
-    width: 100%;
+  .detail__chart-panel {
+    border-right: none;
+    border-bottom: 1px solid var(--mat-sys-outline-variant);
+  }
+
+  .detail__context-panel {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .detail__banner-meta {
+    padding-left: 0;
   }
 
   .detail__vitals-grid {
     grid-template-columns: 1fr 1fr;
-  }
-}
-
-@media (max-width: 480px) {
-  .detail__vitals-grid {
-    grid-template-columns: 1fr;
   }
 }

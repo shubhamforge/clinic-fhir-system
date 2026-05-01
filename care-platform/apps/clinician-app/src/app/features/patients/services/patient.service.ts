@@ -16,6 +16,7 @@ import {
   EncounterItem,
   VitalsSnapshot,
   VitalReading,
+  ObservationPoint,
 } from '../models/patient-detail.model';
 
 const LOINC_SYSTOLIC = '8480-6';
@@ -23,11 +24,17 @@ const LOINC_DIASTOLIC = '8462-4';
 const LOINC_WEIGHT = '29463-7';
 const LOINC_SPO2 = '59408-5';
 
+const LOINC_META: Record<string, { type: ObservationPoint['vitalType']; label: string }> = {
+  [LOINC_SYSTOLIC]:  { type: 'systolic',  label: 'Systolic BP' },
+  [LOINC_DIASTOLIC]: { type: 'diastolic', label: 'Diastolic BP' },
+  [LOINC_WEIGHT]:    { type: 'weight',    label: 'Weight' },
+  [LOINC_SPO2]:      { type: 'spo2',      label: 'SpO₂' },
+};
+
 @Injectable({ providedIn: 'root' })
 export class PatientService {
   private readonly http = inject(HttpClient);
 
-  // GET /api/patients → FHIR Bundle (proxied to http://localhost:9090 in dev)
   getPatients(): Observable<PatientListItem[]> {
     return this.http
       .get<FhirBundle>('/api/patients')
@@ -51,7 +58,6 @@ export class PatientService {
     const nameObj = p.name?.[0];
     const given = nameObj?.given?.join(' ') ?? '';
     const family = nameObj?.family ?? '';
-    // Prefer the "text" field if the server provides it, otherwise build from parts
     const fullName = nameObj?.text ?? ([given, family].filter(Boolean).join(' ') || 'Unknown');
 
     return {
@@ -60,14 +66,12 @@ export class PatientService {
       gender: p.gender ?? 'unknown',
       dob: p.birthDate ?? '',
       status: p.active === false ? 'inactive' : 'active',
-      // lastEncounter requires a separate encounter query — deferred to patient detail screen
       lastEncounter: undefined,
     };
   }
 
   private mapSummaryBundle(bundle: FhirBundle): PatientSummary {
     const resources = (bundle.entry ?? []).map((e) => e.resource);
-
     const fhirPatient = resources.find(isFhirPatient);
     const encounters = resources.filter(isFhirEncounter);
     const observations = resources.filter(isFhirObservation);
@@ -80,16 +84,44 @@ export class PatientService {
     const phone = fhirPatient?.telecom?.find((t) => t.system === 'phone')?.value;
     const email = fhirPatient?.telecom?.find((t) => t.system === 'email')?.value;
 
+    const mrnEntry = fhirPatient?.identifier?.find((id) =>
+      id.type?.coding?.some((c) => c.code === 'MR'),
+    );
+    const mrn = mrnEntry?.value;
+
+    const addr = fhirPatient?.address?.[0];
+    const address = addr
+      ? {
+          line: addr.line?.join(', ') ?? '',
+          city: addr.city ?? '',
+          state: addr.state ?? '',
+          postalCode: addr.postalCode ?? '',
+        }
+      : undefined;
+
+    const maritalStatus =
+      fhirPatient?.maritalStatus?.text ??
+      fhirPatient?.maritalStatus?.coding?.[0]?.display;
+
+    const language =
+      fhirPatient?.communication?.[0]?.language?.text ??
+      fhirPatient?.communication?.[0]?.language?.coding?.[0]?.display;
+
     return {
       id: fhirPatient?.id ?? '',
       name: fullName,
       dob: fhirPatient?.birthDate ?? '',
       gender: fhirPatient?.gender ?? 'unknown',
+      mrn,
       phone,
       email,
+      address,
+      maritalStatus,
+      language,
       status: fhirPatient?.active === false ? 'inactive' : 'active',
       encounters: this.mapEncounters(encounters),
       vitals: this.mapVitals(observations),
+      allObservations: this.mapAllObservations(observations),
     };
   }
 
@@ -101,14 +133,13 @@ export class PatientService {
         reason: e.reasonCode?.[0]?.text ?? '—',
         status: e.status ?? 'unknown',
       }))
-      .sort((a, b) => b.date.localeCompare(a.date))
-      .slice(0, 5);
+      .sort((a, b) => b.date.localeCompare(a.date));
   }
 
   private mapVitals(observations: FhirObservation[]): VitalsSnapshot {
     const pick = (loincCode: string): VitalReading | undefined => {
-      const matches = observations.filter(
-        (o) => o.code?.coding?.some((c) => c.code === loincCode),
+      const matches = observations.filter((o) =>
+        o.code?.coding?.some((c) => c.code === loincCode),
       );
       if (!matches.length) return undefined;
 
@@ -119,11 +150,7 @@ export class PatientService {
       const value = latest.valueQuantity?.value;
       if (value === undefined) return undefined;
 
-      return {
-        value,
-        unit: latest.valueQuantity?.unit ?? '',
-        date: latest.effectiveDateTime ?? '',
-      };
+      return { value, unit: latest.valueQuantity?.unit ?? '', date: latest.effectiveDateTime ?? '' };
     };
 
     return {
@@ -132,5 +159,27 @@ export class PatientService {
       weight: pick(LOINC_WEIGHT),
       spo2: pick(LOINC_SPO2),
     };
+  }
+
+  private mapAllObservations(observations: FhirObservation[]): ObservationPoint[] {
+    return observations
+      .filter((o) => {
+        const code = o.code?.coding?.[0]?.code;
+        return code && LOINC_META[code] && o.valueQuantity?.value !== undefined && o.effectiveDateTime;
+      })
+      .map((o) => {
+        const code = o.code!.coding![0].code!;
+        const meta = LOINC_META[code];
+        return {
+          id: o.id ?? '',
+          loincCode: code,
+          vitalType: meta.type,
+          label: meta.label,
+          value: o.valueQuantity!.value!,
+          unit: o.valueQuantity?.unit ?? '',
+          date: o.effectiveDateTime!,
+        };
+      })
+      .sort((a, b) => a.date.localeCompare(b.date));
   }
 }

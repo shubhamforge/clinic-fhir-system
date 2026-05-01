@@ -1,6 +1,6 @@
 <div class="detail">
 
-  <!-- ── Loading state ────────────────────────────────────────────────────── -->
+  <!-- ── Loading ──────────────────────────────────────────────────────────── -->
   @if (loading()) {
     <div class="detail__state" role="status" aria-label="Loading patient">
       <mat-spinner diameter="36" />
@@ -8,14 +8,13 @@
     </div>
   }
 
-  <!-- ── Error state ──────────────────────────────────────────────────────── -->
+  <!-- ── Error ────────────────────────────────────────────────────────────── -->
   @if (error()) {
     <div class="detail__state detail__state--error" role="alert">
       <mat-icon aria-hidden="true">error_outline</mat-icon>
       <p class="mat-body-medium">{{ error() }}</p>
       <button mat-stroked-button (click)="loadSummary()">
-        <mat-icon>refresh</mat-icon>
-        Try again
+        <mat-icon>refresh</mat-icon> Try again
       </button>
     </div>
   }
@@ -23,177 +22,258 @@
   <!-- ── Main content ─────────────────────────────────────────────────────── -->
   @if (!loading() && !error() && patient(); as p) {
 
-    <!-- ── Page header ────────────────────────────────────────────────────── -->
-    <header class="detail__header">
-      <button
-        mat-icon-button
-        (click)="goBack()"
-        aria-label="Back to patient list"
-        class="detail__back-btn"
-      >
-        <mat-icon>chevron_left</mat-icon>
-      </button>
+    <!-- ── Panel 1: Patient banner ──────────────────────────────────────── -->
+    <header class="detail__banner">
+      <div class="detail__banner-top">
+        <button mat-icon-button (click)="goBack()" aria-label="Back to patients">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <div class="detail__banner-identity">
+          <h1 class="detail__name mat-headline-small">{{ p.name }}</h1>
+          <span
+            class="cp-status-badge"
+            [class.cp-status-badge--success]="p.status === 'active'"
+            [class.cp-status-badge--info]="p.status === 'inactive'"
+          >
+            {{ p.status | titlecase }}
+          </span>
+        </div>
+      </div>
 
-      <div class="detail__header-title">
-        <h1 class="mat-headline-medium detail__name">{{ p.name }}</h1>
-        <span
-          class="cp-status-badge"
-          [class.cp-status-badge--success]="p.status === 'active'"
-          [class.cp-status-badge--info]="p.status === 'inactive'"
-        >
-          {{ p.status | titlecase }}
-        </span>
+      <div class="detail__banner-meta">
+        @if (p.mrn) {
+          <div class="detail__meta-item">
+            <span class="detail__meta-label">MRN</span>
+            <span class="detail__meta-value cp-font-mono">{{ p.mrn }}</span>
+          </div>
+          <div class="detail__meta-divider"></div>
+        }
+
+        <div class="detail__meta-item">
+          <span class="detail__meta-label">Age</span>
+          <span class="detail__meta-value">{{ patientAge() }}y</span>
+        </div>
+        <div class="detail__meta-item">
+          <span class="detail__meta-label">DOB</span>
+          <span class="detail__meta-value cp-font-mono">{{ p.dob | date : 'dd MMM yyyy' }}</span>
+        </div>
+        <div class="detail__meta-item">
+          <span class="detail__meta-label">Gender</span>
+          <span class="detail__meta-value">{{ p.gender | titlecase }}</span>
+        </div>
+        @if (p.maritalStatus) {
+          <div class="detail__meta-item">
+            <span class="detail__meta-label">Marital</span>
+            <span class="detail__meta-value">{{ p.maritalStatus }}</span>
+          </div>
+        }
+        @if (p.language) {
+          <div class="detail__meta-item">
+            <span class="detail__meta-label">Language</span>
+            <span class="detail__meta-value">{{ p.language }}</span>
+          </div>
+        }
+
+        @if (p.phone || p.email) {
+          <div class="detail__meta-divider"></div>
+        }
+        @if (p.phone) {
+          <div class="detail__meta-item">
+            <span class="detail__meta-label">Phone</span>
+            <span class="detail__meta-value">{{ p.phone }}</span>
+          </div>
+        }
+        @if (p.email) {
+          <div class="detail__meta-item">
+            <span class="detail__meta-label">Email</span>
+            <span class="detail__meta-value">{{ p.email }}</span>
+          </div>
+        }
+
+        @if (p.address) {
+          <div class="detail__meta-divider"></div>
+          <div class="detail__meta-item">
+            <span class="detail__meta-label">Address</span>
+            <span class="detail__meta-value">
+              {{ p.address.line }}, {{ p.address.city }}, {{ p.address.state }} {{ p.address.postalCode }}
+            </span>
+          </div>
+        }
       </div>
     </header>
 
-    <!-- ── Top row: info + vitals ────────────────────────────────────────── -->
-    <div class="detail__top-row">
+    <!-- ── Panels 2 + 3: Body ──────────────────────────────────────────────── -->
+    <div class="detail__body">
 
-      <!-- Patient info card -->
-      <mat-card appearance="outlined" class="detail__info-card">
-        <mat-card-header>
-          <mat-card-title class="mat-title-medium">Patient Information</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <dl class="detail__info-grid">
-            <dt class="mat-label-medium">Date of Birth</dt>
-            <dd class="cp-font-mono mat-body-medium">
-              {{ p.dob ? (p.dob | date : 'dd MMM yyyy') : '—' }}
-            </dd>
+      <!-- ── Panel 2: Timeline chart ────────────────────────────────────── -->
+      <section class="detail__chart-panel" aria-label="Clinical timeline">
+        <h2 class="detail__section-title mat-title-medium">Clinical Timeline</h2>
+        <p class="detail__chart-hint mat-body-small">Click a data point to inspect the reading</p>
 
-            <dt class="mat-label-medium">Gender</dt>
-            <dd class="mat-body-medium">{{ p.gender | titlecase }}</dd>
+        <apx-chart
+          [series]="chartSeries()"
+          [chart]="chartConfig"
+          [xaxis]="xaxisConfig"
+          [yaxis]="yaxisConfig()"
+          [annotations]="chartAnnotations()"
+          [colors]="chartColors"
+          [stroke]="strokeConfig"
+          [markers]="markersConfig"
+          [legend]="legendConfig"
+          [grid]="gridConfig"
+          [tooltip]="tooltipConfig"
+          [noData]="noDataConfig"
+        ></apx-chart>
+      </section>
 
-            <dt class="mat-label-medium">Phone</dt>
-            <dd class="mat-body-medium">{{ p.phone ?? '—' }}</dd>
+      <!-- ── Panel 3: Context detail ───────────────────────────────────── -->
+      <aside class="detail__context-panel" aria-label="Detail panel">
 
-            <dt class="mat-label-medium">Email</dt>
-            <dd class="mat-body-medium">{{ p.email ?? '—' }}</dd>
-          </dl>
-        </mat-card-content>
-      </mat-card>
-
-      <!-- Latest vitals card -->
-      <mat-card appearance="outlined" class="detail__vitals-card">
-        <mat-card-header>
-          <mat-card-title class="mat-title-medium">Latest Vitals</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="detail__vitals-grid">
-
-            <div class="detail__vital-tile">
-              <span class="detail__vital-label mat-label-medium">Systolic BP</span>
-              @if (p.vitals.systolic; as v) {
-                <span class="detail__vital-value cp-font-mono mat-headline-small">{{ v.value }}</span>
-                <span class="detail__vital-unit mat-body-small">{{ v.unit }}</span>
-                <span class="detail__vital-date mat-body-small">{{ v.date | date : 'dd MMM yyyy' }}</span>
-              } @else {
-                <span class="detail__vital-empty mat-headline-small">—</span>
-              }
-            </div>
-
-            <div class="detail__vital-tile">
-              <span class="detail__vital-label mat-label-medium">Diastolic BP</span>
-              @if (p.vitals.diastolic; as v) {
-                <span class="detail__vital-value cp-font-mono mat-headline-small">{{ v.value }}</span>
-                <span class="detail__vital-unit mat-body-small">{{ v.unit }}</span>
-                <span class="detail__vital-date mat-body-small">{{ v.date | date : 'dd MMM yyyy' }}</span>
-              } @else {
-                <span class="detail__vital-empty mat-headline-small">—</span>
-              }
-            </div>
-
-            <div class="detail__vital-tile">
-              <span class="detail__vital-label mat-label-medium">Weight</span>
-              @if (p.vitals.weight; as v) {
-                <span class="detail__vital-value cp-font-mono mat-headline-small">{{ v.value }}</span>
-                <span class="detail__vital-unit mat-body-small">{{ v.unit }}</span>
-                <span class="detail__vital-date mat-body-small">{{ v.date | date : 'dd MMM yyyy' }}</span>
-              } @else {
-                <span class="detail__vital-empty mat-headline-small">—</span>
-              }
-            </div>
-
-            <div class="detail__vital-tile">
-              <span class="detail__vital-label mat-label-medium">SpO₂</span>
-              @if (p.vitals.spo2; as v) {
-                <span class="detail__vital-value cp-font-mono mat-headline-small">{{ v.value }}</span>
-                <span class="detail__vital-unit mat-body-small">{{ v.unit }}</span>
-                <span class="detail__vital-date mat-body-small">{{ v.date | date : 'dd MMM yyyy' }}</span>
-              } @else {
-                <span class="detail__vital-empty mat-headline-small">—</span>
-              }
-            </div>
-
+        <!-- Vital observation selected -->
+        @if (selectedDetail(); as sel) {
+          <div class="detail__selected-header">
+            <button mat-icon-button (click)="clearSelection()" aria-label="Back to summary">
+              <mat-icon>arrow_back</mat-icon>
+            </button>
+            <span class="mat-title-small">
+              {{ sel.kind === 'observation' ? 'Vital Reading' : 'Encounter' }}
+            </span>
           </div>
-        </mat-card-content>
-      </mat-card>
 
-    </div>
-
-    <!-- ── Encounters card (full width) ──────────────────────────────────── -->
-    <section class="detail__section" aria-label="Recent encounters">
-      <mat-card appearance="outlined" class="detail__encounters-card">
-        <mat-card-header>
-          <mat-card-title class="mat-title-medium">Recent Encounters</mat-card-title>
-          <mat-card-subtitle class="mat-body-small">Last 5 visits</mat-card-subtitle>
-        </mat-card-header>
-
-        @if (p.encounters.length === 0) {
-          <mat-card-content>
-            <div class="detail__empty" role="status">
-              <mat-icon aria-hidden="true">event_busy</mat-icon>
-              <p class="mat-body-medium">No encounters recorded for this patient.</p>
+          @if (sel.kind === 'observation') {
+            <div class="detail__obs-card">
+              <span class="detail__obs-label mat-label-medium">{{ sel.data.label }}</span>
+              <div class="detail__obs-value-row">
+                <span class="detail__obs-value cp-font-mono">{{ sel.data.value }}</span>
+                <span class="detail__obs-unit mat-body-medium">{{ sel.data.unit }}</span>
+              </div>
+              <span class="detail__obs-date mat-body-small">
+                {{ sel.data.date | date : 'dd MMM yyyy, HH:mm' }}
+              </span>
+              <mat-divider class="detail__obs-divider"></mat-divider>
+              <div class="detail__obs-meta">
+                <span class="detail__meta-label">LOINC</span>
+                <span class="detail__meta-value cp-font-mono">{{ sel.data.loincCode }}</span>
+              </div>
             </div>
-          </mat-card-content>
+          }
+
+          @if (sel.kind === 'encounter') {
+            <div class="detail__enc-card">
+              <div class="detail__enc-row">
+                <span class="detail__meta-label">Date</span>
+                <span class="detail__meta-value cp-font-mono">{{ sel.data.date | date : 'dd MMM yyyy' }}</span>
+              </div>
+              <div class="detail__enc-row">
+                <span class="detail__meta-label">Reason</span>
+                <span class="detail__meta-value">{{ sel.data.reason }}</span>
+              </div>
+              <div class="detail__enc-row">
+                <span class="detail__meta-label">Status</span>
+                <span
+                  class="cp-status-badge"
+                  [class.cp-status-badge--success]="sel.data.status === 'finished'"
+                  [class.cp-status-badge--warning]="sel.data.status === 'in-progress'"
+                  [class.cp-status-badge--info]="sel.data.status !== 'finished' && sel.data.status !== 'in-progress'"
+                >
+                  {{ sel.data.status | titlecase }}
+                </span>
+              </div>
+            </div>
+          }
+
         } @else {
-          <mat-card-content class="detail__table-content">
-            <table
-              mat-table
-              [dataSource]="p.encounters"
-              class="detail__encounters-table"
-              aria-label="Patient encounters"
-            >
 
-              <!-- Date -->
-              <ng-container matColumnDef="date">
-                <th mat-header-cell *matHeaderCellDef>Date</th>
-                <td mat-cell *matCellDef="let e" class="cp-font-mono">
-                  {{ e.date ? (e.date | date : 'dd MMM yyyy') : '—' }}
-                </td>
-              </ng-container>
+          <!-- Default: latest vitals + encounter list -->
+          <h2 class="detail__section-title mat-title-medium">Latest Vitals</h2>
 
-              <!-- Reason -->
-              <ng-container matColumnDef="reason">
-                <th mat-header-cell *matHeaderCellDef>Reason</th>
-                <td mat-cell *matCellDef="let e">{{ e.reason }}</td>
-              </ng-container>
+          <div class="detail__vitals-grid">
+            <div class="detail__vital-tile">
+              <span class="detail__vital-label mat-label-small">Systolic BP</span>
+              @if (patient()!.vitals.systolic; as v) {
+                <span class="detail__vital-value cp-font-mono">{{ v.value }}</span>
+                <span class="detail__vital-unit mat-body-small">{{ v.unit }}</span>
+                <span class="detail__vital-date mat-body-small">{{ v.date | date : 'dd MMM yyyy' }}</span>
+              } @else {
+                <span class="detail__vital-empty">—</span>
+              }
+            </div>
 
-              <!-- Status -->
-              <ng-container matColumnDef="status">
-                <th mat-header-cell *matHeaderCellDef>Status</th>
-                <td mat-cell *matCellDef="let e">
+            <div class="detail__vital-tile">
+              <span class="detail__vital-label mat-label-small">Diastolic BP</span>
+              @if (patient()!.vitals.diastolic; as v) {
+                <span class="detail__vital-value cp-font-mono">{{ v.value }}</span>
+                <span class="detail__vital-unit mat-body-small">{{ v.unit }}</span>
+                <span class="detail__vital-date mat-body-small">{{ v.date | date : 'dd MMM yyyy' }}</span>
+              } @else {
+                <span class="detail__vital-empty">—</span>
+              }
+            </div>
+
+            <div class="detail__vital-tile">
+              <span class="detail__vital-label mat-label-small">Weight</span>
+              @if (patient()!.vitals.weight; as v) {
+                <span class="detail__vital-value cp-font-mono">{{ v.value }}</span>
+                <span class="detail__vital-unit mat-body-small">{{ v.unit }}</span>
+                <span class="detail__vital-date mat-body-small">{{ v.date | date : 'dd MMM yyyy' }}</span>
+              } @else {
+                <span class="detail__vital-empty">—</span>
+              }
+            </div>
+
+            <div class="detail__vital-tile">
+              <span class="detail__vital-label mat-label-small">SpO₂</span>
+              @if (patient()!.vitals.spo2; as v) {
+                <span class="detail__vital-value cp-font-mono">{{ v.value }}</span>
+                <span class="detail__vital-unit mat-body-small">{{ v.unit }}</span>
+                <span class="detail__vital-date mat-body-small">{{ v.date | date : 'dd MMM yyyy' }}</span>
+              } @else {
+                <span class="detail__vital-empty">—</span>
+              }
+            </div>
+          </div>
+
+          <mat-divider class="detail__panel-divider"></mat-divider>
+
+          <h2 class="detail__section-title detail__section-title--spaced mat-title-medium">Encounters</h2>
+
+          @if (patient()!.encounters.length === 0) {
+            <div class="detail__empty-list">
+              <mat-icon aria-hidden="true">event_busy</mat-icon>
+              <span class="mat-body-small">No encounters recorded</span>
+            </div>
+          } @else {
+            <ul class="detail__enc-list" role="list">
+              @for (enc of patient()!.encounters; track enc.id) {
+                <li
+                  class="detail__enc-item"
+                  role="listitem"
+                  tabindex="0"
+                  (click)="selectEncounter(enc)"
+                  (keydown.enter)="selectEncounter(enc)"
+                  (keydown.space)="selectEncounter(enc); $event.preventDefault()"
+                  [attr.aria-label]="'Encounter on ' + enc.date + ': ' + enc.reason"
+                >
+                  <div class="detail__enc-item-main">
+                    <span class="detail__enc-reason mat-body-medium">{{ enc.reason }}</span>
+                    <span class="detail__enc-date mat-body-small cp-font-mono">{{ enc.date | date : 'dd MMM yyyy' }}</span>
+                  </div>
                   <span
                     class="cp-status-badge"
-                    [class.cp-status-badge--success]="e.status === 'finished'"
-                    [class.cp-status-badge--warning]="e.status === 'in-progress'"
-                    [class.cp-status-badge--info]="e.status !== 'finished' && e.status !== 'in-progress'"
+                    [class.cp-status-badge--success]="enc.status === 'finished'"
+                    [class.cp-status-badge--warning]="enc.status === 'in-progress'"
+                    [class.cp-status-badge--info]="enc.status !== 'finished' && enc.status !== 'in-progress'"
                   >
-                    {{ e.status | titlecase }}
+                    {{ enc.status | titlecase }}
                   </span>
-                </td>
-              </ng-container>
-
-              <tr mat-header-row *matHeaderRowDef="encounterColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: encounterColumns" class="detail__encounter-row"></tr>
-
-            </table>
-          </mat-card-content>
+                </li>
+              }
+            </ul>
+          }
         }
 
-      </mat-card>
-    </section>
-
+      </aside>
+    </div>
   }
 
 </div>
