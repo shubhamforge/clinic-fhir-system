@@ -8,7 +8,7 @@ import {
   CreateServiceRequestBody,
   apiClient,
 } from '../support/api-client';
-import { daysAgo, daysFromNow } from '../support/date-helpers';
+import { daysAgo, daysAhead } from '../support/date-helpers';
 import { SeedWorld } from '../support/world';
 
 // ── Condition ────────────────────────────────────────────────────────────────
@@ -67,7 +67,7 @@ When(
   'an appointment is scheduled {int} days from now with description {string}',
   async function (this: SeedWorld, days: number, description: string) {
     if (!this.currentPatientId) throw new Error('No currentPatientId');
-    const startDate = daysFromNow(days);
+    const startDate = daysAhead(days);
     const result = await apiClient.createAppointment({
       patientId: this.currentPatientId,
       practitionerId: 'seed-default-practitioner',
@@ -190,7 +190,7 @@ When(
       targetMeasureDisplay: description,
       targetValue,
       targetUnit,
-      targetDate: daysFromNow(days),
+      targetDate: daysAhead(days),
     };
     const result = await apiClient.createGoal(body);
     this.currentGoalId = result.id;

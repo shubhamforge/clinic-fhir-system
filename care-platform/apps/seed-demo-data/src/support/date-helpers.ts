@@ -1,11 +1,5 @@
-export function daysAgo(n: number): string {
-  const date = new Date();
-  date.setDate(date.getDate() - n);
-  return date.toISOString().slice(0, 10);
-}
-
-export function daysFromNow(n: number): string {
-  const date = new Date();
-  date.setDate(date.getDate() + n);
-  return date.toISOString().slice(0, 10);
-}
+export const anchor = new Date();
+export const daysAgo = (n: number): string =>
+  new Date(anchor.getTime() - n * 86_400_000).toISOString().split('T')[0];
+export const daysAhead = (n: number): string =>
+  new Date(anchor.getTime() + n * 86_400_000).toISOString().split('T')[0];
