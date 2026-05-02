@@ -6,7 +6,7 @@
 
 // ─── Clinician App Theme ──────────────────────────────────────────────────────
 // density -1: compact rows/form fields (~4px reduction per level)
-// Cyan primary (trust/clinical) · Green tertiary (health/success actions)
+// Cyan primary (closest M3 preset to teal) · Green tertiary (health/success actions)
 
 $clinician-light: mat.define-theme((
   color: (
@@ -15,8 +15,8 @@ $clinician-light: mat.define-theme((
     tertiary:    mat.$green-palette,
   ),
   typography: (
-    brand-family:    'Lexend',
-    plain-family:    'Source Sans 3',
+    brand-family:    'Inter',
+    plain-family:    'Inter',
     bold-weight:     700,
     medium-weight:   500,
     regular-weight:  400,
@@ -33,8 +33,8 @@ $clinician-dark: mat.define-theme((
     tertiary:    mat.$green-palette,
   ),
   typography: (
-    brand-family:   'Lexend',
-    plain-family:   'Source Sans 3',
+    brand-family:   'Inter',
+    plain-family:   'Inter',
     bold-weight:    700,
     medium-weight:  500,
     regular-weight: 400,
@@ -50,6 +50,48 @@ $clinician-dark: mat.define-theme((
 
 [data-theme='dark'] {
   @include mat.all-component-themes($clinician-dark);
+}
+
+// ─── Custom token layer (--px-*) ─────────────────────────────────────────────
+
+:root {
+  // semantic (theme-invariant)
+  --px-accent:     #0d6e6e;
+  --px-accent-2:   #b45309;
+  --px-warn:       #b45309;
+  --px-crit:       #b91c1c;
+  --px-ok:         #15803d;
+
+  // fonts
+  --px-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --px-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  // surfaces — light (default)
+  --px-bg:         #f6f6f3;
+  --px-surface:    #ffffff;
+  --px-surface-2:  #fafaf7;
+  --px-surface-3:  #f1f0eb;
+  --px-border:     #e8e6df;
+  --px-border-2:   #d6d3ca;
+  --px-text:       #15171a;
+  --px-text-muted: #6b7077;
+  --px-text-sub:   #8a8f96;
+  --px-shadow:     0 1px 2px rgba(15, 17, 20, 0.04), 0 0 0 1px rgba(15, 17, 20, 0.04);
+  --px-shadow-lg:  0 12px 30px rgba(15, 17, 20, 0.10), 0 0 0 1px rgba(15, 17, 20, 0.06);
+}
+
+[data-theme='dark'] {
+  --px-bg:         #0e1013;
+  --px-surface:    #16191e;
+  --px-surface-2:  #1b1f25;
+  --px-surface-3:  #232830;
+  --px-border:     #262b32;
+  --px-border-2:   #353c46;
+  --px-text:       #ecedef;
+  --px-text-muted: #9aa0a8;
+  --px-text-sub:   #6c727a;
+  --px-shadow:     0 1px 2px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --px-shadow-lg:  0 12px 30px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 // ─── Design Tokens (primitive — feed into Material system) ───────────────────
@@ -87,8 +129,13 @@ html,
 body {
   height: 100%;
   margin: 0;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-  background-color: $cp-neutral-50;
+  font-family: var(--px-sans);
+  font-size: 13px;
+  line-height: 1.45;
+  background: var(--px-bg);
+  color: var(--px-text);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: 'ss01', 'cv11';
 }
 
 // Skip link (accessibility)
@@ -101,7 +148,7 @@ body {
   color: var(--mat-sys-on-primary);
   border-radius: 4px;
   z-index: 9999;
-  font-family: 'Source Sans 3', sans-serif;
+  font-family: var(--px-sans);
   font-size: 0.875rem;
   text-decoration: none;
 
@@ -113,7 +160,7 @@ body {
 // ─── Utility: Monospace for lab values, vital readings, IDs ──────────────────
 
 .cp-font-mono {
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-family: var(--px-mono);
   font-variant-numeric: tabular-nums;
 }
 
@@ -153,4 +200,22 @@ body {
   background: $cp-info-bg;
   border-color: $cp-info-border;
   color: $cp-info-text;
+}
+
+// ─── Utility: Skeleton shimmer ────────────────────────────────────────────────
+
+@keyframes px-shimmer {
+  from { background-position: -400px 0; }
+  to   { background-position:  400px 0; }
+}
+
+.px-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--px-surface-2) 25%,
+    var(--px-surface-3) 50%,
+    var(--px-surface-2) 75%
+  );
+  background-size: 800px 100%;
+  animation: px-shimmer 1.4s ease-in-out infinite;
 }

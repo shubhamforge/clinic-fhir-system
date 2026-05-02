@@ -27,11 +27,15 @@
   }
 
   &__logo-text {
-    font-family: 'Lexend', sans-serif;
+    font-family: var(--px-sans);
     font-size: 0.9375rem;
     font-weight: 600;
     color: var(--mat-sys-on-surface);
     white-space: nowrap;
+  }
+
+  &__spacer {
+    flex: 1;
   }
 }
 
