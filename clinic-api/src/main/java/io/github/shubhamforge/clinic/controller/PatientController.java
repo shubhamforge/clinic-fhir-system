@@ -1,10 +1,17 @@
 package io.github.shubhamforge.clinic.controller;
 
 import io.github.shubhamforge.clinic.dto.PatientRequest;
+import io.github.shubhamforge.clinic.dto.SnapshotResponse;
+import io.github.shubhamforge.clinic.dto.TimelineEvent;
+import io.github.shubhamforge.clinic.dto.TrendsResponse;
 import io.github.shubhamforge.clinic.service.PatientService;
+import io.github.shubhamforge.clinic.service.SnapshotService;
 import io.github.shubhamforge.clinic.service.SummaryService;
+import io.github.shubhamforge.clinic.service.TimelineService;
+import io.github.shubhamforge.clinic.service.TrendsService;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
+import java.util.List;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Patient;
 import org.springframework.http.HttpStatus;
@@ -23,10 +30,21 @@ public class PatientController {
 
   private final PatientService patientService;
   private final SummaryService summaryService;
+  private final SnapshotService snapshotService;
+  private final TrendsService trendsService;
+  private final TimelineService timelineService;
 
-  public PatientController(PatientService patientService, SummaryService summaryService) {
+  public PatientController(
+      PatientService patientService,
+      SummaryService summaryService,
+      SnapshotService snapshotService,
+      TrendsService trendsService,
+      TimelineService timelineService) {
     this.patientService = patientService;
     this.summaryService = summaryService;
+    this.snapshotService = snapshotService;
+    this.trendsService = trendsService;
+    this.timelineService = timelineService;
   }
 
   @PostMapping
@@ -48,5 +66,27 @@ public class PatientController {
   @GetMapping("/{id}/summary")
   public ResponseEntity<Bundle> getSummary(@PathVariable String id) {
     return ResponseEntity.ok(summaryService.getSummary(id));
+  }
+
+  @GetMapping("/{id}/snapshot")
+  public ResponseEntity<SnapshotResponse> getSnapshot(@PathVariable String id) {
+    return ResponseEntity.ok(snapshotService.getSnapshot(id));
+  }
+
+  @GetMapping("/{id}/trends")
+  public ResponseEntity<TrendsResponse> getTrends(
+      @PathVariable String id,
+      @RequestParam(required = false) String type,
+      @RequestParam(required = false) String period) {
+    return ResponseEntity.ok(trendsService.getTrends(id, type, period));
+  }
+
+  @GetMapping("/{id}/timeline")
+  public ResponseEntity<List<TimelineEvent>> getTimeline(
+      @PathVariable String id,
+      @RequestParam(required = false) Integer limit,
+      @RequestParam(required = false) String before,
+      @RequestParam(required = false) String types) {
+    return ResponseEntity.ok(timelineService.getTimeline(id, limit, before, types));
   }
 }

@@ -58,9 +58,26 @@ Target: 1–2 weeks. Single Spring Boot monolith. No microservices yet.
 - [x] Patient roster — searchable `mat-table` with live data from `/api/patients`
 - [x] Patient detail page — 3-panel layout with ApexCharts vitals timeline
 - [x] Top navigation header replacing sidebar
+- [ ] Wire `/api/dashboard`, `/snapshot`, `/trends`, `/timeline` to clinician-app
 - [ ] Encounter list in patient detail
 - [ ] CORS configuration (needed for any non-proxied deployment)
 - [ ] Auth / JWT
+
+---
+
+## Phase 5 — Clinical Dashboard Backend
+
+- [x] 8 new FHIR CRUD resource types: Practitioner, Condition, MedicationStatement, Appointment, ServiceRequest, DiagnosticReport, CarePlan, Goal
+- [x] `EncounterRequest` extended with optional `practitionerId` → `Encounter.participant[ATND]`
+- [x] `ServiceRequestService.complete()` — auto-marks ServiceRequest `completed` when DiagnosticReport is created against it
+- [x] `ClinicalThresholds` config (`@ConfigurationProperties`) — vital alert levels from `application.yaml`
+- [x] `SnapshotService` → `GET /api/patients/{id}/snapshot` — active conditions, meds, latest vitals per LOINC, alerts
+- [x] `TrendsService` → `GET /api/patients/{id}/trends?type=bp,spo2&period=30d` — paired BP series, downsampling, reference ranges
+- [x] `TimelineService` → `GET /api/patients/{id}/timeline` — unified event feed, cursor pagination, practitioner name resolution
+- [x] `ConditionEvaluationService` — auto-detects hypertension (3× systolic >140) and hypoxemia (2× SpO2 <95%) after vitals recording
+- [x] `DashboardService` → `GET /api/dashboard/{patientId}` — partial-failure-safe aggregation with `_warnings[]`, goal progress evaluation
+- [x] `GlobalExceptionHandler` extended: 422 (`ReferenceValidationException`), 503 (`FhirClientConnectionException`)
+- [x] Seed data enriched — each of 5 patients has full clinical profile; each patient in its own `.feature` file
 
 ---
 
@@ -107,8 +124,19 @@ Frontend (care-platform)
   ✓ Angular Material M3 shell + theme (clinician-app)
   ✓ Patient roster (mat-table, live API data)
   ✓ Patient detail page (ApexCharts vitals timeline)
-  ✓ seed-demo-data app (Cucumber, idempotent, 5 patient profiles)
+  ✓ seed-demo-data app (Cucumber, idempotent, 5 patient profiles — each in own .feature file)
+  ○ Wire dashboard/snapshot/trends/timeline to clinician-app
   ○ Encounter list in patient detail
   ○ CORS config
   ○ Auth / JWT
+
+Phase 5 — Clinical Dashboard Backend
+  ✓ 11 FHIR resource types (Patient, Encounter, Observation + 8 new)
+  ✓ 4 experience APIs (dashboard, snapshot, trends, timeline)
+  ✓ ConditionEvaluationService (auto-detects hypertension + hypoxemia)
+  ✓ ServiceRequest → DiagnosticReport lifecycle
+  ✓ Practitioner context in Encounters, Appointments, ServiceRequests
+  ✓ ClinicalThresholds config with alert computation
+  ✓ Partial-failure-safe DashboardService
+  ✓ Enriched seed data (Conditions, Meds, Appointments, Labs, CarePlans, Goals)
 ```

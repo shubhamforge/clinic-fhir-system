@@ -9,6 +9,18 @@ fhir:
   server:
     url: http://localhost:8080/fhir
 
+clinical:
+  thresholds:
+    systolic-warn: 140
+    systolic-critical: 180
+    diastolic-warn: 90
+    diastolic-critical: 120
+    spo2-warn: 95.0
+    spo2-critical: 90.0
+
+clinic:
+  default-org-id: seed-default-org
+
 logging:
   level:
     io.github.shubhamforge.clinic: DEBUG

@@ -4,9 +4,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 
-public record EncounterRequest(
+public record MedicationRequest(
     @NotBlank String patientId,
-    @NotNull LocalDate visitDate,
-    String reason,
+    @NotBlank String medicationName,
     @NotBlank String status,
-    String practitionerId) {}
+    String dosageText,
+    @NotNull LocalDate startDate) {}

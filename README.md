@@ -1,5 +1,9 @@
 # Clinic FHIR System
 
+> **License notice:** This repository is provided for **viewing and evaluation purposes only.**
+> No permission is granted to copy, modify, distribute, sublicense, or use the code in any form
+> without explicit written permission from the author. See [LICENSE](./LICENSE) for full terms.
+
 A production-style, FHIR-compliant clinical management system for a small clinic. Built for learning and portfolio purposes using Java 21, Spring Boot, HAPI FHIR, and Angular 21.
 
 ## Architecture
@@ -179,3 +183,13 @@ See [`docs/`](./docs) for full system design:
 - [MVP Plan](./docs/06-mvp-plan.md)
 - [Best Practices](./docs/07-best-practices.md)
 - [Design System](./docs/08-design-system.md)
+
+---
+
+## License
+
+**Proprietary Evaluation License** — Copyright (c) 2026 shubhamforge (Shubham Samarth). All rights reserved.
+
+This repository is provided for viewing and evaluation purposes only. No permission is granted to copy, modify, distribute, sublicense, or use this code in any form without explicit written permission from the author.
+
+See [LICENSE](./LICENSE) for full terms. For permissions, contact: shubhamsamarth.dev@gmail.com

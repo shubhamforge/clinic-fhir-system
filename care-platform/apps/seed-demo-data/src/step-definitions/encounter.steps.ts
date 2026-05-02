@@ -14,6 +14,7 @@ When(
       visitDate,
       reason,
       status,
+      practitionerId: 'seed-default-practitioner',
     });
     if (!encounter.id) throw new Error('createEncounter returned no id');
     this.currentEncounterId = encounter.id;

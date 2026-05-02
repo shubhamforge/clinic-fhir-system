@@ -6,6 +6,11 @@ export interface FhirEncounterResponse {
   id: string;
 }
 
+export interface FhirResourceResponse {
+  resourceType: string;
+  id: string;
+}
+
 export interface FhirBundleResponse {
   resourceType: 'Bundle';
 }
@@ -15,6 +20,7 @@ export interface CreateEncounterBody {
   visitDate: string;
   reason?: string;
   status: string;
+  practitionerId?: string;
 }
 
 export interface CreateVitalsBody {
@@ -35,6 +41,74 @@ export interface PatientFields {
   gender: string;
   phone?: string;
   email?: string;
+}
+
+export interface CreateConditionBody {
+  patientId: string;
+  encounterId?: string;
+  code: string;
+  display: string;
+  clinicalStatus: string;
+  onsetDate: string;
+}
+
+export interface CreateMedicationBody {
+  patientId: string;
+  medicationName: string;
+  status: string;
+  dosageText?: string;
+  startDate: string;
+}
+
+export interface CreateAppointmentBody {
+  patientId: string;
+  practitionerId?: string;
+  start: string;
+  end: string;
+  description?: string;
+  status: string;
+}
+
+export interface CreateServiceRequestBody {
+  patientId: string;
+  encounterId?: string;
+  practitionerId?: string;
+  code: string;
+  category: string;
+  status: string;
+  priority: string;
+  authoredOn: string;
+}
+
+export interface CreateDiagnosticReportBody {
+  patientId: string;
+  encounterId?: string;
+  serviceRequestId?: string;
+  title: string;
+  status: string;
+  issued: string;
+  conclusion?: string;
+  resultIds?: string[];
+}
+
+export interface CreateCarePlanBody {
+  patientId: string;
+  conditionIds?: string[];
+  title: string;
+  status: string;
+  periodStart: string;
+  goalIds?: string[];
+}
+
+export interface CreateGoalBody {
+  patientId: string;
+  description: string;
+  status: string;
+  targetMeasureCode?: string;
+  targetMeasureDisplay?: string;
+  targetValue?: number;
+  targetUnit?: string;
+  targetDate?: string;
 }
 
 interface FhirSearchBundle {
@@ -85,6 +159,31 @@ class ApiClient {
   }
 
   async cascadeDeletePatient(id: string): Promise<void> {
+    // Order matters: delete referencing resources before the resources they reference.
+    // CarePlan → Goal, Condition; DiagnosticReport → ServiceRequest, Observation;
+    // ServiceRequest, Observation → Encounter; everything → Patient.
+
+    const cpIds = await this.searchFhirIds('CarePlan', `patient=${id}`);
+    await Promise.all(cpIds.map((cid) => this.deleteFhirById('CarePlan', cid)));
+
+    const goalIds = await this.searchFhirIds('Goal', `patient=${id}`);
+    await Promise.all(goalIds.map((gid) => this.deleteFhirById('Goal', gid)));
+
+    const rptIds = await this.searchFhirIds('DiagnosticReport', `patient=${id}`);
+    await Promise.all(rptIds.map((rid) => this.deleteFhirById('DiagnosticReport', rid)));
+
+    const srIds = await this.searchFhirIds('ServiceRequest', `patient=${id}`);
+    await Promise.all(srIds.map((sid) => this.deleteFhirById('ServiceRequest', sid)));
+
+    const apptIds = await this.searchFhirIds('Appointment', `patient=${id}`);
+    await Promise.all(apptIds.map((aid) => this.deleteFhirById('Appointment', aid)));
+
+    const medIds = await this.searchFhirIds('MedicationStatement', `patient=${id}`);
+    await Promise.all(medIds.map((mid) => this.deleteFhirById('MedicationStatement', mid)));
+
+    const condIds = await this.searchFhirIds('Condition', `patient=${id}`);
+    await Promise.all(condIds.map((cid) => this.deleteFhirById('Condition', cid)));
+
     const obsIds = await this.searchFhirIds('Observation', `patient=${id}`);
     await Promise.all(obsIds.map((oid) => this.deleteFhirById('Observation', oid)));
 
@@ -111,18 +210,17 @@ class ApiClient {
   }
 
   async upsertPractitioner(id: string): Promise<void> {
-    await this.deleteFhirById('Practitioner', id);
     await this.put(`${HAPI_FHIR}/fhir/Practitioner/${id}`, {
       resourceType: 'Practitioner',
       id,
       active: true,
-      name: [{ family: 'Seed', given: ['Default'], prefix: ['Dr.'] }],
-      gender: 'unknown',
+      name: [{ family: 'Patel', given: ['Aisha'], prefix: ['Dr.'] }],
+      gender: 'female',
+      qualification: [{ code: { text: 'Internal Medicine' } }],
     });
   }
 
   async upsertOrganization(id: string): Promise<void> {
-    await this.deleteFhirById('Organization', id);
     await this.put(`${HAPI_FHIR}/fhir/Organization/${id}`, {
       resourceType: 'Organization',
       id,
@@ -148,6 +246,34 @@ class ApiClient {
 
   recordVitals(body: CreateVitalsBody): Promise<FhirBundleResponse> {
     return this.post<FhirBundleResponse>(`${SPRING_API}/api/vitals`, body);
+  }
+
+  createCondition(body: CreateConditionBody): Promise<FhirResourceResponse> {
+    return this.post<FhirResourceResponse>(`${SPRING_API}/api/conditions`, body);
+  }
+
+  createMedication(body: CreateMedicationBody): Promise<FhirResourceResponse> {
+    return this.post<FhirResourceResponse>(`${SPRING_API}/api/medications`, body);
+  }
+
+  createAppointment(body: CreateAppointmentBody): Promise<FhirResourceResponse> {
+    return this.post<FhirResourceResponse>(`${SPRING_API}/api/appointments`, body);
+  }
+
+  createServiceRequest(body: CreateServiceRequestBody): Promise<FhirResourceResponse> {
+    return this.post<FhirResourceResponse>(`${SPRING_API}/api/service-requests`, body);
+  }
+
+  createDiagnosticReport(body: CreateDiagnosticReportBody): Promise<FhirResourceResponse> {
+    return this.post<FhirResourceResponse>(`${SPRING_API}/api/diagnostic-reports`, body);
+  }
+
+  createCarePlan(body: CreateCarePlanBody): Promise<FhirResourceResponse> {
+    return this.post<FhirResourceResponse>(`${SPRING_API}/api/care-plans`, body);
+  }
+
+  createGoal(body: CreateGoalBody): Promise<FhirResourceResponse> {
+    return this.post<FhirResourceResponse>(`${SPRING_API}/api/goals`, body);
   }
 }
 

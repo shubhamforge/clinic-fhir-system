@@ -4,9 +4,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 
-public record EncounterRequest(
+public record ConditionRequest(
     @NotBlank String patientId,
-    @NotNull LocalDate visitDate,
-    String reason,
-    @NotBlank String status,
-    String practitionerId) {}
+    String encounterId,
+    @NotBlank String code,
+    @NotBlank String display,
+    @NotBlank String clinicalStatus,
+    @NotNull LocalDate onsetDate) {}

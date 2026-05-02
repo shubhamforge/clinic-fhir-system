@@ -3,10 +3,14 @@ package io.github.shubhamforge.clinic.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.util.List;
 
-public record EncounterRequest(
+public record DiagnosticReportRequest(
     @NotBlank String patientId,
-    @NotNull LocalDate visitDate,
-    String reason,
+    String encounterId,
+    String serviceRequestId,
+    @NotBlank String title,
     @NotBlank String status,
-    String practitionerId) {}
+    @NotNull LocalDate issued,
+    String conclusion,
+    List<String> resultIds) {}

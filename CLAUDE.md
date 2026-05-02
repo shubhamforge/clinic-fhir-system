@@ -25,18 +25,43 @@ PostgreSQL 15  (owned entirely by HAPI — Spring Boot never queries it directly
 ```
 clinic-api/         Spring Boot backend (Maven)
   src/main/java/io/github/shubhamforge/clinic/
-    config/         FhirConfig, FhirHttpMessageConverter
-    controller/     PatientController, EncounterController, VitalsController
-    service/        PatientService, EncounterService, VitalsService, SummaryService
-    mapper/         PatientMapper, EncounterMapper, ObservationMapper
-    dto/            PatientRequest, EncounterRequest, VitalsRequest  (Java records)
-    exception/      ResourceNotFoundException, GlobalExceptionHandler
+    config/         FhirConfig, FhirHttpMessageConverter, ClinicalThresholds
+    controller/     PatientController, EncounterController, VitalsController,
+                    PractitionerController, ConditionController, MedicationController,
+                    AppointmentController, ServiceRequestController,
+                    DiagnosticReportController, CarePlanController, GoalController,
+                    DashboardController
+    service/        PatientService, EncounterService, VitalsService, SummaryService,
+                    PractitionerService, ConditionService, MedicationService,
+                    AppointmentService, ServiceRequestService, DiagnosticReportService,
+                    CarePlanService, GoalService,
+                    SnapshotService, TrendsService, TimelineService,
+                    DashboardService, ConditionEvaluationService
+    mapper/         PatientMapper, EncounterMapper, ObservationMapper,
+                    PractitionerMapper, ConditionMapper, MedicationMapper,
+                    AppointmentMapper, ServiceRequestMapper, DiagnosticReportMapper,
+                    CarePlanMapper, GoalMapper
+    dto/            PatientRequest, EncounterRequest, VitalsRequest,
+                    PractitionerRequest, ConditionRequest, MedicationRequest,
+                    AppointmentRequest, ServiceRequestRequest, DiagnosticReportRequest,
+                    CarePlanRequest, GoalRequest,
+                    SnapshotResponse, TrendsResponse, TimelineEvent, DashboardResponse,
+                    AlertItem, VitalReading, LatestVitals, GoalProgress,
+                    DataPoint, BpSeries, SimpleSeries  (all Java records)
+    exception/      ResourceNotFoundException, ReferenceValidationException,
+                    GlobalExceptionHandler
   seed-data/        13 Synthea FHIR R4 patient bundles + load.sh
   integration-tests/ Postman collection
 
 care-platform/      Angular 21 Nx monorepo
   apps/clinician-app/   Clinician-facing UI (active development)
   apps/patient-app/     Patient-facing UI (scaffolded, empty)
+  apps/seed-demo-data/  Cucumber-driven idempotent seed data (5 patient profiles)
+    src/features/       marcus-webb.feature, priya-nair.feature, gerald-horton.feature,
+                        sandra-okafor.feature, ramon-castillo.feature
+    src/step-definitions/  background.steps.ts, patient.steps.ts, encounter.steps.ts,
+                           vitals.steps.ts, clinical.steps.ts
+    src/support/        api-client.ts, world.ts, date-helpers.ts
   libs/design-system/   SCSS tokens + palette + global utilities (planned)
   libs/ui/              Shared Angular components (planned)
   libs/shared/          ThemeService, FHIR model types (planned)
@@ -51,7 +76,7 @@ docs/
   03-fhir-mapping.md    DTO→FHIR field mappings + LOINC codes
   04-key-flows.md       Sequence diagrams
   05-database.md        PostgreSQL internals (HAPI-owned)
-  06-mvp-plan.md        MVP checklist (backend complete, frontend in progress)
+  06-mvp-plan.md        MVP checklist
   07-best-practices.md  Spring + FHIR patterns
   08-design-system.md   Angular Material M3 design system spec
 ```
@@ -91,7 +116,8 @@ npx nx test clinician-app
 
 ### Seed data
 ```bash
-bash clinic-api/seed-data/load.sh   # loads 13 Synthea patients into HAPI FHIR
+bash clinic-api/seed-data/load.sh           # loads 13 Synthea patients into HAPI FHIR
+npx nx run seed-demo-data:seed              # idempotent Cucumber seed — 5 realistic patients
 ```
 
 ---
@@ -110,10 +136,10 @@ bash clinic-api/seed-data/load.sh   # loads 13 Synthea patients into HAPI FHIR
 - **No comments** unless the WHY is non-obvious.
 
 ### Response format
-All endpoints return native FHIR R4 with `Content-Type: application/fhir+json`. Serialization is handled by `FhirHttpMessageConverter` (registers `IParser` per request — not thread-safe, never share instances).
-
-- `POST`, `GET /{id}` → single resource (`Patient`, `Encounter`, `Observation`)
-- Search / aggregation → `Bundle` (`type: searchset` from HAPI, `type: collection` for multi-resource aggregations)
+- **FHIR CRUD endpoints** return native FHIR R4 with `Content-Type: application/fhir+json`. Serialization handled by `FhirHttpMessageConverter` (per-request `IParser` — not thread-safe, never share).
+  - `POST`, `GET /{id}` → single FHIR resource
+  - `GET ?query` → `Bundle` (`searchset` from HAPI, `collection` for manual aggregations)
+- **Experience API endpoints** (`/snapshot`, `/trends`, `/timeline`, `/dashboard`) return plain JSON POJOs (`Content-Type: application/json`). These are flat DTOs, not FHIR resources.
 
 ---
 
@@ -148,24 +174,153 @@ All resources use **FHIR R4**. FHIR server: `http://localhost:8080/fhir` (config
 
 LOINC system URI: `http://loinc.org`. Units system: `http://unitsofmeasure.org`. Status always `final`.
 
+### Encounter (updated)
+| Request field | FHIR path |
+|---|---|
+| `patientId` | `Encounter.subject` → `Patient/{id}` |
+| `visitDate` | `Encounter.period.start` |
+| `reason` | `Encounter.reasonCode[0].text` |
+| `status` | `Encounter.status` |
+| `practitionerId` *(optional)* | `Encounter.participant[type=ATND].individual` → `Practitioner/{id}` |
+
+### Condition
+| Request field | FHIR path |
+|---|---|
+| `patientId` | `Condition.subject` |
+| `encounterId` *(optional)* | `Condition.encounter` |
+| `code` | `Condition.code.coding[0].code` |
+| `display` | `Condition.code.text` |
+| `clinicalStatus` | `Condition.clinicalStatus` (system: `http://terminology.hl7.org/CodeSystem/condition-clinical`) |
+| `onsetDate` | `Condition.onsetDateTime` |
+
+### MedicationStatement
+| Request field | FHIR path |
+|---|---|
+| `patientId` | `MedicationStatement.subject` |
+| `medicationName` | `MedicationStatement.medication[CodeableConcept].text` |
+| `status` | `MedicationStatement.status` |
+| `dosageText` | `MedicationStatement.dosage[0].text` |
+| `startDate` | `MedicationStatement.effective[Period].start` |
+
+### Appointment
+| Request field | FHIR path |
+|---|---|
+| `patientId` | `Appointment.participant[actor=Patient]` |
+| `practitionerId` *(optional)* | `Appointment.participant[actor=Practitioner]` |
+| `start` / `end` | `Appointment.start` / `Appointment.end` |
+| `description` | `Appointment.description` |
+| `status` | `Appointment.status` |
+
+### ServiceRequest
+| Request field | FHIR path |
+|---|---|
+| `patientId` | `ServiceRequest.subject` |
+| `encounterId` *(optional)* | `ServiceRequest.encounter` |
+| `practitionerId` *(optional)* | `ServiceRequest.requester` |
+| `code` | `ServiceRequest.code.text` |
+| `category` | `ServiceRequest.category[0].text` |
+| `status` | `ServiceRequest.status` (`active` → `completed` when DiagnosticReport is created) |
+| `priority` | `ServiceRequest.priority` |
+| `authoredOn` | `ServiceRequest.authoredOn` |
+
+### DiagnosticReport
+| Request field | FHIR path |
+|---|---|
+| `patientId` | `DiagnosticReport.subject` |
+| `encounterId` *(optional)* | `DiagnosticReport.encounter` |
+| `serviceRequestId` *(optional)* | `DiagnosticReport.basedOn[0]` — also auto-marks ServiceRequest `completed` |
+| `title` | `DiagnosticReport.code.text` |
+| `status` | `DiagnosticReport.status` |
+| `issued` | `DiagnosticReport.issued` |
+| `conclusion` | `DiagnosticReport.conclusion` |
+| `resultIds[]` | `DiagnosticReport.result[]` → Observation references |
+
+### CarePlan
+| Request field | FHIR path |
+|---|---|
+| `patientId` | `CarePlan.subject` |
+| `conditionIds[]` | `CarePlan.addresses[]` → Condition references |
+| `title` | `CarePlan.title` |
+| `status` | `CarePlan.status` |
+| `periodStart` | `CarePlan.period.start` |
+| `goalIds[]` | `CarePlan.goal[]` → Goal references |
+
+### Goal
+| Request field | FHIR path |
+|---|---|
+| `patientId` | `Goal.subject` |
+| `description` | `Goal.description.text` |
+| `status` | `Goal.lifecycleStatus` |
+| `targetMeasureCode` | `Goal.target[0].measure.coding[0].code` (LOINC) |
+| `targetValue` | `Goal.target[0].detail[Quantity]` |
+| `targetDate` | `Goal.target[0].due[DateType]` |
+
+### Practitioner
+| Request field | FHIR path |
+|---|---|
+| `firstName` + `lastName` | `Practitioner.name[0]` (HumanName) |
+| `specialty` | `Practitioner.qualification[0].code.text` |
+| `npi` *(optional)* | `Practitioner.identifier[system=NPI]` |
+| `email` *(optional)* | `Practitioner.telecom[system=email]` |
+
+### Alert thresholds (`ClinicalThresholds` config, `application.yaml`)
+| Property | Default | Meaning |
+|---|---|---|
+| `clinical.thresholds.systolic-warn` | `140` | Systolic BP warning level |
+| `clinical.thresholds.systolic-critical` | `180` | Systolic BP critical level |
+| `clinical.thresholds.diastolic-warn` | `90` | Diastolic BP warning level |
+| `clinical.thresholds.diastolic-critical` | `120` | Diastolic BP critical level |
+| `clinical.thresholds.spo2-warn` | `95.0` | SpO2 warning level (below) |
+| `clinical.thresholds.spo2-critical` | `90.0` | SpO2 critical level (below) |
+| `clinic.default-org-id` | `seed-default-org` | HAPI FHIR Organization ID for care team |
+
 ---
 
 ## REST API Reference
 
 Base URL: `http://localhost:9090`
 
+### FHIR CRUD — return `application/fhir+json`
+
 | Method | Path | Description |
 |---|---|---|
 | `POST` | `/api/patients` | Register patient |
 | `GET` | `/api/patients/{id}` | Get patient |
 | `GET` | `/api/patients?name=&dob=` | Search patients |
-| `GET` | `/api/patients/{id}/summary` | Full summary (Patient + Encounters + Observations) |
-| `POST` | `/api/encounters` | Record visit |
+| `GET` | `/api/patients/{id}/summary` | Legacy FHIR Bundle summary (Patient + Encounters + Observations) |
+| `POST` | `/api/encounters` | Record visit (optional `practitionerId`) |
 | `GET` | `/api/encounters/{id}` | Get encounter |
 | `GET` | `/api/encounters?patientId={id}` | List encounters |
-| `POST` | `/api/vitals` | Record vitals (null fields skipped) |
+| `POST` | `/api/vitals` | Record vitals — auto-evaluates conditions on creation |
 | `GET` | `/api/vitals?patientId={id}` | All vitals for patient |
 | `GET` | `/api/vitals?patientId={id}&type=weight` | Filter by type (`systolic`, `diastolic`, `weight`, `spo2`) |
+| `POST` | `/api/practitioners` | Register practitioner |
+| `GET` | `/api/practitioners/{id}` | Get practitioner |
+| `POST` | `/api/conditions` | Record diagnosis |
+| `GET` | `/api/conditions/{id}` | Get condition |
+| `GET` | `/api/conditions?patientId={id}` | List conditions |
+| `POST` | `/api/medications` | Record medication |
+| `GET` | `/api/medications?patientId={id}` | List medications |
+| `POST` | `/api/appointments` | Schedule appointment |
+| `GET` | `/api/appointments?patientId={id}` | List appointments |
+| `POST` | `/api/service-requests` | Place lab/imaging order |
+| `GET` | `/api/service-requests/{id}` | Get order |
+| `GET` | `/api/service-requests?patientId={id}&status=active` | List orders (optional status filter) |
+| `POST` | `/api/diagnostic-reports` | Create report (auto-completes linked ServiceRequest) |
+| `GET` | `/api/diagnostic-reports?patientId={id}` | List reports |
+| `POST` | `/api/care-plans` | Create care plan |
+| `GET` | `/api/care-plans?patientId={id}` | List care plans |
+| `POST` | `/api/goals` | Create goal |
+| `GET` | `/api/goals?patientId={id}` | List goals |
+
+### Experience APIs — return `application/json` (flat DTOs, not FHIR)
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/dashboard/{patientId}` | Full clinical dashboard — partial-failure safe, `_warnings[]` on degraded sections |
+| `GET` | `/api/patients/{id}/snapshot` | At-a-glance: active conditions, meds, latest vitals, alerts |
+| `GET` | `/api/patients/{id}/trends?type=bp,spo2,weight&period=30d` | Chart-ready vitals series; `bp` returns paired systolic+diastolic |
+| `GET` | `/api/patients/{id}/timeline?limit=20&before=2026-05-01&types=encounter,report` | Unified chronological event feed with cursor pagination |
 
 ---
 
@@ -259,14 +414,14 @@ color: #334155;
 
 ## Project Status (as of 2026-05-02)
 
-**Backend (clinic-api):** MVP complete. All endpoints implemented and manually tested via Postman. Synthea seed data loaded.
+**Backend (clinic-api):** Production-style clinical dashboard backend complete. 11 FHIR resource types, 4 experience APIs, clinical intelligence layer (auto-condition detection, goal progress evaluation), partial-failure-safe dashboard aggregation.
 
-**Frontend (care-platform):** In progress. `clinician-app` has shell layout, patient roster, and patient detail page with ApexCharts vitals timeline. Next logical features: encounter list in patient detail, CORS config.
+**Frontend (care-platform):** In progress. `clinician-app` has shell layout, patient roster, and patient detail page with ApexCharts vitals timeline. Next logical features: connect dashboard/snapshot/timeline/trends APIs to the frontend, encounter list, CORS config.
 
-**Seed data:** `apps/seed-demo-data` — Cucumber-driven app with 5 idempotent patient profiles (encounters + vitals, relative dates). Run: `npx nx run seed-demo-data:seed`.
+**Seed data:** `apps/seed-demo-data` — 5 idempotent patient profiles each in their own `.feature` file. Each patient has Encounters + Vitals + Condition + Medications + Appointment + ServiceRequest + DiagnosticReport + CarePlan + Goal. Run: `npx nx run seed-demo-data:seed`.
 
-**Pending from MVP plan:**
-- End-to-end Postman smoke test (infra must be running)
+**Pending:**
+- Wire new backend APIs to clinician-app frontend (dashboard panel, timeline, trends)
 - Encounter list in patient detail view
 - CORS config, auth/JWT (post-MVP)
 

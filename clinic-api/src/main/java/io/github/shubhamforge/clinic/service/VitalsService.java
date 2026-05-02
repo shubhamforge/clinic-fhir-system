@@ -6,10 +6,13 @@ import ca.uhn.fhir.rest.gclient.TokenClientParam;
 import io.github.shubhamforge.clinic.dto.VitalsRequest;
 import io.github.shubhamforge.clinic.mapper.ObservationMapper;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Observation;
+import org.hl7.fhir.r4.model.Quantity;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class VitalsService {
 
@@ -24,10 +27,15 @@ public class VitalsService {
 
   private final IGenericClient fhirClient;
   private final ObservationMapper observationMapper;
+  private final ConditionEvaluationService conditionEvaluationService;
 
-  public VitalsService(IGenericClient fhirClient, ObservationMapper observationMapper) {
+  public VitalsService(
+      IGenericClient fhirClient,
+      ObservationMapper observationMapper,
+      ConditionEvaluationService conditionEvaluationService) {
     this.fhirClient = fhirClient;
     this.observationMapper = observationMapper;
+    this.conditionEvaluationService = conditionEvaluationService;
   }
 
   public Bundle recordVitals(VitalsRequest request) {
@@ -42,6 +50,7 @@ public class VitalsService {
               Observation created =
                   fhirClient.read().resource(Observation.class).withId(id).execute();
               result.addEntry().setResource(created);
+              triggerConditionEvaluation(request.patientId(), created);
             });
     return result;
   }
@@ -61,5 +70,31 @@ public class VitalsService {
                   .systemAndCode(LOINC_SYSTEM, TYPE_TO_LOINC.get(type)));
     }
     return query.execute();
+  }
+
+  private void triggerConditionEvaluation(String patientId, Observation obs) {
+    if (!(obs.getValue() instanceof Quantity q)) return;
+    double value = q.getValue().doubleValue();
+    String vitalType = resolveVitalType(obs);
+    if (vitalType == null) return;
+    try {
+      conditionEvaluationService.evaluate(patientId, vitalType, value);
+    } catch (Exception e) {
+      log.warn(
+          "Condition evaluation failed for patient {} vital {} — {}",
+          patientId,
+          vitalType,
+          e.getMessage());
+    }
+  }
+
+  private String resolveVitalType(Observation obs) {
+    if (!obs.hasCode() || !obs.getCode().hasCoding()) return null;
+    String loincCode = obs.getCode().getCodingFirstRep().getCode();
+    return TYPE_TO_LOINC.entrySet().stream()
+        .filter(e -> e.getValue().equals(loincCode))
+        .map(Map.Entry::getKey)
+        .findFirst()
+        .orElse(null);
   }
 }
