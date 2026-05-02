@@ -4,11 +4,11 @@
   <header class="roster__header">
     <div class="roster__title-group">
       <h1 class="mat-headline-small roster__title">Patients</h1>
-      @if (!loading() && !error()) {
+      @if (!isLoading() && !hasError()) {
         <span class="mat-body-medium roster__count" aria-live="polite" aria-atomic="true">
-          {{ filteredCount === totalCount
-              ? totalCount + ' patients'
-              : filteredCount + ' of ' + totalCount + ' patients' }}
+          {{ filteredCount() === totalCount()
+              ? totalCount() + ' patients'
+              : filteredCount() + ' of ' + totalCount() + ' patients' }}
         </span>
       }
     </div>
@@ -23,16 +23,16 @@
         #searchInput
         matInput
         type="search"
-        (input)="applyFilter($event)"
+        (input)="setSearch($event)"
         placeholder="Name or date of birth…"
         aria-label="Search patients by name or date of birth"
       />
-      @if (searchInput.value) {
+      @if (searchTerm()) {
         <button
           matSuffix
           mat-icon-button
           aria-label="Clear search"
-          (click)="clearFilter(searchInput)"
+          (click)="clearSearch(searchInput)"
         >
           <mat-icon>close</mat-icon>
         </button>
@@ -44,7 +44,7 @@
   <mat-card appearance="outlined" class="roster__card">
 
     <!-- Loading state -->
-    @if (loading()) {
+    @if (isLoading()) {
       <div class="roster__state" role="status" aria-label="Loading patients">
         <mat-spinner diameter="36" />
         <span class="mat-body-medium">Loading patients…</span>
@@ -52,11 +52,11 @@
     }
 
     <!-- Error state -->
-    @if (error()) {
+    @if (hasError()) {
       <div class="roster__state roster__state--error" role="alert">
         <mat-icon aria-hidden="true">error_outline</mat-icon>
-        <p class="mat-body-medium">{{ error() }}</p>
-        <button mat-stroked-button (click)="loadPatients()">
+        <p class="mat-body-medium">Could not load patients. Check that the backend is running on port 9090.</p>
+        <button mat-stroked-button (click)="reload()">
           <mat-icon>refresh</mat-icon>
           Try again
         </button>
@@ -65,7 +65,7 @@
 
     <!-- Table — always in DOM so @ViewChild resolves in ngAfterViewInit.
          [hidden] hides it visually while loading/error without removing it. -->
-    <div class="roster__table-wrapper" [hidden]="loading() || !!error()">
+    <div class="roster__table-wrapper" [hidden]="isLoading() || hasError()">
       <table
         mat-table
         [dataSource]="dataSource"
@@ -155,7 +155,7 @@
           <td [attr.colspan]="displayedColumns.length" class="roster__empty">
             <mat-icon aria-hidden="true">person_search</mat-icon>
             <p class="mat-body-medium">No patients match your search.</p>
-            <button mat-button color="primary" (click)="clearFilter(searchInput)">
+            <button mat-button color="primary" (click)="clearSearch(searchInput)">
               Clear search
             </button>
           </td>
@@ -166,7 +166,7 @@
 
     <!-- Paginator — also always in DOM, hidden alongside the table -->
     <mat-paginator
-      [hidden]="loading() || !!error()"
+      [hidden]="isLoading() || hasError()"
       [pageSizeOptions]="[10, 25, 50]"
       [pageSize]="25"
       showFirstLastButtons

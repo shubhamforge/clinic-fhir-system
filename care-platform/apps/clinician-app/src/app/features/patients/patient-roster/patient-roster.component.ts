@@ -1,11 +1,12 @@
 import {
   Component,
-  OnInit,
   AfterViewInit,
   ViewChild,
   ChangeDetectionStrategy,
   signal,
+  computed,
   inject,
+  DestroyRef,
 } from '@angular/core';
 import { TitleCasePipe, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
@@ -19,6 +20,19 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import {
+  Subject,
+  combineLatest,
+  of,
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  map,
+  shareReplay,
+  startWith,
+  switchMap,
+} from 'rxjs';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { PatientService } from '../services/patient.service';
 import { PatientListItem } from '../models/patient-list-item.model';
 
@@ -43,74 +57,91 @@ import { PatientListItem } from '../models/patient-list-item.model';
   styleUrl: './patient-roster.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PatientRosterComponent implements OnInit, AfterViewInit {
+export class PatientRosterComponent implements AfterViewInit {
   private readonly svc = inject(PatientService);
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly displayedColumns = ['name', 'gender', 'dob', 'lastEncounter', 'status', 'actions'];
   readonly dataSource = new MatTableDataSource<PatientListItem>([]);
 
-  readonly loading = signal(true);
-  readonly error = signal<string | null>(null);
-
-  // Table and paginator are always in the DOM ([hidden] approach), so ViewChild
-  // resolves reliably in ngAfterViewInit without needing setTimeout.
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
-  ngOnInit(): void {
-    // Search by patient name or date of birth
-    this.dataSource.filterPredicate = (data: PatientListItem, filter: string) => {
-      const q = filter.toLowerCase();
-      return data.name.toLowerCase().includes(q) || data.dob.includes(q);
-    };
+  readonly searchTerm = signal('');
 
-    this.loadPatients();
+  private readonly reload$ = new Subject<void>();
+
+  private readonly rawPatients$ = this.reload$.pipe(
+    startWith(undefined),
+    switchMap(() =>
+      this.svc.getPatients().pipe(
+        catchError(() => of('error' as const)),
+        startWith(null),
+      ),
+    ),
+    shareReplay(1),
+  );
+
+  private readonly search$ = toObservable(this.searchTerm).pipe(
+    debounceTime(250),
+    distinctUntilChanged(),
+    startWith(''),
+  );
+
+  private readonly filtered$ = combineLatest([this.rawPatients$, this.search$]).pipe(
+    map(([patients, term]) => {
+      if (!Array.isArray(patients)) return patients;
+      if (!term) return patients;
+      const q = term.toLowerCase();
+      return patients.filter((p) => p.name.toLowerCase().includes(q) || p.dob.includes(q));
+    }),
+  );
+
+  readonly filtered = toSignal(this.filtered$, {
+    initialValue: null as PatientListItem[] | null | 'error',
+  });
+  readonly isLoading = computed(() => this.filtered() === null);
+  readonly hasError = computed(() => this.filtered() === 'error');
+
+  readonly totalCount = toSignal(
+    this.rawPatients$.pipe(map((p) => (Array.isArray(p) ? p.length : 0))),
+    { initialValue: 0 },
+  );
+
+  readonly filteredCount = computed(() => {
+    const f = this.filtered();
+    return Array.isArray(f) ? f.length : 0;
+  });
+
+  constructor() {
+    this.filtered$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((result) => {
+      if (Array.isArray(result)) {
+        this.dataSource.data = result;
+        this.dataSource.paginator?.firstPage();
+      }
+    });
   }
 
   ngAfterViewInit(): void {
-    // Wire up sort and paginator here — elements are always in the DOM via [hidden]
     this.dataSource.sort = this.sort;
     this.dataSource.paginator = this.paginator;
   }
 
-  loadPatients(): void {
-    this.error.set(null);
-    this.loading.set(true);
-
-    this.svc.getPatients().subscribe({
-      next: (patients) => {
-        this.dataSource.data = patients;
-        this.loading.set(false);
-      },
-      error: () => {
-        this.error.set('Could not load patients. Check that the backend is running on port 9090.');
-        this.loading.set(false);
-      },
-    });
+  reload(): void {
+    this.reload$.next();
   }
 
-  applyFilter(event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = value.trim().toLowerCase();
-    this.dataSource.paginator?.firstPage();
+  setSearch(event: Event): void {
+    this.searchTerm.set((event.target as HTMLInputElement).value.trim());
   }
 
-  clearFilter(input: HTMLInputElement): void {
+  clearSearch(input: HTMLInputElement): void {
     input.value = '';
-    this.dataSource.filter = '';
-    this.dataSource.paginator?.firstPage();
+    this.searchTerm.set('');
   }
 
   viewPatient(id: string): void {
     this.router.navigate(['/patients', id]);
-  }
-
-  get filteredCount(): number {
-    return this.dataSource.filteredData.length;
-  }
-
-  get totalCount(): number {
-    return this.dataSource.data.length;
   }
 }
