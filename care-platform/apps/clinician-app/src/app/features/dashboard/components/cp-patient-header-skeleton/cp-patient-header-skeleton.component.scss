@@ -1,0 +1,40 @@
+.ph-skeleton {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+  background: var(--px-surface);
+  border-bottom: 1px solid var(--px-border);
+}
+
+.ph-skeleton__avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.ph-skeleton__lines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ph-skeleton__line {
+  border-radius: 4px;
+
+  &--name {
+    width: 200px;
+    height: 16px;
+  }
+
+  &--meta {
+    width: 280px;
+    height: 12px;
+  }
+
+  &--sub {
+    width: 180px;
+    height: 12px;
+  }
+}

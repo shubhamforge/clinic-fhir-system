@@ -45,6 +45,14 @@
 			<version>${hapi.fhir.version}</version>
 		</dependency>
 
+		<!-- Dev: auto-restart on classpath changes (excluded from production jar) -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<scope>runtime</scope>
+			<optional>true</optional>
+		</dependency>
+
 		<!-- Utilities -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>

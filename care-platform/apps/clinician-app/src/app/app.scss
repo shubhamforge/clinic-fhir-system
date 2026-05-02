@@ -1,45 +1,11 @@
-// App shell — layout only. Colors via var(--mat-sys-*).
+// App shell — layout only. Colors via --px-* tokens.
 
 .app-container {
   display: flex;
   flex-direction: column;
   height: 100dvh;
+  overflow: hidden;
 }
-
-// ── Header ────────────────────────────────────────────────────────────────────
-
-.app-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  height: 56px;
-  padding: 0 24px;
-  flex-shrink: 0;
-  background: var(--mat-sys-surface);
-  border-bottom: 1px solid var(--mat-sys-outline-variant);
-  z-index: 10;
-
-  &__logo-icon {
-    color: var(--mat-sys-primary);
-    font-size: 22px;
-    width: 22px;
-    height: 22px;
-  }
-
-  &__logo-text {
-    font-family: var(--px-sans);
-    font-size: 0.9375rem;
-    font-weight: 600;
-    color: var(--mat-sys-on-surface);
-    white-space: nowrap;
-  }
-
-  &__spacer {
-    flex: 1;
-  }
-}
-
-// ── Main content ──────────────────────────────────────────────────────────────
 
 .app-main {
   flex: 1;

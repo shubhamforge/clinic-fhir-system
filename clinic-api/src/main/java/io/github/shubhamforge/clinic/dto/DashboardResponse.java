@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 public record DashboardResponse(
-    Map<String, Object> patient,
+    PatientSummary patient,
     Map<String, Object> careTeam,
     SnapshotResponse snapshot,
     Map<String, Object> upcomingAppointment,

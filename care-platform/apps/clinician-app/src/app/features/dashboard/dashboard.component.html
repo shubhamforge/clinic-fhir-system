@@ -1,0 +1,18 @@
+<div class="dashboard">
+  <div class="dashboard__header">
+    @if (isPatientLoading()) {
+      <cp-patient-header-skeleton />
+    } @else if (isPatientError()) {
+      <cp-panel-error message="Could not load patient data" (retry)="reload()" />
+    } @else {
+      <cp-patient-header [data]="patientHeader()!" />
+    }
+  </div>
+
+  <div class="dashboard__panels">
+    <aside class="dashboard__panel dashboard__panel--left px-shimmer"></aside>
+    <main class="dashboard__panel dashboard__panel--center px-shimmer"></main>
+    <div class="dashboard__resizer"></div>
+    <aside class="dashboard__panel dashboard__panel--right px-shimmer"></aside>
+  </div>
+</div>

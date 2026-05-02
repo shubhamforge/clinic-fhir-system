@@ -1,0 +1,34 @@
+<div class="cp-patient-header">
+  <div class="cp-patient-header__id">
+    <div class="cp-patient-header__avatar" aria-hidden="true">{{ initials }}</div>
+    <div>
+      <div class="cp-patient-header__name">
+        {{ data.displayName }}
+        <span class="cp-patient-header__meta">
+          {{ data.age !== null ? data.age + ' yo' : '—' }} · {{ data.gender | titlecase }}
+        </span>
+      </div>
+      <div class="cp-patient-header__sub">
+        <span>
+          <span class="cp-patient-header__lab">MRN</span>
+          <span class="cp-font-mono">{{ data.mrn }}</span>
+        </span>
+        <span class="cp-patient-header__sep">·</span>
+        <span>
+          <span class="cp-patient-header__lab">DOB</span>
+          <span class="cp-font-mono">{{ data.dob | date: 'MM/dd/yyyy' }}</span>
+        </span>
+        <span class="cp-patient-header__sep">·</span>
+        <span>
+          <span class="cp-patient-header__lab">PCP</span>
+          {{ data.pcp }}
+        </span>
+      </div>
+    </div>
+  </div>
+  <div class="cp-patient-header__actions">
+    <button class="cp-patient-header__btn" type="button">+ New order</button>
+    <button class="cp-patient-header__btn" type="button">+ Note</button>
+    <button class="cp-patient-header__btn cp-patient-header__btn--primary" type="button">Open chart</button>
+  </div>
+</div>

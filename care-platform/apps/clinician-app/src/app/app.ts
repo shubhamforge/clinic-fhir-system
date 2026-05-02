@@ -1,16 +1,11 @@
-import { Component, inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { ThemeService } from './theme.service';
+import { CpTopbarComponent } from './features/dashboard/components/cp-topbar/cp-topbar.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterModule, MatIconModule, MatButtonModule, MatTooltipModule],
+  imports: [RouterModule, CpTopbarComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
-export class App {
-  protected readonly theme = inject(ThemeService);
-}
+export class App {}

@@ -1,24 +1,9 @@
 <a href="#main-content" class="cp-skip-link">Skip to main content</a>
 
 <div class="app-container">
-
-  <header class="app-header" role="banner">
-    <mat-icon class="app-header__logo-icon" aria-hidden="true">local_hospital</mat-icon>
-    <span class="app-header__logo-text">Care Platform</span>
-    <span class="app-header__spacer"></span>
-    <button
-      mat-icon-button
-      class="app-header__theme-toggle"
-      (click)="theme.toggle()"
-      [matTooltip]="theme.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
-      aria-label="Toggle dark mode"
-    >
-      <mat-icon>{{ theme.isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
-    </button>
-  </header>
+  <cp-topbar />
 
   <main id="main-content" class="app-main" tabindex="-1">
     <router-outlet />
   </main>
-
 </div>

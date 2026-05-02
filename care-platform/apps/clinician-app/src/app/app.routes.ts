@@ -14,10 +14,17 @@ export const appRoutes: Route[] = [
       ),
   },
   {
-    path: 'patients/:id',
+    path: 'patients/:id/legacy',
     loadComponent: () =>
       import('./features/patients/patient-detail/patient-detail.component').then(
         (m) => m.PatientDetailComponent,
+      ),
+  },
+  {
+    path: 'patients/:id',
+    loadComponent: () =>
+      import('./features/dashboard/dashboard.component').then(
+        (m) => m.DashboardComponent,
       ),
   },
 ];

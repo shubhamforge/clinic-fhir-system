@@ -1,0 +1,73 @@
+// Layout only. Colors via --px-* tokens.
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - 48px); // 48px = topbar height
+  overflow: hidden;
+}
+
+.dashboard__header {
+  flex-shrink: 0;
+}
+
+.dashboard__panels {
+  flex: 1 1 0;
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr) 6px var(--px-right-w, 400px);
+  gap: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.dashboard__panel {
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  &--left {
+    border-right: 1px solid var(--px-border);
+    background: var(--px-surface-2);
+  }
+
+  &--center {
+    background: var(--px-bg);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  &--right {
+    background: var(--px-surface-2);
+  }
+}
+
+.dashboard__resizer {
+  border-left: 1px solid var(--px-border);
+  cursor: col-resize;
+}
+
+@media (max-width: 1280px) {
+  .dashboard__panels {
+    grid-template-columns: 280px minmax(0, 1fr) 6px var(--px-right-w, 360px);
+  }
+}
+
+@media (max-width: 1024px) {
+  .dashboard__panels {
+    display: block;
+    height: auto;
+    overflow: visible;
+  }
+
+  .dashboard__resizer {
+    display: none;
+  }
+
+  .dashboard__panel {
+    overflow: visible;
+    height: auto;
+    min-height: 200px;
+  }
+}

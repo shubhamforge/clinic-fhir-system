@@ -5,6 +5,7 @@ import ca.uhn.fhir.rest.gclient.ReferenceClientParam;
 import ca.uhn.fhir.rest.gclient.TokenClientParam;
 import io.github.shubhamforge.clinic.dto.DashboardResponse;
 import io.github.shubhamforge.clinic.dto.GoalProgress;
+import io.github.shubhamforge.clinic.dto.PatientSummary;
 import io.github.shubhamforge.clinic.dto.SnapshotResponse;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.r4.model.Appointment;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.CarePlan;
+import org.hl7.fhir.r4.model.ContactPoint;
 import org.hl7.fhir.r4.model.DiagnosticReport;
 import org.hl7.fhir.r4.model.Encounter;
 import org.hl7.fhir.r4.model.Goal;
@@ -74,7 +76,7 @@ public class DashboardService {
     List<String> warnings = new ArrayList<>();
 
     Patient patient = patientService.getPatient(patientId);
-    Map<String, Object> patientMap = buildPatientMap(patient);
+    PatientSummary patientMap = buildPatientMap(patient);
 
     SnapshotResponse snapshot = null;
     try {
@@ -160,21 +162,27 @@ public class DashboardService {
         warnings);
   }
 
-  private Map<String, Object> buildPatientMap(Patient patient) {
-    Map<String, Object> m = new LinkedHashMap<>();
-    m.put("id", patient.getIdElement().getIdPart());
+  private PatientSummary buildPatientMap(Patient patient) {
+    String id = patient.getIdElement().getIdPart();
+    String firstName = null;
+    String lastName = null;
     if (patient.hasName()) {
-      m.put(
-          "name",
-          patient.getNameFirstRep().getGivenAsSingleString()
-              + " "
-              + patient.getNameFirstRep().getFamily());
+      firstName = patient.getNameFirstRep().getGivenAsSingleString();
+      lastName = patient.getNameFirstRep().getFamily();
     }
-    if (patient.hasBirthDate()) {
-      m.put("dob", patient.getBirthDateElement().getValueAsString());
+    String dob = patient.hasBirthDate() ? patient.getBirthDateElement().getValueAsString() : null;
+    String gender = patient.hasGender() ? patient.getGender().toCode() : null;
+    String phone = null;
+    String email = null;
+    for (ContactPoint cp : patient.getTelecom()) {
+      if (phone == null && cp.getSystem() == ContactPoint.ContactPointSystem.PHONE) {
+        phone = cp.getValue();
+      }
+      if (email == null && cp.getSystem() == ContactPoint.ContactPointSystem.EMAIL) {
+        email = cp.getValue();
+      }
     }
-    if (patient.hasGender()) m.put("gender", patient.getGender().toCode());
-    return m;
+    return new PatientSummary(id, firstName, lastName, dob, gender, id, phone, email);
   }
 
   private Map<String, Object> buildCareTeam(String practitionerId, List<String> warnings) {

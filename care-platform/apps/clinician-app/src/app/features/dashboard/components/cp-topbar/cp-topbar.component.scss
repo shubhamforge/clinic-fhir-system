@@ -1,0 +1,229 @@
+// Layout only. Colors via --px-* tokens.
+
+.cp-topbar {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 24px;
+  background: var(--px-surface);
+  border-bottom: 1px solid var(--px-border);
+  flex-shrink: 0;
+}
+
+// ── Left ──────────────────────────────────────────────────────────────────────
+
+.cp-topbar__left {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex: 0 0 auto;
+}
+
+.cp-topbar__brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+  color: var(--px-text);
+  white-space: nowrap;
+}
+
+.cp-topbar__brand-mark {
+  width: 22px;
+  height: 22px;
+  background: var(--px-accent);
+  color: #fff;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.cp-topbar__brand-sub {
+  color: var(--px-text-sub);
+  font-weight: 500;
+}
+
+.cp-topbar__nav {
+  display: flex;
+  gap: 4px;
+}
+
+.cp-topbar__nav-item {
+  padding: 6px 10px;
+  border-radius: 6px;
+  color: var(--px-text-muted);
+  font-weight: 500;
+  font-size: 13px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+
+  &:hover {
+    background: var(--px-surface-2);
+    color: var(--px-text);
+  }
+
+  &--active {
+    color: var(--px-text);
+    background: var(--px-surface-3);
+  }
+}
+
+.cp-topbar__nav-badge {
+  background: var(--px-accent);
+  color: #fff;
+  font-family: var(--px-mono);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+// ── Center ────────────────────────────────────────────────────────────────────
+
+.cp-topbar__center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.cp-topbar__search {
+  width: 360px;
+  max-width: 100%;
+  height: 30px;
+  background: var(--px-surface-2);
+  border: 1px solid var(--px-border);
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  gap: 8px;
+  color: var(--px-text-muted);
+}
+
+.cp-topbar__search-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.cp-topbar__search-input {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  color: var(--px-text);
+  outline: none;
+
+  &::placeholder {
+    color: var(--px-text-sub);
+  }
+}
+
+.cp-topbar__search-kbd {
+  font-family: var(--px-mono);
+  font-size: 10px;
+  background: var(--px-surface);
+  border: 1px solid var(--px-border);
+  padding: 1px 5px;
+  border-radius: 4px;
+  color: var(--px-text-muted);
+  flex-shrink: 0;
+}
+
+// ── Right ─────────────────────────────────────────────────────────────────────
+
+.cp-topbar__right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cp-topbar__iconbtn {
+  width: 30px;
+  height: 30px;
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  color: var(--px-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+
+  mat-icon {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+  }
+
+  &:hover {
+    background: var(--px-surface-2);
+    color: var(--px-text);
+  }
+}
+
+.cp-topbar__dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 6px;
+  height: 6px;
+  background: var(--px-crit);
+  border-radius: 50%;
+  border: 1.5px solid var(--px-surface);
+}
+
+.cp-topbar__user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-left: 1px solid var(--px-border);
+  padding-left: 12px;
+  margin-left: 4px;
+}
+
+.cp-topbar__user-avatar {
+  width: 28px;
+  height: 28px;
+  background: var(--px-surface-3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--px-text);
+  flex-shrink: 0;
+}
+
+.cp-topbar__user-meta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.cp-topbar__user-name {
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--px-text);
+}
+
+.cp-topbar__user-role {
+  color: var(--px-text-sub);
+  font-size: 11px;
+}

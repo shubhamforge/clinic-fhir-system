@@ -1,0 +1,15 @@
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { RouterLink, RouterLinkActive } from '@angular/router';
+import { MatIconModule } from '@angular/material/icon';
+import { ThemeService } from '../../../../theme.service';
+
+@Component({
+  selector: 'cp-topbar',
+  imports: [RouterLink, RouterLinkActive, MatIconModule],
+  templateUrl: './cp-topbar.component.html',
+  styleUrl: './cp-topbar.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class CpTopbarComponent {
+  protected readonly theme = inject(ThemeService);
+}

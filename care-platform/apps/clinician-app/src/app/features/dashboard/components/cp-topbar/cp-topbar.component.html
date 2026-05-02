@@ -1,0 +1,55 @@
+<header class="cp-topbar">
+  <div class="cp-topbar__left">
+    <div class="cp-topbar__brand">
+      <div class="cp-topbar__brand-mark">
+        <mat-icon aria-hidden="true">monitor_heart</mat-icon>
+      </div>
+      <span class="cp-topbar__brand-name">Praxis</span>
+      <span class="cp-topbar__brand-sub">/ Clinician</span>
+    </div>
+    <nav class="cp-topbar__nav" aria-label="Main navigation">
+      <a class="cp-topbar__nav-item" routerLink="/patients" routerLinkActive="cp-topbar__nav-item--active">Patients</a>
+      <a class="cp-topbar__nav-item">Schedule</a>
+      <a class="cp-topbar__nav-item">Orders</a>
+      <a class="cp-topbar__nav-item">
+        Inbox
+        <span class="cp-topbar__nav-badge">3</span>
+      </a>
+    </nav>
+  </div>
+
+  <div class="cp-topbar__center">
+    <div class="cp-topbar__search">
+      <mat-icon class="cp-topbar__search-icon" aria-hidden="true">search</mat-icon>
+      <input
+        class="cp-topbar__search-input"
+        type="search"
+        placeholder="Search patients, orders, MRN…"
+        aria-label="Search"
+      />
+      <kbd class="cp-topbar__search-kbd">⌘K</kbd>
+    </div>
+  </div>
+
+  <div class="cp-topbar__right">
+    <button
+      class="cp-topbar__iconbtn"
+      (click)="theme.toggle()"
+      [attr.title]="theme.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
+      [attr.aria-label]="theme.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
+    >
+      <mat-icon>{{ theme.isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+    </button>
+    <button class="cp-topbar__iconbtn" aria-label="Notifications">
+      <mat-icon>notifications</mat-icon>
+      <span class="cp-topbar__dot" aria-hidden="true"></span>
+    </button>
+    <div class="cp-topbar__user">
+      <div class="cp-topbar__user-avatar" aria-hidden="true">AP</div>
+      <div class="cp-topbar__user-meta">
+        <span class="cp-topbar__user-name">Dr. A. Patel</span>
+        <span class="cp-topbar__user-role">Internal Medicine</span>
+      </div>
+    </div>
+  </div>
+</header>

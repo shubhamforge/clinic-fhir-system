@@ -1,0 +1,23 @@
+.cp-panel-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px 20px;
+  background: var(--px-surface);
+  border-bottom: 1px solid var(--px-border);
+}
+
+.cp-panel-error__icon {
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+  color: var(--px-text-muted);
+}
+
+.cp-panel-error__message {
+  font-size: 13px;
+  color: var(--px-text-muted);
+  text-align: center;
+}
