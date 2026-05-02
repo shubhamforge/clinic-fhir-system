@@ -20,7 +20,7 @@ Feature: Seed Patient — Tony Stark (hypertensive crisis)
       | email       | tony.stark@stark-ind.com |
 
     # Visit 1 — initial cardiac evaluation, baseline vitals
-    When an encounter is recorded 90 days ago with reason "Cardiac evaluation — implant check" and status "finished"
+    When an encounter is recorded 90 days ago with reason "Cardiac evaluation — implant check" and note "Initial evaluation. BP elevated despite current medication. Arc reactor causing EMI with standard cardiac monitoring. CMP ordered to assess renal and electrolyte status." and status "finished"
     And vitals are recorded for that encounter:
       | systolicBp         | 155  |
       | diastolicBp        | 96   |
@@ -33,7 +33,7 @@ Feature: Seed Patient — Tony Stark (hypertensive crisis)
     And the last diagnostic report conclusion is "BUN 22 mg/dL. Creatinine 1.3 mg/dL — mildly elevated, monitor for ACE inhibitor effect. Potassium 3.6 mEq/L. No acute electrolyte disturbances."
 
     # Visit 2 — BP worsening, medication adjusted
-    When an encounter is recorded 60 days ago with reason "BP medication adjustment — worsening control" and status "finished"
+    When an encounter is recorded 60 days ago with reason "BP medication adjustment — worsening control" and note "BP worsening. Increased fatigue and exertional dyspnea reported. HR borderline elevated at 98 bpm. Amlodipine dose maximised; Carvedilol initiated for combined BP and rate control." and status "finished"
     And vitals are recorded for that encounter:
       | systolicBp   | 162  |
       | diastolicBp  | 100  |
@@ -42,7 +42,7 @@ Feature: Seed Patient — Tony Stark (hypertensive crisis)
       | heartRateBpm | 98   |
 
     # Visit 3 — tachycardia and hypoxia develop
-    When an encounter is recorded 30 days ago with reason "Worsening symptoms — tachycardia and hypoxia" and status "finished"
+    When an encounter is recorded 30 days ago with reason "Worsening symptoms — tachycardia and hypoxia" and note "Tachycardia confirmed at 105 bpm. SpO₂ declined to 94% — hypoxia developing. Hydralazine added as third-line agent. Patient advised to reduce workload and return urgently if symptoms worsen." and status "finished"
     And vitals are recorded for that encounter:
       | systolicBp         | 170  |
       | diastolicBp        | 104  |
@@ -53,7 +53,7 @@ Feature: Seed Patient — Tony Stark (hypertensive crisis)
 
     # Visit 4 — hypertensive crisis (most recent — drives snapshot panel alerts)
     # systolic 182 > critical 180, diastolic 122 > critical 120, HR 112 > 100, SpO₂ 93 < warn 95
-    When an encounter is recorded 5 days ago with reason "Hypertensive crisis — emergency presentation" and status "finished"
+    When an encounter is recorded 5 days ago with reason "Hypertensive crisis — emergency presentation" and note "Hypertensive crisis: BP 182/122 mmHg, HR 112 bpm, SpO₂ 93%. Emergency cardiology referral placed. Three pending orders: ECG, stress test, echocardiogram. Patient admitted for observation and IV antihypertensive titration." and status "finished"
     And vitals are recorded for that encounter:
       | systolicBp         | 182  |
       | diastolicBp        | 122  |

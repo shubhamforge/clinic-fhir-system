@@ -45,9 +45,10 @@ export interface SnapshotResponse {
 export interface GoalProgress {
   currentValue: number | null;
   targetValue: number | null;
-  onTrack: boolean;
+  onTrack: boolean | null;
   percentToGoal: number | null;
-  message: string;
+  message: string | null;
+  baselineValue: number | null;
 }
 
 export interface DataPoint {
@@ -74,15 +75,28 @@ export interface TrendsResponse {
   series: Record<string, BpSeries | SimpleSeries>;
 }
 
+export interface GroupedObservation {
+  type: string;
+  display: string;
+  value: number;
+  unit: string;
+  flagged: boolean;
+}
+
 export interface TimelineEvent {
   id: string;
   type: string;
   date: string;
   title: string;
-  subtitle: string;
-  status: string;
+  subtitle: string | null;
+  status: string | null;
   resourceId: string;
   metadata: Record<string, unknown>;
+  chiefComplaint: string | null;
+  note: string | null;
+  groupedObservations: GroupedObservation[] | null;
+  linkedTo: string | null;
+  linkedFrom: string | null;
 }
 
 export interface PatientSummary {

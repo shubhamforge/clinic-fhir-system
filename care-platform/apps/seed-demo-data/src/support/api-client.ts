@@ -21,6 +21,7 @@ export interface CreateEncounterBody {
   reason?: string;
   status: string;
   practitionerId?: string;
+  note?: string;
 }
 
 export interface CreateVitalsBody {

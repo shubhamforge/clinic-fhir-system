@@ -1,5 +1,6 @@
 package io.github.shubhamforge.clinic.dto;
 
+import java.util.List;
 import java.util.Map;
 
 public record TimelineEvent(
@@ -10,4 +11,9 @@ public record TimelineEvent(
     String subtitle,
     String status,
     String resourceId,
-    Map<String, Object> metadata) {}
+    Map<String, Object> metadata,
+    String chiefComplaint,
+    String note,
+    List<GroupedObservation> groupedObservations,
+    String linkedTo,
+    String linkedFrom) {}

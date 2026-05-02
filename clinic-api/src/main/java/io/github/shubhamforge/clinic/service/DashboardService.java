@@ -388,15 +388,17 @@ public class DashboardService {
 
   private GoalProgress evaluateGoalProgress(Goal goal, String patientId, double targetValue) {
     if (!goal.hasTarget() || goal.getTarget().isEmpty()) {
-      return new GoalProgress(null, targetValue, null, null, "No target defined");
+      return new GoalProgress(null, targetValue, null, null, "No target defined", null);
     }
     Goal.GoalTargetComponent target = goal.getTargetFirstRep();
     if (!target.hasMeasure() || !target.getMeasure().hasCoding()) {
-      return new GoalProgress(null, targetValue, null, null, "No matching measurements found");
+      return new GoalProgress(
+          null, targetValue, null, null, "No matching measurements found", null);
     }
     String loincCode = target.getMeasure().getCodingFirstRep().getCode();
     if (loincCode == null) {
-      return new GoalProgress(null, targetValue, null, null, "No matching measurements found");
+      return new GoalProgress(
+          null, targetValue, null, null, "No matching measurements found", null);
     }
     try {
       Bundle bundle =
@@ -411,23 +413,48 @@ public class DashboardService {
               .returnBundle(Bundle.class)
               .execute();
       if (bundle.getEntry() == null || bundle.getEntry().isEmpty()) {
-        return new GoalProgress(null, targetValue, null, null, "No matching measurements found");
+        return new GoalProgress(
+            null, targetValue, null, null, "No matching measurements found", null);
       }
       Observation obs = (Observation) bundle.getEntryFirstRep().getResource();
       if (!(obs.getValue() instanceof Quantity q)) {
-        return new GoalProgress(null, targetValue, null, null, "No matching measurements found");
+        return new GoalProgress(
+            null, targetValue, null, null, "No matching measurements found", null);
       }
       double currentValue = q.getValue().doubleValue();
-      // For BP goals (lower is better), onTrack means current ≤ target
       boolean onTrack = currentValue <= targetValue;
       int percent =
           targetValue > 0
               ? (int) Math.min(100, Math.round((targetValue / Math.max(currentValue, 1)) * 100))
               : 0;
-      return new GoalProgress(currentValue, targetValue, onTrack, percent, null);
+
+      Double baselineValue = null;
+      try {
+        Bundle earliestBundle =
+            fhirClient
+                .search()
+                .forResource(Observation.class)
+                .where(new ReferenceClientParam("subject").hasId("Patient/" + patientId))
+                .and(new TokenClientParam("code").exactly().systemAndCode(LOINC_SYSTEM, loincCode))
+                .sort()
+                .ascending("date")
+                .count(1)
+                .returnBundle(Bundle.class)
+                .execute();
+        if (earliestBundle.getEntry() != null && !earliestBundle.getEntry().isEmpty()) {
+          Observation earliest = (Observation) earliestBundle.getEntryFirstRep().getResource();
+          if (earliest.getValue() instanceof Quantity bq) {
+            baselineValue = bq.getValue().doubleValue();
+          }
+        }
+      } catch (Exception e) {
+        log.warn("Could not fetch baseline observation — {}", e.getMessage());
+      }
+
+      return new GoalProgress(currentValue, targetValue, onTrack, percent, null, baselineValue);
     } catch (Exception e) {
       log.warn("Could not evaluate goal progress — {}", e.getMessage());
-      return new GoalProgress(null, targetValue, null, null, "Progress evaluation failed");
+      return new GoalProgress(null, targetValue, null, null, "Progress evaluation failed", null);
     }
   }
 }

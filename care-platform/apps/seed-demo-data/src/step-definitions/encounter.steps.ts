@@ -21,3 +21,23 @@ When(
     this.log(`Created encounter: ${encounter.id} (${visitDate})`);
   },
 );
+
+When(
+  'an encounter is recorded {int} days ago with reason {string} and note {string} and status {string}',
+  async function (this: SeedWorld, days: number, reason: string, note: string, status: string) {
+    if (!this.currentPatientId) throw new Error('No currentPatientId — patient step must run first');
+    const visitDate = daysAgo(days);
+    this.currentEncounterDate = visitDate;
+    const encounter = await apiClient.createEncounter({
+      patientId: this.currentPatientId,
+      visitDate,
+      reason,
+      note,
+      status,
+      practitionerId: 'seed-default-practitioner',
+    });
+    if (!encounter.id) throw new Error('createEncounter returned no id');
+    this.currentEncounterId = encounter.id;
+    this.log(`Created encounter with note: ${encounter.id} (${visitDate})`);
+  },
+);

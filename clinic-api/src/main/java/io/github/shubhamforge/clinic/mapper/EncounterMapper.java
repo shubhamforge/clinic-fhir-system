@@ -8,6 +8,7 @@ import org.hl7.fhir.r4.model.Coding;
 import org.hl7.fhir.r4.model.Encounter;
 import org.hl7.fhir.r4.model.Period;
 import org.hl7.fhir.r4.model.Reference;
+import org.hl7.fhir.r4.model.StringType;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -15,6 +16,8 @@ public class EncounterMapper {
 
   private static final String PARTICIPATION_TYPE_SYSTEM =
       "http://terminology.hl7.org/CodeSystem/v3-ParticipationType";
+  public static final String NOTE_EXTENSION_URL =
+      "http://praxis.clinic/fhir/extension/encounter-note";
 
   public Encounter toFhir(EncounterRequest request) {
     Encounter encounter = new Encounter();
@@ -25,6 +28,9 @@ public class EncounterMapper {
     encounter.setPeriod(new Period().setStart(startDate));
     if (request.reason() != null) {
       encounter.addReasonCode(new CodeableConcept().setText(request.reason()));
+    }
+    if (request.note() != null) {
+      encounter.addExtension(NOTE_EXTENSION_URL, new StringType(request.note()));
     }
     if (request.practitionerId() != null) {
       Encounter.EncounterParticipantComponent participant =

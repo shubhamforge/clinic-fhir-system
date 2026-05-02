@@ -5,4 +5,5 @@ public record GoalProgress(
     Double targetValue,
     Boolean onTrack,
     Integer percentToGoal,
-    String message) {}
+    String message,
+    Double baselineValue) {}

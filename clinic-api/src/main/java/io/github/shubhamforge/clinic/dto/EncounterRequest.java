@@ -9,4 +9,5 @@ public record EncounterRequest(
     @NotNull LocalDate visitDate,
     String reason,
     @NotBlank String status,
-    String practitionerId) {}
+    String practitionerId,
+    String note) {}

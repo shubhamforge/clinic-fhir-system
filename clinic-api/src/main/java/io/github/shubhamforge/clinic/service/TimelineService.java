@@ -3,7 +3,10 @@ package io.github.shubhamforge.clinic.service;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.gclient.DateClientParam;
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam;
+import io.github.shubhamforge.clinic.config.ClinicalThresholds;
+import io.github.shubhamforge.clinic.dto.GroupedObservation;
 import io.github.shubhamforge.clinic.dto.TimelineEvent;
+import io.github.shubhamforge.clinic.mapper.EncounterMapper;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -21,7 +24,9 @@ import org.hl7.fhir.r4.model.Appointment;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.DiagnosticReport;
 import org.hl7.fhir.r4.model.Encounter;
+import org.hl7.fhir.r4.model.Observation;
 import org.hl7.fhir.r4.model.Practitioner;
+import org.hl7.fhir.r4.model.Quantity;
 import org.hl7.fhir.r4.model.ServiceRequest;
 import org.springframework.stereotype.Service;
 
@@ -32,12 +37,35 @@ public class TimelineService {
   private static final int DEFAULT_LIMIT = 20;
   private static final int MAX_LIMIT = 50;
 
+  private static final Map<String, String> LOINC_TO_TYPE =
+      Map.ofEntries(
+          Map.entry("8480-6", "systolic"),
+          Map.entry("8462-4", "diastolic"),
+          Map.entry("29463-7", "weight"),
+          Map.entry("59408-5", "spo2"),
+          Map.entry("8867-4", "heartRate"),
+          Map.entry("8310-5", "temperature"));
+
+  private static final Map<String, String> LOINC_TO_DISPLAY =
+      Map.ofEntries(
+          Map.entry("8480-6", "Systolic BP"),
+          Map.entry("8462-4", "Diastolic BP"),
+          Map.entry("29463-7", "Weight"),
+          Map.entry("59408-5", "SpO₂"),
+          Map.entry("8867-4", "Heart Rate"),
+          Map.entry("8310-5", "Temperature"));
+
   private final IGenericClient fhirClient;
   private final PractitionerService practitionerService;
+  private final ClinicalThresholds thresholds;
 
-  public TimelineService(IGenericClient fhirClient, PractitionerService practitionerService) {
+  public TimelineService(
+      IGenericClient fhirClient,
+      PractitionerService practitionerService,
+      ClinicalThresholds thresholds) {
     this.fhirClient = fhirClient;
     this.practitionerService = practitionerService;
+    this.thresholds = thresholds;
   }
 
   public List<TimelineEvent> getTimeline(
@@ -116,16 +144,25 @@ public class TimelineService {
           enc.hasReasonCode() && !enc.getReasonCode().isEmpty()
               ? enc.getReasonCodeFirstRep().getText()
               : null;
+      var noteExt = enc.getExtensionByUrl(EncounterMapper.NOTE_EXTENSION_URL);
+      String note = noteExt != null ? noteExt.getValue().primitiveValue() : null;
+      String encId = enc.getIdElement().getIdPart();
+      List<GroupedObservation> groupedObs = fetchGroupedObservations(encId);
       events.add(
           new TimelineEvent(
-              enc.getIdElement().getIdPart(),
+              encId,
               "encounter",
               date,
               "Clinic Visit",
               reason,
               enc.getStatus() != null ? enc.getStatus().toCode() : null,
-              "Encounter/" + enc.getIdElement().getIdPart(),
-              metadata));
+              "Encounter/" + encId,
+              metadata,
+              reason,
+              note,
+              groupedObs,
+              null,
+              null));
     }
     return events;
   }
@@ -155,9 +192,13 @@ public class TimelineService {
       if (date == null) continue;
       Map<String, Object> metadata = new LinkedHashMap<>();
       if (rpt.hasConclusion()) metadata.put("conclusion", rpt.getConclusion());
+      String linkedTo = null;
       if (rpt.hasBasedOn() && !rpt.getBasedOn().isEmpty()) {
         String srRef = rpt.getBasedOnFirstRep().getReference();
-        if (srRef != null) metadata.put("serviceRequestId", srRef.replace("ServiceRequest/", ""));
+        if (srRef != null) {
+          linkedTo = srRef.replace("ServiceRequest/", "");
+          metadata.put("serviceRequestId", linkedTo);
+        }
       }
       String title = rpt.hasCode() ? rpt.getCode().getText() : "Diagnostic Report";
       events.add(
@@ -169,7 +210,12 @@ public class TimelineService {
               title,
               rpt.getStatus() != null ? rpt.getStatus().toCode() : null,
               "DiagnosticReport/" + rpt.getIdElement().getIdPart(),
-              metadata));
+              metadata,
+              null,
+              null,
+              null,
+              linkedTo,
+              null));
     }
     return events;
   }
@@ -219,7 +265,12 @@ public class TimelineService {
               code,
               sr.getStatus() != null ? sr.getStatus().toCode() : null,
               "ServiceRequest/" + sr.getIdElement().getIdPart(),
-              metadata));
+              metadata,
+              null,
+              null,
+              null,
+              null,
+              null));
     }
     return events;
   }
@@ -263,7 +314,12 @@ public class TimelineService {
               appt.hasDescription() ? appt.getDescription() : null,
               appt.getStatus() != null ? appt.getStatus().toCode() : null,
               "Appointment/" + appt.getIdElement().getIdPart(),
-              metadata));
+              metadata,
+              null,
+              null,
+              null,
+              null,
+              null));
     }
     return events;
   }
@@ -309,7 +365,12 @@ public class TimelineService {
         event.subtitle(),
         event.status(),
         event.resourceId(),
-        meta);
+        meta,
+        event.chiefComplaint(),
+        event.note(),
+        event.groupedObservations(),
+        event.linkedTo(),
+        event.linkedFrom());
   }
 
   private String extractEncounterDate(Encounter enc) {
@@ -337,5 +398,41 @@ public class TimelineService {
         .map(ref -> ref.replace("Practitioner/", ""))
         .findFirst()
         .orElse(null);
+  }
+
+  private List<GroupedObservation> fetchGroupedObservations(String encounterId) {
+    Bundle bundle =
+        fhirClient
+            .search()
+            .forResource(Observation.class)
+            .where(new ReferenceClientParam("encounter").hasId("Encounter/" + encounterId))
+            .returnBundle(Bundle.class)
+            .execute();
+    if (bundle.getEntry() == null) return List.of();
+    List<GroupedObservation> result = new ArrayList<>();
+    for (var entry : bundle.getEntry()) {
+      Observation obs = (Observation) entry.getResource();
+      if (!obs.hasCode() || obs.getCode().getCoding().isEmpty()) continue;
+      String loincCode = obs.getCode().getCodingFirstRep().getCode();
+      String type = LOINC_TO_TYPE.get(loincCode);
+      if (type == null) continue;
+      if (!(obs.getValue() instanceof Quantity q)) continue;
+      double value = q.getValue().doubleValue();
+      String display = LOINC_TO_DISPLAY.getOrDefault(loincCode, type);
+      result.add(
+          new GroupedObservation(type, display, value, q.getUnit(), isVitalFlagged(type, value)));
+    }
+    return result;
+  }
+
+  private boolean isVitalFlagged(String type, double value) {
+    return switch (type) {
+      case "systolic" -> value > thresholds.systolicWarn();
+      case "diastolic" -> value > thresholds.diastolicWarn();
+      case "spo2" -> value < thresholds.spo2Warn();
+      case "heartRate" -> value > 100 || value < 60;
+      case "temperature" -> value > 37.8;
+      default -> false;
+    };
   }
 }
