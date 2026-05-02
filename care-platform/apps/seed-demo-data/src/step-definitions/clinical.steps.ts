@@ -84,7 +84,12 @@ When(
 
 When(
   'a service request is placed with code {string} category {string} authored {int} days ago',
-  async function (this: SeedWorld, code: string, category: string, days: number) {
+  async function (
+    this: SeedWorld,
+    code: string,
+    category: string,
+    days: number,
+  ) {
     if (!this.currentPatientId) throw new Error('No currentPatientId');
     const body: CreateServiceRequestBody = {
       patientId: this.currentPatientId,
@@ -125,8 +130,14 @@ When(
 When(
   'the last diagnostic report conclusion is {string}',
   async function (this: SeedWorld, conclusion: string) {
-    if (!this.pendingReportBody) throw new Error('No pending diagnostic report — run "a diagnostic report is created from..." first');
-    const body: CreateDiagnosticReportBody = { ...this.pendingReportBody, conclusion };
+    if (!this.pendingReportBody)
+      throw new Error(
+        'No pending diagnostic report — run "a diagnostic report is created from..." first',
+      );
+    const body: CreateDiagnosticReportBody = {
+      ...this.pendingReportBody,
+      conclusion,
+    };
     const result = await apiClient.createDiagnosticReport(body);
     this.pendingReportBody = null;
     this.log(`Created diagnostic report: ${result.id} (${body.title})`);

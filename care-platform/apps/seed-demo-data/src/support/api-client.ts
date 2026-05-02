@@ -119,7 +119,11 @@ interface FhirSearchBundle {
 }
 
 class ApiClient {
-  private async post<T>(url: string, body: unknown, contentType = 'application/json'): Promise<T> {
+  private async post<T>(
+    url: string,
+    body: unknown,
+    contentType = 'application/json',
+  ): Promise<T> {
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': contentType },
@@ -127,7 +131,9 @@ class ApiClient {
     });
     if (!response.ok) {
       const text = await response.text();
-      throw new Error(`POST ${url} failed [${response.status}]: ${text.slice(0, 300)}`);
+      throw new Error(
+        `POST ${url} failed [${response.status}]: ${text.slice(0, 300)}`,
+      );
     }
     return response.json() as Promise<T>;
   }
@@ -140,24 +146,40 @@ class ApiClient {
     });
     if (!response.ok) {
       const text = await response.text();
-      throw new Error(`PUT ${url} failed [${response.status}]: ${text.slice(0, 300)}`);
+      throw new Error(
+        `PUT ${url} failed [${response.status}]: ${text.slice(0, 300)}`,
+      );
     }
   }
 
-  private async searchFhirIds(resourceType: string, query?: string): Promise<string[]> {
+  private async searchFhirIds(
+    resourceType: string,
+    query?: string,
+  ): Promise<string[]> {
     const qs = query ? `&${query}` : '';
-    const response = await fetch(`${HAPI_FHIR}/fhir/${resourceType}?_count=1000&_elements=id${qs}`, {
-      headers: { Accept: 'application/fhir+json' },
-    });
-    if (!response.ok) throw new Error(`GET /fhir/${resourceType} failed [${response.status}]`);
+    const response = await fetch(
+      `${HAPI_FHIR}/fhir/${resourceType}?_count=1000&_elements=id${qs}`,
+      {
+        headers: { Accept: 'application/fhir+json' },
+      },
+    );
+    if (!response.ok)
+      throw new Error(`GET /fhir/${resourceType} failed [${response.status}]`);
     const bundle = (await response.json()) as FhirSearchBundle;
     return bundle.entry?.map((e) => e.resource.id).filter(Boolean) ?? [];
   }
 
-  private async deleteFhirById(resourceType: string, id: string): Promise<void> {
-    const response = await fetch(`${HAPI_FHIR}/fhir/${resourceType}/${id}`, { method: 'DELETE' });
+  private async deleteFhirById(
+    resourceType: string,
+    id: string,
+  ): Promise<void> {
+    const response = await fetch(`${HAPI_FHIR}/fhir/${resourceType}/${id}`, {
+      method: 'DELETE',
+    });
     if (!response.ok && response.status !== 404) {
-      throw new Error(`DELETE /fhir/${resourceType}/${id} failed [${response.status}]`);
+      throw new Error(
+        `DELETE /fhir/${resourceType}/${id} failed [${response.status}]`,
+      );
     }
   }
 
@@ -172,26 +194,46 @@ class ApiClient {
     const goalIds = await this.searchFhirIds('Goal', `patient=${id}`);
     await Promise.all(goalIds.map((gid) => this.deleteFhirById('Goal', gid)));
 
-    const rptIds = await this.searchFhirIds('DiagnosticReport', `patient=${id}`);
-    await Promise.all(rptIds.map((rid) => this.deleteFhirById('DiagnosticReport', rid)));
+    const rptIds = await this.searchFhirIds(
+      'DiagnosticReport',
+      `patient=${id}`,
+    );
+    await Promise.all(
+      rptIds.map((rid) => this.deleteFhirById('DiagnosticReport', rid)),
+    );
 
     const srIds = await this.searchFhirIds('ServiceRequest', `patient=${id}`);
-    await Promise.all(srIds.map((sid) => this.deleteFhirById('ServiceRequest', sid)));
+    await Promise.all(
+      srIds.map((sid) => this.deleteFhirById('ServiceRequest', sid)),
+    );
 
     const apptIds = await this.searchFhirIds('Appointment', `patient=${id}`);
-    await Promise.all(apptIds.map((aid) => this.deleteFhirById('Appointment', aid)));
+    await Promise.all(
+      apptIds.map((aid) => this.deleteFhirById('Appointment', aid)),
+    );
 
-    const medIds = await this.searchFhirIds('MedicationStatement', `patient=${id}`);
-    await Promise.all(medIds.map((mid) => this.deleteFhirById('MedicationStatement', mid)));
+    const medIds = await this.searchFhirIds(
+      'MedicationStatement',
+      `patient=${id}`,
+    );
+    await Promise.all(
+      medIds.map((mid) => this.deleteFhirById('MedicationStatement', mid)),
+    );
 
     const condIds = await this.searchFhirIds('Condition', `patient=${id}`);
-    await Promise.all(condIds.map((cid) => this.deleteFhirById('Condition', cid)));
+    await Promise.all(
+      condIds.map((cid) => this.deleteFhirById('Condition', cid)),
+    );
 
     const obsIds = await this.searchFhirIds('Observation', `patient=${id}`);
-    await Promise.all(obsIds.map((oid) => this.deleteFhirById('Observation', oid)));
+    await Promise.all(
+      obsIds.map((oid) => this.deleteFhirById('Observation', oid)),
+    );
 
     const encIds = await this.searchFhirIds('Encounter', `patient=${id}`);
-    await Promise.all(encIds.map((eid) => this.deleteFhirById('Encounter', eid)));
+    await Promise.all(
+      encIds.map((eid) => this.deleteFhirById('Encounter', eid)),
+    );
 
     await this.deleteFhirById('Patient', id);
   }
@@ -244,7 +286,10 @@ class ApiClient {
   }
 
   createEncounter(body: CreateEncounterBody): Promise<FhirEncounterResponse> {
-    return this.post<FhirEncounterResponse>(`${SPRING_API}/api/encounters`, body);
+    return this.post<FhirEncounterResponse>(
+      `${SPRING_API}/api/encounters`,
+      body,
+    );
   }
 
   recordVitals(body: CreateVitalsBody): Promise<FhirBundleResponse> {
@@ -252,27 +297,51 @@ class ApiClient {
   }
 
   createCondition(body: CreateConditionBody): Promise<FhirResourceResponse> {
-    return this.post<FhirResourceResponse>(`${SPRING_API}/api/conditions`, body);
+    return this.post<FhirResourceResponse>(
+      `${SPRING_API}/api/conditions`,
+      body,
+    );
   }
 
   createMedication(body: CreateMedicationBody): Promise<FhirResourceResponse> {
-    return this.post<FhirResourceResponse>(`${SPRING_API}/api/medications`, body);
+    return this.post<FhirResourceResponse>(
+      `${SPRING_API}/api/medications`,
+      body,
+    );
   }
 
-  createAppointment(body: CreateAppointmentBody): Promise<FhirResourceResponse> {
-    return this.post<FhirResourceResponse>(`${SPRING_API}/api/appointments`, body);
+  createAppointment(
+    body: CreateAppointmentBody,
+  ): Promise<FhirResourceResponse> {
+    return this.post<FhirResourceResponse>(
+      `${SPRING_API}/api/appointments`,
+      body,
+    );
   }
 
-  createServiceRequest(body: CreateServiceRequestBody): Promise<FhirResourceResponse> {
-    return this.post<FhirResourceResponse>(`${SPRING_API}/api/service-requests`, body);
+  createServiceRequest(
+    body: CreateServiceRequestBody,
+  ): Promise<FhirResourceResponse> {
+    return this.post<FhirResourceResponse>(
+      `${SPRING_API}/api/service-requests`,
+      body,
+    );
   }
 
-  createDiagnosticReport(body: CreateDiagnosticReportBody): Promise<FhirResourceResponse> {
-    return this.post<FhirResourceResponse>(`${SPRING_API}/api/diagnostic-reports`, body);
+  createDiagnosticReport(
+    body: CreateDiagnosticReportBody,
+  ): Promise<FhirResourceResponse> {
+    return this.post<FhirResourceResponse>(
+      `${SPRING_API}/api/diagnostic-reports`,
+      body,
+    );
   }
 
   createCarePlan(body: CreateCarePlanBody): Promise<FhirResourceResponse> {
-    return this.post<FhirResourceResponse>(`${SPRING_API}/api/care-plans`, body);
+    return this.post<FhirResourceResponse>(
+      `${SPRING_API}/api/care-plans`,
+      body,
+    );
   }
 
   createGoal(body: CreateGoalBody): Promise<FhirResourceResponse> {

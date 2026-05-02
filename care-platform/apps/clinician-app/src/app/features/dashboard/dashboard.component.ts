@@ -51,7 +51,7 @@ export class DashboardComponent {
   private readonly svc = inject(DashboardService);
 
   private readonly patientId$ = this.route.paramMap.pipe(
-    map(p => p.get('id')!),
+    map((p) => p.get('id')!),
     distinctUntilChanged(),
     shareReplay(1),
   );
@@ -59,7 +59,10 @@ export class DashboardComponent {
   private readonly reload$ = new Subject<void>();
 
   private makeFetch$<T>(fetch: (id: string) => import('rxjs').Observable<T>) {
-    return combineLatest([this.patientId$, this.reload$.pipe(startWith(undefined))]).pipe(
+    return combineLatest([
+      this.patientId$,
+      this.reload$.pipe(startWith(undefined)),
+    ]).pipe(
       switchMap(([id]) =>
         fetch(id).pipe(
           catchError(() => of('error' as const)),
@@ -70,13 +73,26 @@ export class DashboardComponent {
     );
   }
 
-  private readonly dashboard$ = this.makeFetch$<DashboardResponse>(id => this.svc.getDashboard(id));
-  private readonly timeline$ = this.makeFetch$<TimelineEvent[]>(id => this.svc.getTimeline(id));
-  private readonly trends$ = this.makeFetch$<TrendsResponse>(id => this.svc.getTrends(id));
+  private readonly dashboard$ = this.makeFetch$<DashboardResponse>((id) =>
+    this.svc.getDashboard(id),
+  );
+  private readonly timeline$ = this.makeFetch$<TimelineEvent[]>((id) =>
+    this.svc.getTimeline(id),
+  );
+  private readonly trends$ = this.makeFetch$<TrendsResponse>((id) =>
+    this.svc.getTrends(id),
+  );
 
-  readonly dashboard = toSignal<AsyncState<DashboardResponse>>(this.dashboard$, { initialValue: null });
-  readonly timeline = toSignal<AsyncState<TimelineEvent[]>>(this.timeline$, { initialValue: null });
-  readonly trends = toSignal<AsyncState<TrendsResponse>>(this.trends$, { initialValue: null });
+  readonly dashboard = toSignal<AsyncState<DashboardResponse>>(
+    this.dashboard$,
+    { initialValue: null },
+  );
+  readonly timeline = toSignal<AsyncState<TimelineEvent[]>>(this.timeline$, {
+    initialValue: null,
+  });
+  readonly trends = toSignal<AsyncState<TrendsResponse>>(this.trends$, {
+    initialValue: null,
+  });
 
   readonly isPatientLoading = computed(() => this.dashboard() === null);
   readonly isPatientError = computed(() => this.dashboard() === 'error');

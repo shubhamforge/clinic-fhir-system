@@ -3,7 +3,10 @@
     @if (isPatientLoading()) {
       <cp-patient-header-skeleton />
     } @else if (isPatientError()) {
-      <cp-panel-error message="Could not load patient data" (retry)="reload()" />
+      <cp-panel-error
+        message="Could not load patient data"
+        (retry)="reload()"
+      />
     } @else {
       <cp-patient-header [data]="patientHeader()!" />
     }

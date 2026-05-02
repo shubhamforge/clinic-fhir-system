@@ -1,18 +1,54 @@
 <aside class="snapshot-panel">
-
   <!-- Vitals -->
   <div class="px-card">
     <div class="px-card-head">
       <span class="px-card-title">Latest vitals</span>
-      <span class="px-card-meta cp-font-mono">{{ latestVitalsDate }} · {{ daysAgoLabel }}</span>
+      <span class="px-card-meta cp-font-mono"
+        >{{ latestVitalsDate }} · {{ daysAgoLabel }}</span
+      >
     </div>
     <div class="vitals-grid">
-      <cp-vital-cell label="BP"     [value]="bpValue"     unit="mmHg" icon="favorite"        [flagged]="bpFlagged" />
-      <cp-vital-cell label="HR"     [value]="hrValue"     unit="bpm"  icon="ecg_heart"       [flagged]="hrFlagged" />
-      <cp-vital-cell label="Weight" [value]="weightValue" unit="kg"   icon="monitor_weight" />
-      <cp-vital-cell label="SpO₂"   [value]="spo2Value"   unit="%"    icon="water_drop"      [flagged]="spo2Flagged" />
-      <cp-vital-cell label="Temp"   [value]="tempValue"   unit="°C"   icon="thermostat"      [flagged]="tempFlagged" />
-      <cp-vital-cell label="BMI"    value="–"             unit=""     icon="scale"           sub="no height data" />
+      <cp-vital-cell
+        label="BP"
+        [value]="bpValue"
+        unit="mmHg"
+        icon="favorite"
+        [flagged]="bpFlagged"
+      />
+      <cp-vital-cell
+        label="HR"
+        [value]="hrValue"
+        unit="bpm"
+        icon="ecg_heart"
+        [flagged]="hrFlagged"
+      />
+      <cp-vital-cell
+        label="Weight"
+        [value]="weightValue"
+        unit="kg"
+        icon="monitor_weight"
+      />
+      <cp-vital-cell
+        label="SpO₂"
+        [value]="spo2Value"
+        unit="%"
+        icon="water_drop"
+        [flagged]="spo2Flagged"
+      />
+      <cp-vital-cell
+        label="Temp"
+        [value]="tempValue"
+        unit="°C"
+        icon="thermostat"
+        [flagged]="tempFlagged"
+      />
+      <cp-vital-cell
+        label="BMI"
+        value="–"
+        unit=""
+        icon="scale"
+        sub="no height data"
+      />
     </div>
   </div>
 
@@ -22,7 +58,9 @@
       <div class="px-card-head">
         <span class="px-card-title">
           <mat-icon>warning</mat-icon> Alerts
-          <span class="alert-count cp-font-mono">{{ snapshot.alerts.length }}</span>
+          <span class="alert-count cp-font-mono">{{
+            snapshot.alerts.length
+          }}</span>
         </span>
       </div>
       <ul class="alerts-list">
@@ -31,7 +69,9 @@
             <span class="alert-pip"></span>
             <div>
               <div class="alert-msg">{{ alert.message }}</div>
-              <div class="alert-meta cp-font-mono">{{ alert.severity | uppercase }}</div>
+              <div class="alert-meta cp-font-mono">
+                {{ alert.severity | uppercase }}
+              </div>
             </div>
           </li>
         }
@@ -43,7 +83,9 @@
   <div class="px-card">
     <div class="px-card-head">
       <span class="px-card-title">Active conditions</span>
-      <span class="px-card-meta cp-font-mono">{{ snapshot.activeConditions.length }}</span>
+      <span class="px-card-meta cp-font-mono">{{
+        snapshot.activeConditions.length
+      }}</span>
     </div>
     <ul class="cond-list">
       @for (c of snapshot.activeConditions; track c.id) {
@@ -52,7 +94,9 @@
           <div>
             <div class="cond-name">{{ c.display }}</div>
             @if (c.onsetDate) {
-              <div class="cond-meta cp-font-mono">since {{ c.onsetDate | date:'MMM yy' }}</div>
+              <div class="cond-meta cp-font-mono">
+                since {{ c.onsetDate | date: 'MMM yy' }}
+              </div>
             }
           </div>
         </li>
@@ -64,7 +108,9 @@
   <div class="px-card">
     <div class="px-card-head">
       <span class="px-card-title">Current medications</span>
-      <span class="px-card-meta cp-font-mono">{{ snapshot.currentMedications.length }}</span>
+      <span class="px-card-meta cp-font-mono">{{
+        snapshot.currentMedications.length
+      }}</span>
     </div>
     <ul class="med-list">
       @for (m of snapshot.currentMedications; track m.id) {
@@ -81,5 +127,4 @@
       }
     </ul>
   </div>
-
 </aside>

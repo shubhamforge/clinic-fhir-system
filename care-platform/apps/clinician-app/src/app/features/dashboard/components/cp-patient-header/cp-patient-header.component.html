@@ -1,11 +1,14 @@
 <div class="cp-patient-header">
   <div class="cp-patient-header__id">
-    <div class="cp-patient-header__avatar" aria-hidden="true">{{ initials }}</div>
+    <div class="cp-patient-header__avatar" aria-hidden="true">
+      {{ initials }}
+    </div>
     <div>
       <div class="cp-patient-header__name">
         {{ data.displayName }}
         <span class="cp-patient-header__meta">
-          {{ data.age !== null ? data.age + ' yo' : '—' }} · {{ data.gender | titlecase }}
+          {{ data.age !== null ? data.age + ' yo' : '—' }} ·
+          {{ data.gender | titlecase }}
         </span>
       </div>
       <div class="cp-patient-header__sub">
@@ -31,6 +34,11 @@
   <div class="cp-patient-header__actions">
     <button class="cp-patient-header__btn" type="button">+ New order</button>
     <button class="cp-patient-header__btn" type="button">+ Note</button>
-    <button class="cp-patient-header__btn cp-patient-header__btn--primary" type="button">Open chart</button>
+    <button
+      class="cp-patient-header__btn cp-patient-header__btn--primary"
+      type="button"
+    >
+      Open chart
+    </button>
   </div>
 </div>

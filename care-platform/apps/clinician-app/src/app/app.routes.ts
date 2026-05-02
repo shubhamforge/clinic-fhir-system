@@ -9,16 +9,16 @@ export const appRoutes: Route[] = [
   {
     path: 'patients',
     loadComponent: () =>
-      import('./features/patients/patient-roster/patient-roster.component').then(
-        (m) => m.PatientRosterComponent,
-      ),
+      import(
+        './features/patients/patient-roster/patient-roster.component'
+      ).then((m) => m.PatientRosterComponent),
   },
   {
     path: 'patients/:id/legacy',
     loadComponent: () =>
-      import('./features/patients/patient-detail/patient-detail.component').then(
-        (m) => m.PatientDetailComponent,
-      ),
+      import(
+        './features/patients/patient-detail/patient-detail.component'
+      ).then((m) => m.PatientDetailComponent),
   },
   {
     path: 'patients/:id',

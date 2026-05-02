@@ -8,7 +8,12 @@
       <span class="cp-topbar__brand-sub">/ Clinician</span>
     </div>
     <nav class="cp-topbar__nav" aria-label="Main navigation">
-      <a class="cp-topbar__nav-item" routerLink="/patients" routerLinkActive="cp-topbar__nav-item--active">Patients</a>
+      <a
+        class="cp-topbar__nav-item"
+        routerLink="/patients"
+        routerLinkActive="cp-topbar__nav-item--active"
+        >Patients</a
+      >
       <a class="cp-topbar__nav-item">Schedule</a>
       <a class="cp-topbar__nav-item">Orders</a>
       <a class="cp-topbar__nav-item">
@@ -20,7 +25,9 @@
 
   <div class="cp-topbar__center">
     <div class="cp-topbar__search">
-      <mat-icon class="cp-topbar__search-icon" aria-hidden="true">search</mat-icon>
+      <mat-icon class="cp-topbar__search-icon" aria-hidden="true"
+        >search</mat-icon
+      >
       <input
         class="cp-topbar__search-input"
         type="search"
@@ -35,8 +42,12 @@
     <button
       class="cp-topbar__iconbtn"
       (click)="theme.toggle()"
-      [attr.title]="theme.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
-      [attr.aria-label]="theme.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
+      [attr.title]="
+        theme.isDark() ? 'Switch to light mode' : 'Switch to dark mode'
+      "
+      [attr.aria-label]="
+        theme.isDark() ? 'Switch to light mode' : 'Switch to dark mode'
+      "
     >
       <mat-icon>{{ theme.isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
     </button>

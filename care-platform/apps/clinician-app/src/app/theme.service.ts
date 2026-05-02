@@ -7,7 +7,9 @@ export class ThemeService {
 
   init(): void {
     const saved = localStorage.getItem(this.key);
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const prefersDark = window.matchMedia(
+      '(prefers-color-scheme: dark)',
+    ).matches;
     this.apply(saved === 'dark' || (!saved && prefersDark));
   }
 
@@ -16,7 +18,10 @@ export class ThemeService {
   }
 
   private apply(dark: boolean): void {
-    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    document.documentElement.setAttribute(
+      'data-theme',
+      dark ? 'dark' : 'light',
+    );
     localStorage.setItem(this.key, dark ? 'dark' : 'light');
     this.isDark.set(dark);
   }

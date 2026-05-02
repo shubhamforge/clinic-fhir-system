@@ -100,12 +100,26 @@
 
 // Angular Material generates .mat-column-{name} classes from matColumnDef
 
-.mat-column-name          { min-width: 200px; width: auto; }
-.mat-column-gender        { width: 90px; }
-.mat-column-dob           { width: 130px; }
-.mat-column-lastEncounter { width: 140px; }
-.mat-column-status        { width: 100px; }
-.mat-column-actions       { width: 52px; text-align: right; }
+.mat-column-name {
+  min-width: 200px;
+  width: auto;
+}
+.mat-column-gender {
+  width: 90px;
+}
+.mat-column-dob {
+  width: 130px;
+}
+.mat-column-lastEncounter {
+  width: 140px;
+}
+.mat-column-status {
+  width: 100px;
+}
+.mat-column-actions {
+  width: 52px;
+  text-align: right;
+}
 
 // ── Specific cell styles ──────────────────────────────────────────────────────
 

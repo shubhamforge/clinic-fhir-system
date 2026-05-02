@@ -13,11 +13,11 @@ export interface AlertItem {
 }
 
 export interface LatestVitals {
-  systolicBp:  VitalReading | null;
+  systolicBp: VitalReading | null;
   diastolicBp: VitalReading | null;
-  weightKg:    VitalReading | null;
+  weightKg: VitalReading | null;
   spo2Percent: VitalReading | null;
-  heartRate:   VitalReading | null;
+  heartRate: VitalReading | null;
   temperature: VitalReading | null;
 }
 
@@ -36,10 +36,10 @@ export interface MedicationSummary {
 }
 
 export interface SnapshotResponse {
-  activeConditions:   ConditionSummary[];
+  activeConditions: ConditionSummary[];
   currentMedications: MedicationSummary[];
-  latestVitals:       LatestVitals | null;
-  alerts:             AlertItem[];
+  latestVitals: LatestVitals | null;
+  alerts: AlertItem[];
 }
 
 export interface GoalProgress {
@@ -137,11 +137,18 @@ export function extractPatientHeader(
   p: PatientSummary,
   careTeam?: Record<string, unknown>,
 ): PatientHeaderData {
-  const displayName = [p.firstName, p.lastName].filter(Boolean).join(' ') || '—';
-  const age = p.dob ? Math.floor((Date.now() - Date.parse(p.dob)) / 31_557_600_000) : null;
-  const primaryDoctor = careTeam?.['primaryDoctor'] as Record<string, unknown> | undefined;
+  const displayName =
+    [p.firstName, p.lastName].filter(Boolean).join(' ') || '—';
+  const age = p.dob
+    ? Math.floor((Date.now() - Date.parse(p.dob)) / 31_557_600_000)
+    : null;
+  const primaryDoctor = careTeam?.['primaryDoctor'] as
+    | Record<string, unknown>
+    | undefined;
   const pcp = (primaryDoctor?.['name'] as string) ?? '—';
-  const organization = careTeam?.['organization'] as Record<string, unknown> | undefined;
+  const organization = careTeam?.['organization'] as
+    | Record<string, unknown>
+    | undefined;
   const org = (organization?.['name'] as string) ?? '—';
 
   return {

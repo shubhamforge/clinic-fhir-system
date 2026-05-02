@@ -5,8 +5,14 @@ import { SeedWorld } from '../support/world';
 
 When(
   'an encounter is recorded {int} days ago with reason {string} and status {string}',
-  async function (this: SeedWorld, days: number, reason: string, status: string) {
-    if (!this.currentPatientId) throw new Error('No currentPatientId — patient step must run first');
+  async function (
+    this: SeedWorld,
+    days: number,
+    reason: string,
+    status: string,
+  ) {
+    if (!this.currentPatientId)
+      throw new Error('No currentPatientId — patient step must run first');
     const visitDate = daysAgo(days);
     this.currentEncounterDate = visitDate;
     const encounter = await apiClient.createEncounter({
@@ -24,8 +30,15 @@ When(
 
 When(
   'an encounter is recorded {int} days ago with reason {string} and note {string} and status {string}',
-  async function (this: SeedWorld, days: number, reason: string, note: string, status: string) {
-    if (!this.currentPatientId) throw new Error('No currentPatientId — patient step must run first');
+  async function (
+    this: SeedWorld,
+    days: number,
+    reason: string,
+    note: string,
+    status: string,
+  ) {
+    if (!this.currentPatientId)
+      throw new Error('No currentPatientId — patient step must run first');
     const visitDate = daysAgo(days);
     this.currentEncounterDate = visitDate;
     const encounter = await apiClient.createEncounter({

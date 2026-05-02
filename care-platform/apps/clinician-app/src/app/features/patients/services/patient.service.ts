@@ -24,11 +24,14 @@ const LOINC_DIASTOLIC = '8462-4';
 const LOINC_WEIGHT = '29463-7';
 const LOINC_SPO2 = '59408-5';
 
-const LOINC_META: Record<string, { type: ObservationPoint['vitalType']; label: string }> = {
-  [LOINC_SYSTOLIC]:  { type: 'systolic',  label: 'Systolic BP' },
+const LOINC_META: Record<
+  string,
+  { type: ObservationPoint['vitalType']; label: string }
+> = {
+  [LOINC_SYSTOLIC]: { type: 'systolic', label: 'Systolic BP' },
   [LOINC_DIASTOLIC]: { type: 'diastolic', label: 'Diastolic BP' },
-  [LOINC_WEIGHT]:    { type: 'weight',    label: 'Weight' },
-  [LOINC_SPO2]:      { type: 'spo2',      label: 'SpO₂' },
+  [LOINC_WEIGHT]: { type: 'weight', label: 'Weight' },
+  [LOINC_SPO2]: { type: 'spo2', label: 'SpO₂' },
 };
 
 @Injectable({ providedIn: 'root' })
@@ -58,7 +61,8 @@ export class PatientService {
     const nameObj = p.name?.[0];
     const given = nameObj?.given?.join(' ') ?? '';
     const family = nameObj?.family ?? '';
-    const fullName = nameObj?.text ?? ([given, family].filter(Boolean).join(' ') || 'Unknown');
+    const fullName =
+      nameObj?.text ?? ([given, family].filter(Boolean).join(' ') || 'Unknown');
 
     return {
       id: p.id ?? '',
@@ -79,10 +83,15 @@ export class PatientService {
     const nameObj = fhirPatient?.name?.[0];
     const given = nameObj?.given?.join(' ') ?? '';
     const family = nameObj?.family ?? '';
-    const fullName = nameObj?.text ?? ([given, family].filter(Boolean).join(' ') || 'Unknown');
+    const fullName =
+      nameObj?.text ?? ([given, family].filter(Boolean).join(' ') || 'Unknown');
 
-    const phone = fhirPatient?.telecom?.find((t) => t.system === 'phone')?.value;
-    const email = fhirPatient?.telecom?.find((t) => t.system === 'email')?.value;
+    const phone = fhirPatient?.telecom?.find(
+      (t) => t.system === 'phone',
+    )?.value;
+    const email = fhirPatient?.telecom?.find(
+      (t) => t.system === 'email',
+    )?.value;
 
     const mrnEntry = fhirPatient?.identifier?.find((id) =>
       id.type?.coding?.some((c) => c.code === 'MR'),
@@ -150,7 +159,11 @@ export class PatientService {
       const value = latest.valueQuantity?.value;
       if (value === undefined) return undefined;
 
-      return { value, unit: latest.valueQuantity?.unit ?? '', date: latest.effectiveDateTime ?? '' };
+      return {
+        value,
+        unit: latest.valueQuantity?.unit ?? '',
+        date: latest.effectiveDateTime ?? '',
+      };
     };
 
     return {
@@ -161,11 +174,18 @@ export class PatientService {
     };
   }
 
-  private mapAllObservations(observations: FhirObservation[]): ObservationPoint[] {
+  private mapAllObservations(
+    observations: FhirObservation[],
+  ): ObservationPoint[] {
     return observations
       .filter((o) => {
         const code = o.code?.coding?.[0]?.code;
-        return code && LOINC_META[code] && o.valueQuantity?.value !== undefined && o.effectiveDateTime;
+        return (
+          code &&
+          LOINC_META[code] &&
+          o.valueQuantity?.value !== undefined &&
+          o.effectiveDateTime
+        );
       })
       .map((o) => {
         const code = o.code!.coding![0].code!;

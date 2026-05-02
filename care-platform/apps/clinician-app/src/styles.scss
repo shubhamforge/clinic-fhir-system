@@ -8,41 +8,45 @@
 // density -1: compact rows/form fields (~4px reduction per level)
 // Cyan primary (closest M3 preset to teal) · Green tertiary (health/success actions)
 
-$clinician-light: mat.define-theme((
-  color: (
-    theme-type:  light,
-    primary:     mat.$cyan-palette,
-    tertiary:    mat.$green-palette,
-  ),
-  typography: (
-    brand-family:    'Inter',
-    plain-family:    'Inter',
-    bold-weight:     700,
-    medium-weight:   500,
-    regular-weight:  400,
-  ),
-  density: (
-    scale: -1,
-  ),
-));
+$clinician-light: mat.define-theme(
+  (
+    color: (
+      theme-type: light,
+      primary: mat.$cyan-palette,
+      tertiary: mat.$green-palette,
+    ),
+    typography: (
+      brand-family: 'Inter',
+      plain-family: 'Inter',
+      bold-weight: 700,
+      medium-weight: 500,
+      regular-weight: 400,
+    ),
+    density: (
+      scale: -1,
+    ),
+  )
+);
 
-$clinician-dark: mat.define-theme((
-  color: (
-    theme-type:  dark,
-    primary:     mat.$cyan-palette,
-    tertiary:    mat.$green-palette,
-  ),
-  typography: (
-    brand-family:   'Inter',
-    plain-family:   'Inter',
-    bold-weight:    700,
-    medium-weight:  500,
-    regular-weight: 400,
-  ),
-  density: (
-    scale: -1,
-  ),
-));
+$clinician-dark: mat.define-theme(
+  (
+    color: (
+      theme-type: dark,
+      primary: mat.$cyan-palette,
+      tertiary: mat.$green-palette,
+    ),
+    typography: (
+      brand-family: 'Inter',
+      plain-family: 'Inter',
+      bold-weight: 700,
+      medium-weight: 500,
+      regular-weight: 400,
+    ),
+    density: (
+      scale: -1,
+    ),
+  )
+);
 
 :root {
   @include mat.all-component-themes($clinician-light);
@@ -56,66 +60,70 @@ $clinician-dark: mat.define-theme((
 
 :root {
   // semantic (theme-invariant)
-  --px-accent:     #0d6e6e;
-  --px-accent-2:   #b45309;
-  --px-warn:       #b45309;
-  --px-crit:       #b91c1c;
-  --px-ok:         #15803d;
+  --px-accent: #0d6e6e;
+  --px-accent-2: #b45309;
+  --px-warn: #b45309;
+  --px-crit: #b91c1c;
+  --px-ok: #15803d;
 
   // fonts
   --px-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --px-mono: 'JetBrains Mono', ui-monospace, monospace;
 
   // surfaces — light (default)
-  --px-bg:         #f6f6f3;
-  --px-surface:    #ffffff;
-  --px-surface-2:  #fafaf7;
-  --px-surface-3:  #f1f0eb;
-  --px-border:     #e8e6df;
-  --px-border-2:   #d6d3ca;
-  --px-text:       #15171a;
+  --px-bg: #f6f6f3;
+  --px-surface: #ffffff;
+  --px-surface-2: #fafaf7;
+  --px-surface-3: #f1f0eb;
+  --px-border: #e8e6df;
+  --px-border-2: #d6d3ca;
+  --px-text: #15171a;
   --px-text-muted: #6b7077;
-  --px-text-sub:   #8a8f96;
-  --px-shadow:     0 1px 2px rgba(15, 17, 20, 0.04), 0 0 0 1px rgba(15, 17, 20, 0.04);
-  --px-shadow-lg:  0 12px 30px rgba(15, 17, 20, 0.10), 0 0 0 1px rgba(15, 17, 20, 0.06);
+  --px-text-sub: #8a8f96;
+  --px-shadow:
+    0 1px 2px rgba(15, 17, 20, 0.04), 0 0 0 1px rgba(15, 17, 20, 0.04);
+  --px-shadow-lg:
+    0 12px 30px rgba(15, 17, 20, 0.1), 0 0 0 1px rgba(15, 17, 20, 0.06);
 }
 
 [data-theme='dark'] {
-  --px-bg:         #0e1013;
-  --px-surface:    #16191e;
-  --px-surface-2:  #1b1f25;
-  --px-surface-3:  #232830;
-  --px-border:     #262b32;
-  --px-border-2:   #353c46;
-  --px-text:       #ecedef;
+  --px-bg: #0e1013;
+  --px-surface: #16191e;
+  --px-surface-2: #1b1f25;
+  --px-surface-3: #232830;
+  --px-border: #262b32;
+  --px-border-2: #353c46;
+  --px-text: #ecedef;
   --px-text-muted: #9aa0a8;
-  --px-text-sub:   #6c727a;
-  --px-shadow:     0 1px 2px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.04);
-  --px-shadow-lg:  0 12px 30px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --px-text-sub: #6c727a;
+  --px-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --px-shadow-lg:
+    0 12px 30px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 // ─── Design Tokens (primitive — feed into Material system) ───────────────────
 
-$cp-blue-800:  #164E63;
-$cp-neutral-50: #F8FAFC;
-$cp-neutral-100: #F1F5F9;
-$cp-neutral-200: #E2E8F0;
-$cp-neutral-300: #CBD5E1;
-$cp-neutral-500: #64748B;
+$cp-blue-800: #164e63;
+$cp-neutral-50: #f8fafc;
+$cp-neutral-100: #f1f5f9;
+$cp-neutral-200: #e2e8f0;
+$cp-neutral-300: #cbd5e1;
+$cp-neutral-500: #64748b;
 
 // Status semantic colors (used only for cp-status-badge utility — not Material tokens)
-$cp-success-bg:     #F0FDF4;
-$cp-success-border: #86EFAC;
-$cp-success-text:   #047857;
-$cp-warning-bg:     #FFFBEB;
-$cp-warning-border: #FBBF24;
-$cp-warning-text:   #B45309;
-$cp-critical-bg:    #FFF1F2;
-$cp-critical-border:#FCA5A5;
-$cp-critical-text:  #B91C1C;
-$cp-info-bg:        #ECFEFF;
-$cp-info-border:    #A5F3FC;
-$cp-info-text:      #0E7490;
+$cp-success-bg: #f0fdf4;
+$cp-success-border: #86efac;
+$cp-success-text: #047857;
+$cp-warning-bg: #fffbeb;
+$cp-warning-border: #fbbf24;
+$cp-warning-text: #b45309;
+$cp-critical-bg: #fff1f2;
+$cp-critical-border: #fca5a5;
+$cp-critical-text: #b91c1c;
+$cp-info-bg: #ecfeff;
+$cp-info-border: #a5f3fc;
+$cp-info-text: #0e7490;
 
 // ─── Global Reset & Layout ────────────────────────────────────────────────────
 
@@ -205,8 +213,12 @@ body {
 // ─── Utility: Skeleton shimmer ────────────────────────────────────────────────
 
 @keyframes px-shimmer {
-  from { background-position: -400px 0; }
-  to   { background-position:  400px 0; }
+  from {
+    background-position: -400px 0;
+  }
+  to {
+    background-position: 400px 0;
+  }
 }
 
 .px-shimmer {

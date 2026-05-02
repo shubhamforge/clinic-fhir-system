@@ -77,7 +77,15 @@ export class PatientDetailComponent implements OnInit {
     zoom: { enabled: true, type: 'x' },
     toolbar: {
       show: true,
-      tools: { download: false, selection: true, zoom: true, zoomin: true, zoomout: true, pan: true, reset: true },
+      tools: {
+        download: false,
+        selection: true,
+        zoom: true,
+        zoomin: true,
+        zoomout: true,
+        pan: true,
+        reset: true,
+      },
     },
     animations: { enabled: false },
     events: {
@@ -138,11 +146,14 @@ export class PatientDetailComponent implements OnInit {
     const p = this.patient();
     if (!p) return [];
 
-    const vitalTypes: Array<{ key: ObservationPoint['vitalType']; label: string }> = [
-      { key: 'systolic',  label: 'Systolic BP' },
+    const vitalTypes: Array<{
+      key: ObservationPoint['vitalType'];
+      label: string;
+    }> = [
+      { key: 'systolic', label: 'Systolic BP' },
       { key: 'diastolic', label: 'Diastolic BP' },
-      { key: 'weight',    label: 'Weight' },
-      { key: 'spo2',      label: 'SpO₂' },
+      { key: 'weight', label: 'Weight' },
+      { key: 'spo2', label: 'SpO₂' },
     ];
 
     return vitalTypes.map(({ key, label }) => ({
@@ -193,7 +204,12 @@ export class PatientDetailComponent implements OnInit {
           label: {
             text: 'Visit',
             orientation: 'horizontal' as const,
-            style: { background: 'transparent', color: '#94A3B8', fontSize: '10px', padding: { top: 2, bottom: 2 } },
+            style: {
+              background: 'transparent',
+              color: '#94A3B8',
+              fontSize: '10px',
+              padding: { top: 2, bottom: 2 },
+            },
           },
         })),
     };
@@ -228,7 +244,9 @@ export class PatientDetailComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set('Could not load patient. Check that the backend is running on port 9090.');
+        this.error.set(
+          'Could not load patient. Check that the backend is running on port 9090.',
+        );
         this.loading.set(false);
       },
     });
@@ -263,7 +281,10 @@ export class PatientDetailComponent implements OnInit {
     }
 
     const vitalTypes: Array<ObservationPoint['vitalType']> = [
-      'systolic', 'diastolic', 'weight', 'spo2',
+      'systolic',
+      'diastolic',
+      'weight',
+      'spo2',
     ];
 
     if (seriesIndex < vitalTypes.length) {

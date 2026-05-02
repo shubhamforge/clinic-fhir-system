@@ -25,7 +25,10 @@ export interface FhirPatient extends FhirResource {
   birthDate?: string; // YYYY-MM-DD
   telecom?: Array<{ system?: string; value?: string }>;
   identifier?: Array<{
-    type?: { coding?: Array<{ system?: string; code?: string; display?: string }>; text?: string };
+    type?: {
+      coding?: Array<{ system?: string; code?: string; display?: string }>;
+      text?: string;
+    };
     value?: string;
   }>;
   address?: Array<{
@@ -35,9 +38,15 @@ export interface FhirPatient extends FhirResource {
     postalCode?: string;
     country?: string;
   }>;
-  maritalStatus?: { coding?: Array<{ code?: string; display?: string }>; text?: string };
+  maritalStatus?: {
+    coding?: Array<{ code?: string; display?: string }>;
+    text?: string;
+  };
   communication?: Array<{
-    language?: { coding?: Array<{ code?: string; display?: string }>; text?: string };
+    language?: {
+      coding?: Array<{ code?: string; display?: string }>;
+      text?: string;
+    };
   }>;
 }
 
@@ -63,15 +72,21 @@ export interface FhirEncounter extends FhirResource {
 export interface FhirObservation extends FhirResource {
   resourceType: 'Observation';
   id?: string;
-  code?: { coding?: Array<{ system?: string; code?: string; display?: string }> };
+  code?: {
+    coding?: Array<{ system?: string; code?: string; display?: string }>;
+  };
   effectiveDateTime?: string;
   valueQuantity?: { value?: number; unit?: string; system?: string };
 }
 
-export function isFhirEncounter(r: FhirResource | undefined): r is FhirEncounter {
+export function isFhirEncounter(
+  r: FhirResource | undefined,
+): r is FhirEncounter {
   return r?.resourceType === 'Encounter';
 }
 
-export function isFhirObservation(r: FhirResource | undefined): r is FhirObservation {
+export function isFhirObservation(
+  r: FhirResource | undefined,
+): r is FhirObservation {
   return r?.resourceType === 'Observation';
 }

@@ -17,11 +17,19 @@
   padding: 64px 24px;
   color: var(--mat-sys-on-surface-variant);
 
-  mat-icon { font-size: 40px; width: 40px; height: 40px; }
-  p { margin: 0; }
+  mat-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+  }
+  p {
+    margin: 0;
+  }
 }
 
-.detail__state--error mat-icon { color: var(--mat-sys-error); }
+.detail__state--error mat-icon {
+  color: var(--mat-sys-error);
+}
 
 // ── Panel 1: Banner ───────────────────────────────────────────────────────────
 
@@ -238,7 +246,11 @@
   padding: 16px 0;
   color: var(--mat-sys-on-surface-variant);
 
-  mat-icon { font-size: 18px; width: 18px; height: 18px; }
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
 }
 
 // Selected detail view

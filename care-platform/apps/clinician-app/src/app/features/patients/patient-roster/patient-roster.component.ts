@@ -32,7 +32,11 @@ import {
   startWith,
   switchMap,
 } from 'rxjs';
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import {
+  takeUntilDestroyed,
+  toObservable,
+  toSignal,
+} from '@angular/core/rxjs-interop';
 import { PatientService } from '../services/patient.service';
 import { PatientListItem } from '../models/patient-list-item.model';
 
@@ -62,7 +66,14 @@ export class PatientRosterComponent implements AfterViewInit {
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly displayedColumns = ['name', 'gender', 'dob', 'lastEncounter', 'status', 'actions'];
+  readonly displayedColumns = [
+    'name',
+    'gender',
+    'dob',
+    'lastEncounter',
+    'status',
+    'actions',
+  ];
   readonly dataSource = new MatTableDataSource<PatientListItem>([]);
 
   @ViewChild(MatSort) sort!: MatSort;
@@ -89,12 +100,17 @@ export class PatientRosterComponent implements AfterViewInit {
     startWith(''),
   );
 
-  private readonly filtered$ = combineLatest([this.rawPatients$, this.search$]).pipe(
+  private readonly filtered$ = combineLatest([
+    this.rawPatients$,
+    this.search$,
+  ]).pipe(
     map(([patients, term]) => {
       if (!Array.isArray(patients)) return patients;
       if (!term) return patients;
       const q = term.toLowerCase();
-      return patients.filter((p) => p.name.toLowerCase().includes(q) || p.dob.includes(q));
+      return patients.filter(
+        (p) => p.name.toLowerCase().includes(q) || p.dob.includes(q),
+      );
     }),
   );
 
@@ -115,12 +131,14 @@ export class PatientRosterComponent implements AfterViewInit {
   });
 
   constructor() {
-    this.filtered$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((result) => {
-      if (Array.isArray(result)) {
-        this.dataSource.data = result;
-        this.dataSource.paginator?.firstPage();
-      }
-    });
+    this.filtered$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((result) => {
+        if (Array.isArray(result)) {
+          this.dataSource.data = result;
+          this.dataSource.paginator?.firstPage();
+        }
+      });
   }
 
   ngAfterViewInit(): void {
