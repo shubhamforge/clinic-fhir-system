@@ -10,7 +10,15 @@
   </div>
 
   <div class="dashboard__panels">
-    <aside class="dashboard__panel dashboard__panel--left px-shimmer"></aside>
+    <aside class="dashboard__panel dashboard__panel--left">
+      @if (isPatientLoading()) {
+        <cp-snapshot-skeleton />
+      } @else if (isPatientError()) {
+        <cp-panel-error message="Snapshot unavailable" (retry)="reload()" />
+      } @else {
+        <cp-snapshot-panel [snapshot]="snapshotData()!" />
+      }
+    </aside>
     <main class="dashboard__panel dashboard__panel--center px-shimmer"></main>
     <div class="dashboard__resizer"></div>
     <aside class="dashboard__panel dashboard__panel--right px-shimmer"></aside>

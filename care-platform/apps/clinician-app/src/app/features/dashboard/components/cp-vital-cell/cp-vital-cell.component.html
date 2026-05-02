@@ -1,0 +1,15 @@
+<div class="vital-head">
+  @if (icon) {
+    <mat-icon class="vital-icon">{{ icon }}</mat-icon>
+  }
+  <span>{{ label }}</span>
+</div>
+<div class="vital-value">
+  <span class="vital-num">{{ value }}</span>
+  @if (unit) {
+    <span class="vital-unit cp-font-mono">{{ unit }}</span>
+  }
+</div>
+@if (sub) {
+  <div class="vital-sub cp-font-mono">{{ sub }}</div>
+}

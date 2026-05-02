@@ -28,12 +28,20 @@ import {
 import { CpPatientHeaderComponent } from './components/cp-patient-header/cp-patient-header.component';
 import { CpPatientHeaderSkeletonComponent } from './components/cp-patient-header-skeleton/cp-patient-header-skeleton.component';
 import { CpPanelErrorComponent } from './components/cp-panel-error/cp-panel-error.component';
+import { CpSnapshotPanelComponent } from './components/cp-snapshot-panel/cp-snapshot-panel.component';
+import { CpSnapshotSkeletonComponent } from './components/cp-snapshot-skeleton/cp-snapshot-skeleton.component';
 
 type AsyncState<T> = T | null | 'error';
 
 @Component({
   selector: 'cp-dashboard',
-  imports: [CpPatientHeaderComponent, CpPatientHeaderSkeletonComponent, CpPanelErrorComponent],
+  imports: [
+    CpPatientHeaderComponent,
+    CpPatientHeaderSkeletonComponent,
+    CpPanelErrorComponent,
+    CpSnapshotPanelComponent,
+    CpSnapshotSkeletonComponent,
+  ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -72,6 +80,12 @@ export class DashboardComponent {
 
   readonly isPatientLoading = computed(() => this.dashboard() === null);
   readonly isPatientError = computed(() => this.dashboard() === 'error');
+
+  readonly snapshotData = computed(() => {
+    const d = this.dashboard();
+    if (!d || d === 'error') return null;
+    return d.snapshot;
+  });
 
   readonly patientHeader = computed<PatientHeaderData | null>(() => {
     const d = this.dashboard();

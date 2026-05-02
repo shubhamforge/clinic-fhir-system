@@ -1,0 +1,56 @@
+:host {
+  display: block;
+  background: var(--px-surface);
+  padding: 9px 10px;
+}
+
+:host.flagged {
+  background: color-mix(in oklch, var(--px-surface), var(--px-warn) 6%);
+}
+
+.vital-head {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  color: var(--px-text-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.vital-icon {
+  font-size: 12px;
+  width: 12px;
+  height: 12px;
+  opacity: 0.7;
+}
+
+.vital-value {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-top: 3px;
+}
+
+.vital-num {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--px-text);
+}
+
+:host.flagged .vital-num {
+  color: var(--px-warn);
+}
+
+.vital-unit {
+  font-size: 10.5px;
+  color: var(--px-text-muted);
+}
+
+.vital-sub {
+  font-size: 10px;
+  color: var(--px-text-subtle);
+  margin-top: 2px;
+}

@@ -31,11 +31,13 @@ public class SnapshotService {
       "http://terminology.hl7.org/CodeSystem/condition-clinical";
 
   private static final Map<String, String> VITAL_LOINC =
-      Map.of(
-          "systolic", "8480-6",
-          "diastolic", "8462-4",
-          "weight", "29463-7",
-          "spo2", "59408-5");
+      Map.ofEntries(
+          Map.entry("systolic", "8480-6"),
+          Map.entry("diastolic", "8462-4"),
+          Map.entry("weight", "29463-7"),
+          Map.entry("spo2", "59408-5"),
+          Map.entry("heartRate", "8867-4"),
+          Map.entry("temperature", "8310-5"));
 
   private final IGenericClient fhirClient;
   private final ClinicalThresholds thresholds;
@@ -120,8 +122,15 @@ public class SnapshotService {
     VitalReading diastolic = fetchLatestVital(patientId, "diastolic", "mmHg");
     VitalReading weight = fetchLatestVital(patientId, "weight", "kg");
     VitalReading spo2 = fetchLatestVital(patientId, "spo2", "%");
-    if (systolic == null && diastolic == null && weight == null && spo2 == null) return null;
-    return new LatestVitals(systolic, diastolic, weight, spo2);
+    VitalReading heartRate = fetchLatestVital(patientId, "heartRate", "/min");
+    VitalReading temperature = fetchLatestVital(patientId, "temperature", "Cel");
+    if (systolic == null
+        && diastolic == null
+        && weight == null
+        && spo2 == null
+        && heartRate == null
+        && temperature == null) return null;
+    return new LatestVitals(systolic, diastolic, weight, spo2, heartRate, temperature);
   }
 
   private VitalReading fetchLatestVital(String patientId, String type, String unit) {
@@ -161,6 +170,8 @@ public class SnapshotService {
       case "systolic" -> value > thresholds.systolicWarn();
       case "diastolic" -> value > thresholds.diastolicWarn();
       case "spo2" -> value < thresholds.spo2Warn();
+      case "heartRate" -> value > 100 || value < 60;
+      case "temperature" -> value > 37.8;
       default -> false;
     };
   }
@@ -234,6 +245,20 @@ public class SnapshotService {
                 "vital",
                 "SpO2 " + v + "% below " + thresholds.spo2Warn() + "% threshold",
                 null));
+      }
+    }
+    if (vitals.heartRate() != null && vitals.heartRate().value() != null) {
+      double v = vitals.heartRate().value();
+      if (v > 100) {
+        alerts.add(alert("warning", "vital", "Heart rate " + (int) v + " bpm — tachycardia", null));
+      } else if (v < 60) {
+        alerts.add(alert("warning", "vital", "Heart rate " + (int) v + " bpm — bradycardia", null));
+      }
+    }
+    if (vitals.temperature() != null && vitals.temperature().value() != null) {
+      double v = vitals.temperature().value();
+      if (v > 37.8) {
+        alerts.add(alert("warning", "vital", "Temperature " + v + "°C — fever", null));
       }
     }
     return alerts;

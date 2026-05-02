@@ -22,11 +22,13 @@ public class ObservationMapper {
 
   // [loincCode, display, unit]
   private static final Map<String, String[]> VITAL_META =
-      Map.of(
-          "systolic", new String[] {"8480-6", "Systolic blood pressure", "mm[Hg]"},
-          "diastolic", new String[] {"8462-4", "Diastolic blood pressure", "mm[Hg]"},
-          "weight", new String[] {"29463-7", "Body weight", "kg"},
-          "spo2", new String[] {"59408-5", "Oxygen saturation", "%"});
+      Map.ofEntries(
+          Map.entry("systolic", new String[] {"8480-6", "Systolic blood pressure", "mm[Hg]"}),
+          Map.entry("diastolic", new String[] {"8462-4", "Diastolic blood pressure", "mm[Hg]"}),
+          Map.entry("weight", new String[] {"29463-7", "Body weight", "kg"}),
+          Map.entry("spo2", new String[] {"59408-5", "Oxygen saturation", "%"}),
+          Map.entry("heartRate", new String[] {"8867-4", "Heart rate", "/min"}),
+          Map.entry("temperature", new String[] {"8310-5", "Body temperature", "Cel"}));
 
   public List<Observation> toFhirObservations(VitalsRequest request) {
     List<Observation> observations = new ArrayList<>();
@@ -46,6 +48,13 @@ public class ObservationMapper {
     }
     if (request.spo2Percent() != null) {
       observations.add(build(request, "spo2", request.spo2Percent(), effectiveDate));
+    }
+    if (request.heartRateBpm() != null) {
+      observations.add(
+          build(request, "heartRate", request.heartRateBpm().doubleValue(), effectiveDate));
+    }
+    if (request.temperatureCelsius() != null) {
+      observations.add(build(request, "temperature", request.temperatureCelsius(), effectiveDate));
     }
     return observations;
   }

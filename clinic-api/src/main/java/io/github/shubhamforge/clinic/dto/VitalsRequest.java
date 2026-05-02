@@ -11,4 +11,6 @@ public record VitalsRequest(
     Integer systolicBp,
     Integer diastolicBp,
     Double weightKg,
-    Double spo2Percent) {}
+    Double spo2Percent,
+    Integer heartRateBpm,
+    Double temperatureCelsius) {}

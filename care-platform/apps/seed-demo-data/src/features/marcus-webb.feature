@@ -42,9 +42,11 @@ Feature: Seed Patient — Marcus Webb (hypertensive)
 
     When an encounter is recorded 3 days ago with reason "BP check — improved control" and status "finished"
     And vitals are recorded for that encounter:
-      | systolicBp  | 138 |
-      | diastolicBp | 88  |
-      | weightKg    | 89  |
+      | systolicBp         | 138  |
+      | diastolicBp        | 88   |
+      | weightKg           | 89   |
+      | heartRateBpm       | 72   |
+      | temperatureCelsius | 36.7 |
 
     # Lab results arrived 13 days after order
     And a diagnostic report is created from the last service request with title "Basic Metabolic Panel" issued 15 days ago

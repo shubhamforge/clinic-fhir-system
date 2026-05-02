@@ -18,6 +18,8 @@ When('vitals are recorded for that encounter:', async function (this: SeedWorld,
   if (row['diastolicBp'] !== undefined) body.diastolicBp = parseFloat(row['diastolicBp']);
   if (row['weightKg'] !== undefined) body.weightKg = parseFloat(row['weightKg']);
   if (row['spo2Percent'] !== undefined) body.spo2Percent = parseFloat(row['spo2Percent']);
+  if (row['heartRateBpm'] !== undefined) body.heartRateBpm = parseFloat(row['heartRateBpm']);
+  if (row['temperatureCelsius'] !== undefined) body.temperatureCelsius = parseFloat(row['temperatureCelsius']);
 
   await apiClient.recordVitals(body);
   this.log(`Recorded vitals for encounter ${this.currentEncounterId}`);

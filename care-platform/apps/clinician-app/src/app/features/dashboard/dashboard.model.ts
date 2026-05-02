@@ -13,17 +13,33 @@ export interface AlertItem {
 }
 
 export interface LatestVitals {
-  systolicBp: VitalReading | null;
+  systolicBp:  VitalReading | null;
   diastolicBp: VitalReading | null;
-  weightKg: VitalReading | null;
+  weightKg:    VitalReading | null;
   spo2Percent: VitalReading | null;
+  heartRate:   VitalReading | null;
+  temperature: VitalReading | null;
+}
+
+export interface ConditionSummary {
+  id: string;
+  display: string;
+  onsetDate: string | null;
+  status: string;
+}
+
+export interface MedicationSummary {
+  id: string;
+  name: string;
+  dosage: string | null;
+  status: string;
 }
 
 export interface SnapshotResponse {
-  activeConditions: Record<string, unknown>[];
-  currentMedications: Record<string, unknown>[];
-  latestVitals: LatestVitals;
-  alerts: AlertItem[];
+  activeConditions:   ConditionSummary[];
+  currentMedications: MedicationSummary[];
+  latestVitals:       LatestVitals | null;
+  alerts:             AlertItem[];
 }
 
 export interface GoalProgress {

@@ -31,6 +31,8 @@ export interface CreateVitalsBody {
   diastolicBp?: number;
   weightKg?: number;
   spo2Percent?: number;
+  heartRateBpm?: number;
+  temperatureCelsius?: number;
 }
 
 export interface PatientFields {
