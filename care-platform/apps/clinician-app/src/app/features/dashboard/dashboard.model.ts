@@ -100,6 +100,7 @@ export interface PatientHeaderData {
   dob: string;
   mrn: string;
   pcp: string;
+  org: string;
 }
 
 export function extractPatientHeader(
@@ -110,6 +111,8 @@ export function extractPatientHeader(
   const age = p.dob ? Math.floor((Date.now() - Date.parse(p.dob)) / 31_557_600_000) : null;
   const primaryDoctor = careTeam?.['primaryDoctor'] as Record<string, unknown> | undefined;
   const pcp = (primaryDoctor?.['name'] as string) ?? '—';
+  const organization = careTeam?.['organization'] as Record<string, unknown> | undefined;
+  const org = (organization?.['name'] as string) ?? '—';
 
   return {
     id: p.id,
@@ -119,5 +122,6 @@ export function extractPatientHeader(
     dob: p.dob ?? '—',
     mrn: p.mrn,
     pcp,
+    org,
   };
 }
