@@ -41,10 +41,8 @@
   align-items: center;
   justify-content: center;
 
-  mat-icon {
-    font-size: 14px;
-    width: 14px;
-    height: 14px;
+  svg {
+    flex-shrink: 0;
   }
 }
 
