@@ -1,0 +1,160 @@
+<div
+  [class]="
+    'tl-event tl-' +
+    ev.type +
+    (isFuture ? ' future' : '') +
+    (expanded ? ' expanded' : '')
+  "
+  (click)="select.emit(ev.id)"
+>
+  <div class="tl-rail">
+    <div class="tl-node" [style.--c]="meta.color">
+      <mat-icon>{{ meta.icon }}</mat-icon>
+    </div>
+  </div>
+
+  <div class="tl-card">
+    <div class="tl-card-head">
+      <div class="tl-card-titles">
+        <span class="tl-typetag" [style.--c]="meta.color">{{
+          meta.label
+        }}</span>
+        <span class="tl-title">{{ ev.title }}</span>
+        @if (ev.status) {
+          <span [class]="'tl-status status-' + ev.status">{{ ev.status }}</span>
+        }
+      </div>
+      <div class="tl-card-meta cp-font-mono">
+        <span>{{ fmtDate }}</span>
+        <mat-icon class="tl-chevron">{{
+          expanded ? 'expand_more' : 'chevron_right'
+        }}</mat-icon>
+      </div>
+    </div>
+
+    @if (ev.subtitle) {
+      <div class="tl-subtitle">{{ ev.subtitle }}</div>
+    }
+    @if (provider) {
+      <div class="tl-provider">
+        <mat-icon class="tl-icon-sm">person</mat-icon>
+        {{ provider }}
+      </div>
+    }
+
+    @if (showObsGrid) {
+      <div class="tl-obs-grid">
+        @for (obs of ev.groupedObservations!; track obs.type + obs.display) {
+          <div
+            [class]="'tl-obs obs-' + obsKind(obs)"
+            [class.flagged]="obs.flagged"
+          >
+            <span class="tl-obs-label">{{ obs.display }}</span>
+            <span class="tl-obs-value cp-font-mono"
+              >{{ obs.value }}<small>&nbsp;{{ obs.unit }}</small></span
+            >
+          </div>
+        }
+      </div>
+    }
+
+    @if (ev.linkedTo) {
+      <div class="tl-link">
+        <mat-icon class="tl-icon-sm">expand_more</mat-icon>
+        Linked: results received
+      </div>
+    }
+    @if (ev.linkedFrom) {
+      <div class="tl-link from">
+        <mat-icon class="tl-icon-sm">chevron_right</mat-icon>
+        From order placed earlier
+      </div>
+    }
+    @if (showConclusion) {
+      <div class="tl-conclusion">{{ conclusion }}</div>
+    }
+
+    @if (expanded) {
+      <div class="tl-expand" (click)="$event.stopPropagation()">
+        @if (ev.chiefComplaint || ev.note) {
+          <div class="tl-expand-notes">
+            @if (ev.chiefComplaint) {
+              <div class="tl-note-block">
+                <div class="lab">Chief complaint</div>
+                <p class="tl-note-prose">{{ ev.chiefComplaint }}</p>
+              </div>
+            }
+            @if (ev.note) {
+              <div class="tl-note-block">
+                <div class="lab">Visit note</div>
+                <p class="tl-note-prose">{{ ev.note }}</p>
+              </div>
+            }
+          </div>
+        }
+
+        @if (ev.groupedObservations?.length) {
+          <div class="tl-obs-rich">
+            @for (
+              row of expandedObsRows;
+              track row.obs.type + row.obs.display
+            ) {
+              <div
+                [class]="'tl-obs-row obs-' + row.kind"
+                [class.flagged]="row.obs.flagged"
+              >
+                <span class="tl-obs-row-label">{{ row.obs.display }}</span>
+                <span class="tl-obs-row-value cp-font-mono"
+                  >{{ row.obs.value }}&nbsp;{{ row.obs.unit }}</span
+                >
+                <span class="tl-obs-row-spark">
+                  @if (row.history.length >= 2) {
+                    <cp-obs-sparkline
+                      [points]="row.history"
+                      [color]="row.color"
+                      [refMax]="row.refMax"
+                    />
+                  }
+                </span>
+                <span
+                  [class]="
+                    'tl-obs-row-delta cp-font-mono tone-' +
+                    (row.delta?.tone ?? 'neutral')
+                  "
+                >
+                  @if (!row.delta) {
+                    <span class="muted">—</span>
+                  } @else if (row.delta.dir === 'flat') {
+                    <span class="muted">no change</span>
+                  } @else {
+                    <mat-icon class="tl-icon-xs">{{
+                      row.delta.dir === 'up' ? 'arrow_upward' : 'arrow_downward'
+                    }}</mat-icon
+                    >{{ formatDelta(row) }}
+                  }
+                </span>
+              </div>
+            }
+          </div>
+        }
+
+        @if (conclusion) {
+          <div class="tl-expand-block">
+            <div class="lab">Conclusion</div>
+            <p class="tl-expand-prose">{{ conclusion }}</p>
+          </div>
+        }
+
+        <div class="tl-expand-actions">
+          @for (action of actions; track action.label) {
+            <button
+              [class]="action.primary ? 'tl-btn-primary' : 'tl-btn-ghost'"
+            >
+              {{ action.label }}
+            </button>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>

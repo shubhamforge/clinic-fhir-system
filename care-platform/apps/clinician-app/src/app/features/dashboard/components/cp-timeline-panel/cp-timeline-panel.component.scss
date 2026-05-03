@@ -1,0 +1,152 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  min-width: 0;
+}
+
+// ─── Sticky header ────────────────────────────────────────────────────────────
+
+.panel-head {
+  padding: 14px 20px 10px;
+  border-bottom: 1px solid var(--px-border);
+  background: var(--px-bg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.panel-title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+
+  h2 {
+    font-size: 14px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.01em;
+    color: var(--px-text);
+  }
+}
+
+.panel-count {
+  font-size: 11px;
+  color: var(--px-text-sub);
+}
+
+// ─── Filter pills ─────────────────────────────────────────────────────────────
+
+.filter-pills {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.pill {
+  background: transparent;
+  border: 1px solid var(--px-border);
+  color: var(--px-text-muted);
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: var(--px-sans);
+  transition:
+    border-color 0.12s,
+    color 0.12s,
+    background 0.12s;
+
+  &:hover {
+    border-color: var(--px-border-2);
+    color: var(--px-text);
+  }
+
+  &.active {
+    background: var(--px-text);
+    border-color: var(--px-text);
+    color: var(--px-surface);
+  }
+}
+
+// ─── Scrollable body ──────────────────────────────────────────────────────────
+
+.tl-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px 20px 40px;
+  min-height: 0;
+}
+
+// ─── Date stripe (inside cp-timeline-group) ───────────────────────────────────
+// These rules reach into the child component. Since Angular scopes styles,
+// we use ::ng-deep only for structural layout of child-generated classes.
+
+:host ::ng-deep .tl-group {
+  position: relative;
+  margin-top: 4px;
+}
+
+:host ::ng-deep .tl-date-stripe {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 0 10px;
+  position: sticky;
+  top: 0;
+  background: var(--px-bg);
+  z-index: 2;
+}
+
+:host ::ng-deep .tl-date-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--px-text);
+  white-space: nowrap;
+}
+
+:host ::ng-deep .tl-date-rel {
+  font-size: 10px;
+  color: var(--px-text-sub);
+  white-space: nowrap;
+}
+
+:host ::ng-deep .tl-future-tag {
+  font-family: var(--px-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  background: var(--px-accent);
+  color: #fff;
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+
+:host ::ng-deep .tl-date-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--px-border);
+}
+
+// ─── Footer ───────────────────────────────────────────────────────────────────
+
+.tl-end,
+.tl-empty {
+  text-align: center;
+  font-size: 10.5px;
+  color: var(--px-text-sub);
+  padding: 24px 0;
+  letter-spacing: 0.05em;
+}
+
+.tl-sentinel {
+  height: 1px;
+}

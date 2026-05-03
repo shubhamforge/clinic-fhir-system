@@ -1,3 +1,7 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # clinic-fhir-system — Claude Context
 
 A portfolio/learning project: a FHIR-compliant clinic management system built with Java 21, Spring Boot, HAPI FHIR, and Angular 21.

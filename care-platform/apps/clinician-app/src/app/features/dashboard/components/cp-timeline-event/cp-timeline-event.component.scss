@@ -1,0 +1,506 @@
+// ─── Event row ────────────────────────────────────────────────────────────────
+
+.tl-event {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 10px;
+  position: relative;
+  padding: 4px 0;
+  cursor: pointer;
+}
+
+.tl-event::before {
+  content: '';
+  position: absolute;
+  left: 13px;
+  top: 0;
+  bottom: 0;
+  width: 1.5px;
+  background: var(--px-border);
+}
+
+// ─── Rail ─────────────────────────────────────────────────────────────────────
+
+.tl-rail {
+  position: relative;
+  padding-top: 10px;
+  z-index: 1;
+}
+
+.tl-node {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: var(--px-surface);
+  border: 1.5px solid var(--c);
+  color: var(--c);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+
+  mat-icon {
+    font-size: 13px;
+    width: 13px;
+    height: 13px;
+  }
+}
+
+.tl-event.future .tl-node {
+  background: var(--c);
+  color: #fff;
+}
+
+// ─── Card ─────────────────────────────────────────────────────────────────────
+
+.tl-card {
+  background: var(--px-surface);
+  border: 1px solid var(--px-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+  min-width: 0;
+  container: tl-card / inline-size;
+}
+
+.tl-event:hover .tl-card {
+  border-color: var(--px-border-2);
+  box-shadow: var(--px-shadow);
+}
+
+.tl-event.future .tl-card {
+  background: color-mix(in oklch, var(--px-surface), var(--px-accent) 4%);
+  border-color: color-mix(in oklch, var(--px-border), var(--px-accent) 35%);
+}
+
+.tl-event.expanded .tl-card {
+  border-color: var(--px-accent);
+  box-shadow:
+    0 0 0 1px var(--px-accent),
+    var(--px-shadow);
+}
+
+// ─── Card head ────────────────────────────────────────────────────────────────
+
+.tl-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.tl-card-titles {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.tl-typetag {
+  font-family: var(--px-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c);
+  background: color-mix(in oklch, var(--c), transparent 88%);
+  padding: 2px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+.tl-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tl-status {
+  font-family: var(--px-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--px-surface-3);
+  color: var(--px-text-muted);
+  white-space: nowrap;
+}
+
+.status-finished,
+.status-final,
+.status-completed {
+  background: color-mix(in oklch, var(--px-ok), transparent 88%);
+  color: var(--px-ok);
+}
+
+.status-active,
+.status-booked {
+  background: color-mix(in oklch, var(--px-accent), transparent 88%);
+  color: var(--px-accent);
+}
+
+.tl-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  color: var(--px-text-sub);
+  flex: 0 0 auto;
+}
+
+.tl-chevron {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+}
+
+.tl-icon-sm {
+  font-size: 12px;
+  width: 12px;
+  height: 12px;
+}
+
+.tl-icon-xs {
+  font-size: 11px;
+  width: 11px;
+  height: 11px;
+}
+
+.tl-subtitle {
+  font-size: 12px;
+  color: var(--px-text-muted);
+  margin-top: 4px;
+}
+
+.tl-provider {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--px-text-sub);
+  margin-top: 6px;
+}
+
+// ─── Collapsed obs grid ───────────────────────────────────────────────────────
+
+.tl-obs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--px-border);
+}
+
+.tl-obs {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 8px 5px 7px;
+  background: var(--px-surface-2);
+  border-radius: 5px;
+  border-left: 2px solid transparent;
+  font-size: 11.5px;
+}
+
+.tl-obs-label {
+  color: var(--px-text-muted);
+}
+
+.tl-obs-value {
+  font-weight: 600;
+
+  small {
+    font-weight: 400;
+    font-size: 10px;
+    color: var(--px-text-sub);
+  }
+}
+
+// ─── Linked indicator ────────────────────────────────────────────────────────
+
+.tl-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  padding: 3px 7px;
+  font-size: 11px;
+  font-style: italic;
+  color: var(--px-text-sub);
+  background: var(--px-surface-3);
+  border-radius: 4px;
+}
+
+.tl-conclusion {
+  margin-top: 8px;
+  padding: 8px 10px;
+  font-size: 11.5px;
+  background: var(--px-surface-2);
+  border-left: 2px solid var(--px-accent);
+  border-radius: 0 5px 5px 0;
+  color: var(--px-text-muted);
+  line-height: 1.5;
+}
+
+// ─── Density: compact ─────────────────────────────────────────────────────────
+
+.tl-event .tl-card {
+  .density-compact & {
+    padding: 7px 10px;
+  }
+}
+
+// ─── Expanded section ────────────────────────────────────────────────────────
+
+.tl-expand {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--px-border);
+  animation: tl-expand-in 0.18s ease;
+}
+
+@keyframes tl-expand-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.tl-expand-notes {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.lab {
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--px-text-sub);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.tl-note-prose,
+.tl-expand-prose {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--px-text);
+  padding: 8px 10px;
+  background: var(--px-surface-2);
+  border-radius: 5px;
+  border-left: 2px solid var(--px-border);
+}
+
+.tl-expand-prose {
+  border-left-color: var(--px-accent);
+  color: var(--px-text-muted);
+}
+
+.tl-expand-block {
+  margin-top: 12px;
+}
+
+// ─── Enriched obs rows (expanded) ────────────────────────────────────────────
+
+.tl-obs-rich {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 4px;
+  min-width: 0;
+}
+
+.tl-obs-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr) minmax(
+      40px,
+      64px
+    ) minmax(54px, 0.6fr);
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--px-surface-2);
+  border-radius: 5px;
+  border-left: 2px solid transparent;
+  font-size: 12px;
+  min-width: 0;
+
+  > * {
+    min-width: 0;
+  }
+}
+
+// Hide sparkline column at narrow widths
+@container tl-card (max-width: 360px) {
+  .tl-obs-row {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(54px, 0.7fr);
+  }
+
+  .tl-obs-row-spark {
+    display: none;
+  }
+}
+
+.tl-obs-row-label {
+  color: var(--px-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tl-obs-row-value {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tl-obs-row-spark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+}
+
+.tl-obs-row-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  justify-content: flex-end;
+  font-size: 11px;
+  font-weight: 600;
+
+  .muted {
+    color: var(--px-text-sub);
+    font-weight: 500;
+    font-style: italic;
+  }
+}
+
+// Observation kind tints — defined after .tl-obs and .tl-obs-row so they win the cascade for both
+.obs-bp {
+  border-left-color: var(--px-accent);
+  background: color-mix(in oklch, var(--px-surface-2), var(--px-accent) 7%);
+  .tl-obs-value,
+  .tl-obs-row-value {
+    color: var(--px-accent);
+  }
+}
+
+.obs-hr {
+  border-left-color: var(--px-obs-hr);
+  background: color-mix(in oklch, var(--px-surface-2), var(--px-obs-hr) 6%);
+  .tl-obs-value,
+  .tl-obs-row-value {
+    color: var(--px-obs-hr);
+  }
+}
+
+.obs-weight {
+  border-left-color: var(--px-obs-weight);
+  background: color-mix(in oklch, var(--px-surface-2), var(--px-obs-weight) 6%);
+  .tl-obs-value,
+  .tl-obs-row-value {
+    color: var(--px-obs-weight);
+  }
+}
+
+.obs-spo2 {
+  border-left-color: var(--px-obs-spo2);
+  background: color-mix(in oklch, var(--px-surface-2), var(--px-obs-spo2) 7%);
+  .tl-obs-value,
+  .tl-obs-row-value {
+    color: var(--px-obs-spo2);
+  }
+}
+
+.obs-temp {
+  border-left-color: var(--px-obs-temp);
+  background: color-mix(in oklch, var(--px-surface-2), var(--px-obs-temp) 6%);
+  .tl-obs-value,
+  .tl-obs-row-value {
+    color: var(--px-obs-temp);
+  }
+}
+
+.flagged {
+  border-left-color: var(--px-warn) !important; // overrides kind color
+  background: color-mix(
+    in oklch,
+    var(--px-surface-2),
+    var(--px-warn) 14%
+  ) !important;
+  .tl-obs-value,
+  .tl-obs-row-value {
+    color: var(--px-warn) !important;
+  }
+}
+
+.tone-good {
+  color: var(--px-ok);
+}
+.tone-bad {
+  color: var(--px-warn);
+}
+.tone-neutral {
+  color: var(--px-text-muted);
+}
+
+// ─── Action buttons ──────────────────────────────────────────────────────────
+
+.tl-expand-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.tl-btn-ghost,
+.tl-btn-primary {
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: var(--px-sans);
+  transition: background 0.15s;
+}
+
+.tl-btn-ghost {
+  background: transparent;
+  border: 1px solid var(--px-border-2);
+  color: var(--px-text-muted);
+
+  &:hover {
+    background: var(--px-surface-2);
+    color: var(--px-text);
+  }
+}
+
+.tl-btn-primary {
+  background: var(--px-accent);
+  border: 1px solid var(--px-accent);
+  color: #fff;
+
+  &:hover {
+    background: color-mix(in oklch, var(--px-accent), #000 12%);
+  }
+}

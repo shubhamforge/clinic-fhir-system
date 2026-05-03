@@ -1,0 +1,39 @@
+<div class="panel-head">
+  <div class="panel-title">
+    <h2>Clinical timeline</h2>
+    <span class="panel-count cp-font-mono">{{ filtered().length }} events</span>
+  </div>
+  <div class="filter-pills">
+    @for (f of filters; track f.id) {
+      <button
+        class="pill"
+        [class.active]="activeFilter() === f.id"
+        (click)="setFilter(f.id)"
+      >
+        {{ f.label }}
+      </button>
+    }
+  </div>
+</div>
+
+<div class="tl-scroll">
+  @for (g of groups(); track g.date) {
+    <cp-timeline-group
+      [date]="g.date"
+      [events]="g.items"
+      [trends]="trends"
+      [expandedId]="expandedId()"
+      (select)="toggleExpanded($event)"
+    />
+  }
+
+  @if (filtered().length) {
+    <div class="tl-end cp-font-mono">— end of recent history —</div>
+  }
+
+  @if (!filtered().length) {
+    <div class="tl-empty cp-font-mono">No events match this filter.</div>
+  }
+
+  <div #sentinel class="tl-sentinel" aria-hidden="true"></div>
+</div>
