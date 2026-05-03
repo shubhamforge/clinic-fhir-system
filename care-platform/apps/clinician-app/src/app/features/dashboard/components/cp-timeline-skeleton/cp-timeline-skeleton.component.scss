@@ -1,0 +1,44 @@
+.tl-skeleton {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.tl-sk-header {
+  padding: 14px 20px 10px;
+  border-bottom: 1px solid var(--px-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tl-sk-pills {
+  display: flex;
+  gap: 6px;
+}
+
+.tl-sk-body {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tl-sk-event {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.tl-sk-node {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.tl-sk-card {
+  border-radius: 8px;
+}

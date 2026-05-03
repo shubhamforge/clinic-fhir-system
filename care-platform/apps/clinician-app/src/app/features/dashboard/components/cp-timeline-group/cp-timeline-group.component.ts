@@ -13,28 +13,8 @@ import { CpTimelineEventComponent } from '../cp-timeline-event/cp-timeline-event
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CpTimelineEventComponent],
-  template: `
-    <div class="tl-group">
-      <div class="tl-date-stripe">
-        <span class="tl-date-label">{{ fmtDateLong }}</span>
-        <span class="tl-date-rel cp-font-mono">{{ daysAgo }}</span>
-        @if (isFuture) {
-          <span class="tl-future-tag">UPCOMING</span>
-        }
-        <div class="tl-date-rule"></div>
-      </div>
-      @for (ev of events; track ev.id) {
-        <cp-timeline-event
-          [ev]="ev"
-          [trends]="trends"
-          [expanded]="expandedId === ev.id"
-          [density]="density"
-          (select)="select.emit($event)"
-        />
-      }
-    </div>
-  `,
-  styles: [':host { display: block; }'],
+  templateUrl: './cp-timeline-group.component.html',
+  styleUrl: './cp-timeline-group.component.scss',
 })
 export class CpTimelineGroupComponent {
   @Input({ required: true }) date!: string;

@@ -1,0 +1,24 @@
+<div class="tl-skeleton">
+  <div class="tl-sk-header">
+    <div
+      class="px-shimmer"
+      style="height: 14px; width: 130px; border-radius: 4px"
+    ></div>
+    <div class="tl-sk-pills">
+      @for (p of pills; track p) {
+        <div
+          class="px-shimmer"
+          style="height: 26px; width: 52px; border-radius: 14px"
+        ></div>
+      }
+    </div>
+  </div>
+  <div class="tl-sk-body">
+    @for (h of cardHeights; track h; let i = $index) {
+      <div class="tl-sk-event">
+        <div class="px-shimmer tl-sk-node"></div>
+        <div class="px-shimmer tl-sk-card" [style.height.px]="h"></div>
+      </div>
+    }
+  </div>
+</div>

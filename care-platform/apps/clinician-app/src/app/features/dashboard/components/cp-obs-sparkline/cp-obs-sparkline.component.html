@@ -1,0 +1,35 @@
+@if (svgData(); as d) {
+  <svg
+    class="obs-spark"
+    [attr.width]="d.w"
+    [attr.height]="d.h"
+    [attr.viewBox]="'0 0 ' + d.w + ' ' + d.h"
+  >
+    @if (d.refY !== null) {
+      <line
+        x1="0"
+        [attr.y1]="d.refY"
+        [attr.x2]="d.w"
+        [attr.y2]="d.refY"
+        stroke="var(--px-warn)"
+        stroke-width="0.6"
+        stroke-dasharray="2 2"
+        opacity="0.5"
+      />
+    }
+    <path
+      [attr.d]="d.path"
+      fill="none"
+      [attr.stroke]="color()"
+      stroke-width="1.4"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <circle
+      [attr.cx]="d.dotX"
+      [attr.cy]="d.dotY"
+      r="1.8"
+      [attr.fill]="color()"
+    />
+  </svg>
+}

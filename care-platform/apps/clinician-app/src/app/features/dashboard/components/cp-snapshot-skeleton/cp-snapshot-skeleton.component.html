@@ -1,0 +1,47 @@
+<aside class="snapshot-panel">
+  <div class="px-card">
+    <div
+      class="px-shimmer"
+      style="height: 12px; width: 80px; margin-bottom: 12px; border-radius: 4px"
+    ></div>
+    <div class="vitals-grid">
+      @for (i of tiles; track i) {
+        <div class="px-shimmer" style="height: 64px"></div>
+      }
+    </div>
+  </div>
+  <div class="px-card">
+    <div
+      class="px-shimmer"
+      style="
+        height: 12px;
+        width: 100px;
+        margin-bottom: 10px;
+        border-radius: 4px;
+      "
+    ></div>
+    @for (i of rows; track i) {
+      <div
+        class="px-shimmer"
+        style="height: 40px; margin-bottom: 8px; border-radius: 6px"
+      ></div>
+    }
+  </div>
+  <div class="px-card">
+    <div
+      class="px-shimmer"
+      style="
+        height: 12px;
+        width: 120px;
+        margin-bottom: 10px;
+        border-radius: 4px;
+      "
+    ></div>
+    @for (i of rows; track i) {
+      <div
+        class="px-shimmer"
+        style="height: 36px; margin-bottom: 8px; border-radius: 6px"
+      ></div>
+    }
+  </div>
+</aside>
