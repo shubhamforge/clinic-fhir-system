@@ -1,0 +1,133 @@
+<aside class="care-panel">
+  <!-- ── Care plan ─────────────────────────────────────────────────── -->
+  @if (carePlan(); as plan) {
+    <div class="px-card">
+      <div class="px-card-head">
+        <span class="px-card-title">
+          <mat-icon>assignment</mat-icon>
+          Care plan
+        </span>
+        <span [class]="'care-plan-status care-plan-status--' + plan.status">
+          {{ plan.status }}
+        </span>
+      </div>
+      <div class="care-plan-title">{{ plan.title }}</div>
+      <div class="care-plan-sub cp-font-mono">
+        {{ plan.goals.length }} goal{{ plan.goals.length !== 1 ? 's' : '' }}
+      </div>
+
+      @if (plan.goals.length) {
+        <div class="care-goals">
+          @for (goal of plan.goals; track goal.id) {
+            <cp-goal-row
+              [goal]="goal"
+              [expanded]="expandedGoalId() === goal.id"
+              (toggle)="toggleGoal($event)"
+            />
+          }
+        </div>
+      } @else {
+        <div class="care-empty cp-font-mono">No goals defined</div>
+      }
+    </div>
+  } @else {
+    <div class="px-card">
+      <div class="px-card-head">
+        <span class="px-card-title">Care plan</span>
+      </div>
+      <div class="care-empty cp-font-mono">No active care plan</div>
+    </div>
+  }
+
+  <!-- ── Pending orders ────────────────────────────────────────────── -->
+  <div class="px-card">
+    <div class="px-card-head">
+      <span class="px-card-title">
+        <mat-icon>checklist</mat-icon>
+        Pending orders
+      </span>
+      <span class="px-card-meta cp-font-mono">{{
+        sortedPending().length
+      }}</span>
+    </div>
+
+    @if (sortedPending().length) {
+      <ul class="orders-list">
+        @for (order of sortedPending(); track order.id) {
+          <li class="order-row">
+            <span
+              [class]="
+                'order-icon' +
+                (order.category?.toLowerCase() === 'imaging'
+                  ? ' order-icon--imaging'
+                  : '')
+              "
+            >
+              <mat-icon>{{ getCategoryIcon(order.category) }}</mat-icon>
+            </span>
+            <div class="order-body">
+              <div class="order-code">{{ order.code }}</div>
+              <div class="order-meta cp-font-mono">
+                {{ order.category }} · {{ order.orderedOn | date: 'MMM d' }}
+              </div>
+            </div>
+            <span [class]="'order-priority order-priority--' + order.priority">
+              {{ order.priority }}
+            </span>
+          </li>
+        }
+      </ul>
+    } @else {
+      <div class="care-empty cp-font-mono">No pending orders</div>
+    }
+  </div>
+
+  <!-- ── Trend charts ──────────────────────────────────────────────── -->
+  <div class="px-card">
+    <div class="px-card-head">
+      <span class="px-card-title">Trends</span>
+      <div class="period-pills">
+        @for (p of periods; track p) {
+          <button
+            class="period-pill"
+            [class.active]="period() === p"
+            (click)="setPeriod(p)"
+          >
+            {{ p }}
+          </button>
+        }
+      </div>
+    </div>
+
+    @if (isTrendsLoading()) {
+      <div class="trends-loading">
+        <div
+          class="px-shimmer"
+          style="height: 80px; border-radius: 5px; margin-bottom: 14px"
+        ></div>
+        <div
+          class="px-shimmer"
+          style="height: 80px; border-radius: 5px; margin-bottom: 14px"
+        ></div>
+        <div class="px-shimmer" style="height: 80px; border-radius: 5px"></div>
+      </div>
+    } @else {
+      <cp-trend-chart
+        label="Blood pressure"
+        [series]="bpSeries()"
+        primaryColor="var(--px-accent)"
+        [secondaryColor]="'var(--px-accent-2)'"
+      />
+      <cp-trend-chart
+        label="Weight"
+        [series]="weightSeries()"
+        primaryColor="var(--px-obs-weight)"
+      />
+      <cp-trend-chart
+        label="SpO₂"
+        [series]="spo2Series()"
+        primaryColor="var(--px-obs-spo2)"
+      />
+    }
+  </div>
+</aside>

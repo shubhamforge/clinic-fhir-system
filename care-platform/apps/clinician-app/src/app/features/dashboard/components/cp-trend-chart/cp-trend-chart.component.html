@@ -1,0 +1,223 @@
+@if (svgData(); as d) {
+  <!-- Header: label + current reading (only shown when data exists) -->
+  <div class="trend-head">
+    <span class="trend-label">{{ label() }}</span>
+    <div class="trend-current cp-font-mono">
+      @if (hoverData(); as hov) {
+        @if (hov.primary !== null) {
+          <span class="trend-val" [style.color]="primaryColor()">{{
+            hov.primary | number: (d.isBp ? '1.0-0' : '1.0-1')
+          }}</span>
+        }
+        @if (hov.secondary !== null) {
+          <span class="trend-sep">/</span>
+          <span
+            class="trend-val trend-val--sec"
+            [style.color]="secondaryColor()!"
+            >{{ hov.secondary | number: '1.0-0' }}</span
+          >
+        }
+        @if (hov.date) {
+          <span class="trend-date">{{ hov.date | date: 'MMM d' }}</span>
+        }
+      } @else {
+        @if (d.latestPrimary !== null) {
+          <span class="trend-val" [style.color]="primaryColor()">{{
+            d.latestPrimary | number: (d.isBp ? '1.0-0' : '1.0-1')
+          }}</span>
+        }
+        @if (d.latestSecondary !== null) {
+          <span class="trend-sep">/</span>
+          <span
+            class="trend-val trend-val--sec"
+            [style.color]="secondaryColor()!"
+            >{{ d.latestSecondary | number: '1.0-0' }}</span
+          >
+        }
+        @if (d.latestPrimary !== null) {
+          <span class="trend-date">latest</span>
+          <span class="trend-unit">{{ d.unit }}</span>
+        }
+      }
+    </div>
+  </div>
+
+  <svg
+    class="trend-svg"
+    viewBox="0 0 340 110"
+    width="100%"
+    height="110"
+    #svgEl
+    (mousemove)="onSvgMouseMove($event, svgEl)"
+    (mouseleave)="onSvgMouseLeave()"
+  >
+    <!-- Baseline grid -->
+    <line
+      x1="8"
+      [attr.y1]="d.baselineY"
+      [attr.x2]="d.W - 8"
+      [attr.y2]="d.baselineY"
+      stroke="var(--px-border)"
+      stroke-width="1"
+    />
+
+    <!-- Systolic / single-series reference line -->
+    @if (d.refY !== null) {
+      <line
+        x1="8"
+        [attr.y1]="d.refY"
+        [attr.x2]="d.W - 8"
+        [attr.y2]="d.refY"
+        stroke="var(--px-warn)"
+        stroke-dasharray="3 3"
+        stroke-opacity="0.7"
+        stroke-width="0.8"
+      />
+    }
+
+    <!-- Diastolic reference line (BP only) -->
+    @if (d.isBp && d.refY2 !== null) {
+      <line
+        x1="8"
+        [attr.y1]="d.refY2"
+        [attr.x2]="d.W - 8"
+        [attr.y2]="d.refY2"
+        stroke="var(--px-warn)"
+        stroke-dasharray="3 3"
+        stroke-opacity="0.4"
+        stroke-width="0.8"
+      />
+    }
+
+    <!-- Area fill under primary line -->
+    <path
+      [attr.d]="d.primaryArea"
+      [attr.fill]="primaryColor()"
+      fill-opacity="0.08"
+    />
+
+    <!-- Secondary (diastolic) dashed line -->
+    @if (d.secondaryPath) {
+      <path
+        [attr.d]="d.secondaryPath"
+        fill="none"
+        [attr.stroke]="secondaryColor() ?? 'var(--px-accent-2)'"
+        stroke-width="1.4"
+        stroke-dasharray="2 2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    }
+
+    <!-- Primary solid line -->
+    <path
+      [attr.d]="d.primaryPath"
+      fill="none"
+      [attr.stroke]="primaryColor()"
+      stroke-width="1.6"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- Secondary dots (diastolic, drawn below primary) -->
+    @for (dot of d.secondaryDots; track dot.date) {
+      <circle
+        [attr.cx]="dot.x"
+        [attr.cy]="dot.y"
+        r="1.6"
+        [attr.fill]="secondaryColor() ?? 'var(--px-accent-2)'"
+      />
+    }
+
+    <!-- Primary dots -->
+    @for (dot of d.primaryDots; track dot.date) {
+      <circle
+        [attr.cx]="dot.x"
+        [attr.cy]="dot.y"
+        r="2"
+        [attr.fill]="primaryColor()"
+      />
+    }
+
+    <!-- X-axis date labels -->
+    <text
+      x="8"
+      [attr.y]="d.H - 4"
+      font-size="8.5"
+      fill="var(--px-text-sub)"
+      font-family="var(--px-mono)"
+    >
+      {{ d.startDate | date: 'MMM d' }}
+    </text>
+    <text
+      [attr.x]="d.W - 8"
+      [attr.y]="d.H - 4"
+      font-size="8.5"
+      fill="var(--px-text-sub)"
+      text-anchor="end"
+      font-family="var(--px-mono)"
+    >
+      {{ d.endDate | date: 'MMM d' }}
+    </text>
+
+    <!-- Hover overlay -->
+    @if (hoverData(); as hov) {
+      @if (hov.primaryDot) {
+        <line
+          [attr.x1]="hov.primaryDot.x"
+          y1="12"
+          [attr.x2]="hov.primaryDot.x"
+          [attr.y2]="d.baselineY"
+          stroke="var(--px-text)"
+          stroke-opacity="0.15"
+          stroke-dasharray="2 2"
+          stroke-width="1"
+        />
+        <circle
+          [attr.cx]="hov.primaryDot.x"
+          [attr.cy]="hov.primaryDot.y"
+          r="3.5"
+          [attr.fill]="primaryColor()"
+          stroke="var(--px-surface)"
+          stroke-width="1.5"
+        />
+      }
+      @if (hov.secondaryDot) {
+        <circle
+          [attr.cx]="hov.secondaryDot.x"
+          [attr.cy]="hov.secondaryDot.y"
+          r="3.5"
+          [attr.fill]="secondaryColor() ?? 'var(--px-accent-2)'"
+          stroke="var(--px-surface)"
+          stroke-width="1.5"
+        />
+      }
+    }
+  </svg>
+
+  <!-- BP systolic/diastolic legend -->
+  @if (d.isBp) {
+    <div class="trend-legend cp-font-mono">
+      <span class="trend-legend__item">
+        <span
+          class="trend-legend__dot"
+          [style.background]="primaryColor()"
+        ></span>
+        systolic
+      </span>
+      <span class="trend-legend__item">
+        <span
+          class="trend-legend__dot trend-legend__dot--dashed"
+          [style.color]="secondaryColor()!"
+        ></span>
+        diastolic
+      </span>
+    </div>
+  }
+} @else {
+  <!-- No data: label + placeholder, same footprint as a live chart -->
+  <div class="trend-head">
+    <span class="trend-label">{{ label() }}</span>
+  </div>
+  <div class="trend-no-data cp-font-mono">No data for period</div>
+}

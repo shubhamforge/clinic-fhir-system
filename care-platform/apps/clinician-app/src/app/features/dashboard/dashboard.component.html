@@ -12,7 +12,7 @@
     }
   </div>
 
-  <div class="dashboard__panels">
+  <div class="dashboard__panels" #panelsGrid>
     <aside class="dashboard__panel dashboard__panel--left">
       @if (isPatientLoading()) {
         <cp-snapshot-skeleton />
@@ -37,7 +37,24 @@
       }
     </main>
 
-    <div class="dashboard__resizer"></div>
-    <aside class="dashboard__panel dashboard__panel--right px-shimmer"></aside>
+    <div
+      class="dashboard__resizer"
+      [class.dragging]="isDragging()"
+      (mousedown)="onResizerMousedown($event)"
+    ></div>
+
+    <aside class="dashboard__panel dashboard__panel--right">
+      @if (isPatientLoading()) {
+        <cp-care-skeleton />
+      } @else if (isPatientError()) {
+        <cp-panel-error message="Care plan unavailable" (retry)="reload()" />
+      } @else {
+        <cp-care-panel
+          [patientId]="patientId()"
+          [carePlan]="carePlan()"
+          [pending]="pendingOrders()"
+        />
+      }
+    </aside>
   </div>
 </div>

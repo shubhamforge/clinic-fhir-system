@@ -1,0 +1,197 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.care-panel {
+  padding: 12px;
+  overflow-y: auto;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+// ── Care plan ──────────────────────────────────────────────────────────
+
+.care-plan-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--px-text);
+  margin-bottom: 2px;
+}
+
+.care-plan-sub {
+  font-size: 10.5px;
+  color: var(--px-text-sub);
+  margin-bottom: 10px;
+}
+
+.care-plan-status {
+  font-family: var(--px-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 6px;
+  border-radius: 4px;
+
+  &--active {
+    background: color-mix(in oklch, var(--px-ok), transparent 88%);
+    color: var(--px-ok);
+  }
+
+  &--draft,
+  &--on-hold {
+    background: var(--px-surface-3);
+    color: var(--px-text-muted);
+  }
+
+  &--revoked,
+  &--entered-in-error {
+    background: color-mix(in oklch, var(--px-crit), transparent 88%);
+    color: var(--px-crit);
+  }
+}
+
+.care-goals {
+  display: flex;
+  flex-direction: column;
+}
+
+.care-empty {
+  font-size: 11px;
+  color: var(--px-text-sub);
+  padding: 8px 0;
+  text-align: center;
+}
+
+// ── Pending orders ─────────────────────────────────────────────────────
+
+.orders-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.order-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--px-border);
+
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+
+.order-icon {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  flex-shrink: 0;
+  background: color-mix(in oklch, var(--px-accent), transparent 88%);
+  color: var(--px-accent);
+
+  &--imaging {
+    background: color-mix(in oklch, var(--px-obs-weight), transparent 88%);
+    color: var(--px-obs-weight);
+  }
+
+  mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.order-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.order-code {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--px-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.order-meta {
+  font-size: 10.5px;
+  color: var(--px-text-sub);
+  margin-top: 1px;
+}
+
+.order-priority {
+  font-family: var(--px-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  white-space: nowrap;
+
+  &--routine {
+    background: var(--px-surface-3);
+    color: var(--px-text-muted);
+  }
+
+  &--urgent {
+    background: color-mix(in oklch, var(--px-warn), transparent 88%);
+    color: var(--px-warn);
+  }
+
+  &--asap,
+  &--stat {
+    background: color-mix(in oklch, var(--px-crit), transparent 88%);
+    color: var(--px-crit);
+  }
+}
+
+// ── Period switcher ────────────────────────────────────────────────────
+
+.period-pills {
+  display: flex;
+  gap: 4px;
+}
+
+.period-pill {
+  background: transparent;
+  border: 1px solid var(--px-border);
+  color: var(--px-text-muted);
+  padding: 3px 9px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: var(--px-mono);
+  cursor: pointer;
+  transition:
+    border-color 0.12s,
+    color 0.12s,
+    background 0.12s;
+
+  &:hover {
+    border-color: var(--px-border-2);
+    color: var(--px-text);
+  }
+
+  &.active {
+    background: var(--px-text);
+    border-color: var(--px-text);
+    color: var(--px-surface);
+  }
+}
+
+.trends-loading {
+  padding-top: 2px;
+}

@@ -51,6 +51,32 @@ export interface GoalProgress {
   baselineValue: number | null;
 }
 
+export interface GoalSummary {
+  id: string;
+  description: string | null;
+  status: string | null;
+  targetValue: number | null;
+  targetDate: string | null;
+  progress: GoalProgress;
+}
+
+export interface ActiveCarePlan {
+  id: string;
+  title: string | null;
+  status: string | null;
+  goals: GoalSummary[];
+}
+
+export interface PendingOrder {
+  id: string;
+  code: string | null;
+  category: string | null;
+  orderedOn: string | null;
+  priority: string;
+  status: string | null;
+  orderedBy: string | null;
+}
+
 export interface DataPoint {
   date: string;
   value: number;
@@ -116,8 +142,8 @@ export interface DashboardResponse {
   snapshot: SnapshotResponse;
   upcomingAppointment: Record<string, unknown> | null;
   recentEncounters: Record<string, unknown>[];
-  pendingServiceRequests: Record<string, unknown>[];
-  activeCarePlan: Record<string, unknown> | null;
+  pendingServiceRequests: PendingOrder[];
+  activeCarePlan: ActiveCarePlan | null;
   recentDiagnosticReport: Record<string, unknown> | null;
   warnings: string[];
 }

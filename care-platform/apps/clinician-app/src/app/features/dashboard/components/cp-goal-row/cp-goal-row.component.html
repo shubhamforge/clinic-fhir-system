@@ -1,0 +1,78 @@
+<div
+  class="goal-row"
+  [class.goal-row--expanded]="expanded()"
+  (click)="toggle.emit(goal().id)"
+>
+  <div class="goal-row__head">
+    <div class="goal-row__titles">
+      <div class="goal-row__desc">{{ goal().description }}</div>
+      <div class="goal-row__meta cp-font-mono">
+        @if (goal().progress.currentValue !== null) {
+          <span class="goal-row__current">{{
+            goal().progress.currentValue
+          }}</span>
+          <span class="goal-row__arrow">→</span>
+          <span class="goal-row__target"
+            >target {{ goal().progress.targetValue }}</span
+          >
+        }
+        @if (goal().progress.onTrack === true) {
+          <span class="goal-row__status goal-row__status--on-track"
+            >on track</span
+          >
+        } @else if (goal().progress.onTrack === false) {
+          <span class="goal-row__status goal-row__status--off-track"
+            >off track</span
+          >
+        }
+      </div>
+    </div>
+    <mat-icon class="goal-row__chevron">{{
+      expanded() ? 'expand_more' : 'chevron_right'
+    }}</mat-icon>
+  </div>
+
+  @if (percent() !== null) {
+    <div class="goal-row__bar-row">
+      <div class="goal-row__bar-wrap">
+        <div class="goal-row__bar" [style.width.%]="percent()"></div>
+      </div>
+      <span class="goal-row__pct cp-font-mono"
+        >{{ percent() | number: '1.0-0' }}%</span
+      >
+    </div>
+  }
+
+  @if (expanded()) {
+    <div class="goal-row__detail" (click)="$event.stopPropagation()">
+      <div class="goal-row__triple">
+        <div class="goal-row__stat">
+          <span class="goal-row__stat-lab">Baseline</span>
+          <span class="goal-row__stat-val cp-font-mono">{{
+            goal().progress.baselineValue ?? '—'
+          }}</span>
+        </div>
+        <div class="goal-row__stat">
+          <span class="goal-row__stat-lab">Current</span>
+          <span class="goal-row__stat-val cp-font-mono">{{
+            goal().progress.currentValue ?? '—'
+          }}</span>
+        </div>
+        <div class="goal-row__stat">
+          <span class="goal-row__stat-lab">Target</span>
+          <span class="goal-row__stat-val cp-font-mono">{{
+            goal().progress.targetValue ?? goal().targetValue ?? '—'
+          }}</span>
+        </div>
+      </div>
+      @if (goal().targetDate) {
+        <div class="goal-row__target-date cp-font-mono">
+          Target by {{ goal().targetDate | date: 'MMM d, y' }}
+        </div>
+      }
+      @if (goal().progress.message) {
+        <div class="goal-row__msg">{{ goal().progress.message }}</div>
+      }
+    </div>
+  }
+</div>

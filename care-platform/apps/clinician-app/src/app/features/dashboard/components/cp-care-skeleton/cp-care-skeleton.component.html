@@ -1,0 +1,53 @@
+<aside class="care-skeleton">
+  <div class="px-card">
+    <div
+      class="px-shimmer"
+      style="height: 11px; width: 80px; border-radius: 4px; margin-bottom: 10px"
+    ></div>
+    <div
+      class="px-shimmer"
+      style="
+        height: 14px;
+        width: 170px;
+        border-radius: 4px;
+        margin-bottom: 14px;
+      "
+    ></div>
+    @for (r of goalRows; track r) {
+      <div class="care-sk-goal px-shimmer"></div>
+    }
+  </div>
+
+  <div class="px-card">
+    <div
+      class="px-shimmer"
+      style="
+        height: 11px;
+        width: 110px;
+        border-radius: 4px;
+        margin-bottom: 12px;
+      "
+    ></div>
+    @for (r of orderRows; track r) {
+      <div class="care-sk-order px-shimmer"></div>
+    }
+  </div>
+
+  <div class="px-card">
+    <div
+      class="px-shimmer"
+      style="height: 11px; width: 60px; border-radius: 4px; margin-bottom: 10px"
+    ></div>
+    <div class="care-sk-period-row">
+      @for (r of chartRects; track r) {
+        <div
+          class="px-shimmer"
+          style="height: 20px; width: 34px; border-radius: 10px"
+        ></div>
+      }
+    </div>
+    @for (r of chartRects; track r) {
+      <div class="care-sk-chart px-shimmer"></div>
+    }
+  </div>
+</aside>

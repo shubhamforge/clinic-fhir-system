@@ -46,6 +46,12 @@
 .dashboard__resizer {
   border-left: 1px solid var(--px-border);
   cursor: col-resize;
+  transition: background 0.15s;
+
+  &:hover,
+  &.dragging {
+    background: color-mix(in oklch, var(--px-border), var(--px-accent) 30%);
+  }
 }
 
 @media (max-width: 1280px) {

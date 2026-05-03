@@ -1,0 +1,40 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.care-skeleton {
+  padding: 12px;
+  overflow-y: auto;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.care-sk-goal {
+  height: 44px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.care-sk-order {
+  height: 36px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.care-sk-period-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.care-sk-chart {
+  height: 80px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
