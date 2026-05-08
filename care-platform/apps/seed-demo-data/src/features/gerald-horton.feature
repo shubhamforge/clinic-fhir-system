@@ -1,8 +1,8 @@
 Feature: Seed Patient — Gerald Horton (sleep apnea, improving SpO2)
 
-  49-year-old male with moderate OSA and low SpO2 improving with CPAP therapy.
-  Demonstrates: SpO2 trending upward over 4 visits, sleep study lab order → report,
-  active OSA condition, CPAP device medication entry, SpO2 goal in progress.
+  49-year-old male with moderate OSA showing clear SpO₂ improvement arc on CPAP.
+  Demonstrates: critical SpO₂ alert (88% at initial visit), 5-encounter timeline,
+  improving trend (88% → 97%), off-track CPAP compliance goal, 1 pending SR.
 
   Background: Infrastructure provisioned
     Given practitioner "seed-default-practitioner" is provisioned
@@ -19,44 +19,67 @@ Feature: Seed Patient — Gerald Horton (sleep apnea, improving SpO2)
       | email       | gerald.horton@example.com |
 
     # Sleep study ordered at first visit
-    And a service request is placed with code "Polysomnography" category "procedure" authored 45 days ago
+    And a service request is placed with code "Polysomnography" category "procedure" authored 75 days ago
 
-    # 4 encounters showing SpO2 recovery from 93% → 97%
-    When an encounter is recorded 45 days ago with reason "Fatigue and shortness of breath" and status "finished"
+    # Encounter 1 — initial presentation, critical SpO₂ (88% < 90%)
+    When an encounter is recorded 75 days ago with reason "Fatigue, snoring and shortness of breath — initial evaluation" and status "finished"
     And vitals are recorded for that encounter:
-      | systolicBp  | 144 |
-      | diastolicBp | 92  |
-      | weightKg    | 118 |
-      | spo2Percent | 93  |
+      | systolicBp   | 148 |
+      | diastolicBp  | 96  |
+      | weightKg     | 98  |
+      | spo2Percent  | 88  |
+      | heartRateBpm | 84  |
 
-    # Sleep study report arrives 5 days after the study
-    And a diagnostic report is created from the last service request with title "Polysomnography — Sleep Study" issued 40 days ago
-    And the last diagnostic report conclusion is "AHI 22 events/hour. Moderate obstructive sleep apnea. CPAP therapy initiated at 8 cmH2O."
+    # Sleep study report — 10 days after study
+    And a diagnostic report is created from the last service request with title "Polysomnography — Sleep Study" issued 65 days ago
+    And the last diagnostic report conclusion is "AHI 28 events/hour. Moderate-severe obstructive sleep apnea. CPAP therapy initiated at 9 cmH2O. Oxygen supplementation considered."
 
-    When an encounter is recorded 30 days ago with reason "Sleep study result and CPAP initiation" and status "finished"
+    # Encounter 2 — early CPAP, SpO₂ warning (91%)
+    When an encounter is recorded 55 days ago with reason "Sleep study result and CPAP initiation" and status "finished"
     And vitals are recorded for that encounter:
-      | systolicBp  | 140 |
-      | diastolicBp | 90  |
-      | weightKg    | 117 |
-      | spo2Percent | 94  |
+      | systolicBp   | 146 |
+      | diastolicBp  | 94  |
+      | weightKg     | 97  |
+      | spo2Percent  | 91  |
+      | heartRateBpm | 82  |
 
-    When an encounter is recorded 15 days ago with reason "CPAP titration follow-up" and status "finished"
+    # Encounter 3 — early improvement
+    When an encounter is recorded 40 days ago with reason "CPAP titration — early response" and status "finished"
     And vitals are recorded for that encounter:
-      | systolicBp  | 136 |
-      | diastolicBp | 88  |
-      | weightKg    | 116 |
-      | spo2Percent | 96  |
+      | systolicBp   | 142 |
+      | diastolicBp  | 91  |
+      | weightKg     | 97  |
+      | spo2Percent  | 94  |
+      | heartRateBpm | 80  |
 
-    When an encounter is recorded 2 days ago with reason "Sleep quality improving — CPAP adherent" and status "finished"
+    # Encounter 4 — sustained improvement
+    When an encounter is recorded 25 days ago with reason "CPAP adherence check — sustained improvement" and status "finished"
     And vitals are recorded for that encounter:
-      | systolicBp  | 132 |
-      | diastolicBp | 85  |
-      | weightKg    | 115 |
-      | spo2Percent | 97  |
+      | systolicBp   | 138 |
+      | diastolicBp  | 89  |
+      | weightKg     | 96  |
+      | spo2Percent  | 96  |
+      | heartRateBpm | 78  |
+
+    # Encounter 5 — most recent, good control
+    When an encounter is recorded 5 days ago with reason "Sleep quality improved — CPAP adherent" and status "finished"
+    And vitals are recorded for that encounter:
+      | systolicBp   | 132 |
+      | diastolicBp  | 85  |
+      | weightKg     | 95  |
+      | spo2Percent  | 97  |
+      | heartRateBpm | 76  |
+
+    # Pending overnight oximetry — active, no report (demonstrates pending order)
+    And a service request is placed with code "Overnight Pulse Oximetry" category "procedure" authored 5 days ago
 
     # Clinical resources
     And a condition is recorded with code "78275009" display "Obstructive sleep apnea" status "active" onset 480 days ago
-    And a medication is recorded with name "CPAP therapy" status "active" dosage "Nightly CPAP at 8 cmH2O" started 40 days ago
+    And a medication is recorded with name "CPAP therapy" status "active" dosage "Nightly CPAP at 9 cmH2O" started 65 days ago
     And an appointment is scheduled 14 days from now with description "CPAP compliance and SpO2 review"
+
+    # Goal 1 — SpO₂ target on track (latest 97% > 95%)
     And a goal is created with description "Maintain SpO2 above 95% consistently" target LOINC "59408-5" value 95.0 unit "%" due 90 days from now
-    And a care plan is created with title "Sleep Apnea Management" addressing the last condition with the last goal
+    # Goal 2 — CPAP compliance, text-only goal (no observable LOINC measure)
+    And a goal is created with description "Consistent CPAP use 6 hours per night" due 60 days from now
+    And a care plan is created with title "Sleep Apnea Management" addressing the last condition with all goals

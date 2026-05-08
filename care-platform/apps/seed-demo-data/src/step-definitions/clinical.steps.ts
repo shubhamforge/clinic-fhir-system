@@ -33,6 +33,7 @@ When(
     };
     const result = await apiClient.createCondition(body);
     this.currentConditionId = result.id;
+    this.allConditionIds.push(result.id);
     this.log(`Created condition: ${result.id} (${display})`);
   },
 );
@@ -107,9 +108,36 @@ When(
   },
 );
 
+When(
+  'a service request is placed with code {string} category {string} priority {string} authored {int} days ago',
+  async function (
+    this: SeedWorld,
+    code: string,
+    category: string,
+    priority: string,
+    days: number,
+  ) {
+    if (!this.currentPatientId) throw new Error('No currentPatientId');
+    const body: CreateServiceRequestBody = {
+      patientId: this.currentPatientId,
+      encounterId: this.currentEncounterId ?? undefined,
+      practitionerId: 'seed-default-practitioner',
+      code,
+      category,
+      status: 'active',
+      priority,
+      authoredOn: daysAgo(days),
+    };
+    const result = await apiClient.createServiceRequest(body);
+    this.currentServiceRequestId = result.id;
+    this.log(
+      `Created service request: ${result.id} (${code}, priority=${priority})`,
+    );
+  },
+);
+
 // ── DiagnosticReport — two-phase creation (draft → conclusion → send) ────────
 
-// Phase 1: build the draft body and store it in world state
 When(
   'a diagnostic report is created from the last service request with title {string} issued {int} days ago',
   function (this: SeedWorld, title: string, days: number) {
@@ -126,7 +154,6 @@ When(
   },
 );
 
-// Phase 2: add conclusion and POST — must follow Phase 1
 When(
   'the last diagnostic report conclusion is {string}',
   async function (this: SeedWorld, conclusion: string) {
@@ -141,42 +168,6 @@ When(
     const result = await apiClient.createDiagnosticReport(body);
     this.pendingReportBody = null;
     this.log(`Created diagnostic report: ${result.id} (${body.title})`);
-  },
-);
-
-// ── CarePlan ─────────────────────────────────────────────────────────────────
-
-When(
-  'a care plan is created with title {string} addressing the last condition with the last goal',
-  async function (this: SeedWorld, title: string) {
-    if (!this.currentPatientId) throw new Error('No currentPatientId');
-    const body: CreateCarePlanBody = {
-      patientId: this.currentPatientId,
-      conditionIds: this.currentConditionId ? [this.currentConditionId] : [],
-      title,
-      status: 'active',
-      periodStart: daysAgo(0),
-      goalIds: this.currentGoalId ? [this.currentGoalId] : [],
-    };
-    const result = await apiClient.createCarePlan(body);
-    this.log(`Created care plan: ${result.id} (${title})`);
-  },
-);
-
-When(
-  'a completed care plan is created with title {string}',
-  async function (this: SeedWorld, title: string) {
-    if (!this.currentPatientId) throw new Error('No currentPatientId');
-    const body: CreateCarePlanBody = {
-      patientId: this.currentPatientId,
-      conditionIds: this.currentConditionId ? [this.currentConditionId] : [],
-      title,
-      status: 'completed',
-      periodStart: daysAgo(50),
-      goalIds: this.currentGoalId ? [this.currentGoalId] : [],
-    };
-    const result = await apiClient.createCarePlan(body);
-    this.log(`Created completed care plan: ${result.id} (${title})`);
   },
 );
 
@@ -205,6 +196,146 @@ When(
     };
     const result = await apiClient.createGoal(body);
     this.currentGoalId = result.id;
+    this.allGoalIds.push(result.id);
     this.log(`Created goal: ${result.id} (${description})`);
+  },
+);
+
+// Goal already met — status=completed, no future due date
+When(
+  'an achieved goal is created with description {string} target LOINC {string} value {float} unit {string}',
+  async function (
+    this: SeedWorld,
+    description: string,
+    loincCode: string,
+    targetValue: number,
+    targetUnit: string,
+  ) {
+    if (!this.currentPatientId) throw new Error('No currentPatientId');
+    const body: CreateGoalBody = {
+      patientId: this.currentPatientId,
+      description,
+      status: 'completed',
+      targetMeasureCode: loincCode,
+      targetMeasureDisplay: description,
+      targetValue,
+      targetUnit,
+      targetDate: daysAgo(0),
+    };
+    const result = await apiClient.createGoal(body);
+    this.currentGoalId = result.id;
+    this.allGoalIds.push(result.id);
+    this.log(`Created achieved goal: ${result.id} (${description})`);
+  },
+);
+
+// Text-only goal — no LOINC measure code, no computed progress bar
+When(
+  'a goal is created with description {string} due {int} days from now',
+  async function (this: SeedWorld, description: string, days: number) {
+    if (!this.currentPatientId) throw new Error('No currentPatientId');
+    const body: CreateGoalBody = {
+      patientId: this.currentPatientId,
+      description,
+      status: 'active',
+      targetDate: daysAhead(days),
+    };
+    const result = await apiClient.createGoal(body);
+    this.currentGoalId = result.id;
+    this.allGoalIds.push(result.id);
+    this.log(`Created text goal: ${result.id} (${description})`);
+  },
+);
+
+// ── CarePlan ─────────────────────────────────────────────────────────────────
+
+When(
+  'a care plan is created with title {string} addressing the last condition with the last goal',
+  async function (this: SeedWorld, title: string) {
+    if (!this.currentPatientId) throw new Error('No currentPatientId');
+    const body: CreateCarePlanBody = {
+      patientId: this.currentPatientId,
+      conditionIds: this.currentConditionId ? [this.currentConditionId] : [],
+      title,
+      status: 'active',
+      periodStart: daysAgo(0),
+      goalIds: this.currentGoalId ? [this.currentGoalId] : [],
+    };
+    const result = await apiClient.createCarePlan(body);
+    this.log(`Created care plan: ${result.id} (${title})`);
+  },
+);
+
+When(
+  'a care plan is created with title {string} addressing the last condition with all goals',
+  async function (this: SeedWorld, title: string) {
+    if (!this.currentPatientId) throw new Error('No currentPatientId');
+    const body: CreateCarePlanBody = {
+      patientId: this.currentPatientId,
+      conditionIds: this.currentConditionId ? [this.currentConditionId] : [],
+      title,
+      status: 'active',
+      periodStart: daysAgo(0),
+      goalIds: [...this.allGoalIds],
+    };
+    const result = await apiClient.createCarePlan(body);
+    this.log(
+      `Created care plan: ${result.id} (${title}, ${this.allGoalIds.length} goals)`,
+    );
+  },
+);
+
+When(
+  'a care plan is created with title {string} addressing all conditions with all goals',
+  async function (this: SeedWorld, title: string) {
+    if (!this.currentPatientId) throw new Error('No currentPatientId');
+    const body: CreateCarePlanBody = {
+      patientId: this.currentPatientId,
+      conditionIds: [...this.allConditionIds],
+      title,
+      status: 'active',
+      periodStart: daysAgo(0),
+      goalIds: [...this.allGoalIds],
+    };
+    const result = await apiClient.createCarePlan(body);
+    this.log(
+      `Created care plan: ${result.id} (${title}, ${this.allConditionIds.length} conditions, ${this.allGoalIds.length} goals)`,
+    );
+  },
+);
+
+When(
+  'a completed care plan is created with title {string}',
+  async function (this: SeedWorld, title: string) {
+    if (!this.currentPatientId) throw new Error('No currentPatientId');
+    const body: CreateCarePlanBody = {
+      patientId: this.currentPatientId,
+      conditionIds: this.currentConditionId ? [this.currentConditionId] : [],
+      title,
+      status: 'completed',
+      periodStart: daysAgo(50),
+      goalIds: this.currentGoalId ? [this.currentGoalId] : [],
+    };
+    const result = await apiClient.createCarePlan(body);
+    this.log(`Created completed care plan: ${result.id} (${title})`);
+  },
+);
+
+When(
+  'a completed care plan is created with title {string} addressing all conditions with all goals',
+  async function (this: SeedWorld, title: string) {
+    if (!this.currentPatientId) throw new Error('No currentPatientId');
+    const body: CreateCarePlanBody = {
+      patientId: this.currentPatientId,
+      conditionIds: [...this.allConditionIds],
+      title,
+      status: 'completed',
+      periodStart: daysAgo(60),
+      goalIds: [...this.allGoalIds],
+    };
+    const result = await apiClient.createCarePlan(body);
+    this.log(
+      `Created completed care plan: ${result.id} (${title}, ${this.allGoalIds.length} goals)`,
+    );
   },
 );
