@@ -1,0 +1,242 @@
+{
+  "info": {
+    "name": "06 — Medication",
+    "description": "MedicationController — POST /api/medications, GET /api/medications?patientId.\n\nDependency: Patient (created in Setup). No practitioner needed.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "patientId",     "value": "" },
+    { "key": "medicationId",  "value": "" },
+    { "key": "medicationId2", "value": "" }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const token = pm.environment.get('BEARER_TOKEN');",
+          "if (token) {",
+          "  pm.request.headers.add({ key: 'Authorization', value: 'Bearer ' + token });",
+          "}"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Setup — Create Patient",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/patients",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "patients"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"firstName\": \"Test\",\n  \"lastName\": \"Medication\",\n  \"dateOfBirth\": \"1975-09-30\",\n  \"gender\": \"male\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('patientId', pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST Medication — Active",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/medications",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "medications"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"patientId\": \"{{patientId}}\",\n  \"medicationName\": \"Lisinopril 10mg\",\n  \"status\": \"active\",\n  \"dosageText\": \"Once daily\",\n  \"startDate\": \"2025-01-01\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "",
+              "const body = pm.response.json();",
+              "pm.test('resourceType is MedicationStatement', () => pm.expect(body.resourceType).to.eql('MedicationStatement'));",
+              "pm.test('Has id', () => pm.expect(body.id).to.be.a('string').and.not.empty);",
+              "pm.test('Status is active', () => pm.expect(body.status).to.eql('active'));",
+              "pm.test('Subject references patient', () => {",
+              "  pm.expect(body.subject.reference).to.include(pm.collectionVariables.get('patientId'));",
+              "});",
+              "pm.collectionVariables.set('medicationId', body.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST Medication — Stopped",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/medications",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "medications"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"patientId\": \"{{patientId}}\",\n  \"medicationName\": \"Ibuprofen 400mg\",\n  \"status\": \"stopped\",\n  \"dosageText\": \"Three times daily with food\",\n  \"startDate\": \"2025-06-01\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "",
+              "const body = pm.response.json();",
+              "pm.test('Status is stopped', () => pm.expect(body.status).to.eql('stopped'));",
+              "pm.collectionVariables.set('medicationId2', body.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "LIST Medications for Patient",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/medications?patientId={{patientId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "medications"],
+          "query": [{ "key": "patientId", "value": "{{patientId}}" }]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "",
+              "const body = pm.response.json();",
+              "pm.test('resourceType is Bundle', () => pm.expect(body.resourceType).to.eql('Bundle'));",
+              "pm.test('Two medications returned', () => pm.expect(body.entry.length).to.eql(2));",
+              "",
+              "const statuses = body.entry.map(e => e.resource.status);",
+              "pm.test('Has active and stopped medications', () => {",
+              "  pm.expect(statuses).to.include('active');",
+              "  pm.expect(statuses).to.include('stopped');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Error — POST Medication Missing medicationName",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/medications",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "medications"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"patientId\": \"{{patientId}}\",\n  \"status\": \"active\",\n  \"startDate\": \"2025-01-01\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 400', () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Teardown — Cascade Delete Patient",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const pid = pm.collectionVariables.get('patientId');",
+              "if (!pid) throw new Error('patientId is empty — teardown aborted');"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Patient deleted', () => pm.expect(pm.response.code).to.be.oneOf([200, 204]));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "{{fhirUrl}}/Patient/{{patientId}}?_cascade=delete",
+          "host": ["{{fhirUrl}}"],
+          "path": ["Patient", "{{patientId}}"],
+          "query": [{ "key": "_cascade", "value": "delete" }]
+        }
+      }
+    },
+    {
+      "name": "Teardown — Verify Patient Deleted",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/patients/{{patientId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "patients", "{{patientId}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Patient gone (404 or 410)', () => pm.expect(pm.response.code).to.be.oneOf([404, 410]));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

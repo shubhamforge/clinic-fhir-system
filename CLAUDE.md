@@ -144,6 +144,44 @@ npx nx run seed-demo-data:seed              # idempotent Cucumber seed — 5 rea
 
 ---
 
+## Git Commit Conventions
+
+Always use **Conventional Commits**. No exceptions.
+
+**Format:** `<type>(scope): <short summary>`
+**Types:** `feat`, `fix`, `refactor`, `chore`, `docs`, `test`
+
+1. **First line** — 50–72 chars max, describes WHAT changed (not how):
+   - `feat(vitals): add HR and temperature to LatestVitals`
+   - Never: `update stuff`, `fix things`, `changes`
+
+2. **Body** — only when necessary; explain WHY (the diff shows what):
+   - Use bullet points for multiple changes
+   - Include context, decisions, trade-offs — no unstructured paragraphs
+
+3. **Before writing a message:**
+   - Analyze all changed files and group logically related modifications
+   - If changes are unrelated, **split into multiple commits** — prefer small focused commits
+
+4. **For UI / demo data commits**, explicitly mention:
+   - Alignment with design spec or UX behaviour
+   - Fixes for missing states (icons, empty states, flagged vitals)
+   - Demo patient purpose (e.g. "covers critical alert UI state")
+
+5. **Never add** `Co-Authored-By:` lines.
+
+```
+feat(vitals): add latest vitals card support
+
+* Introduced LatestVitalsDTO for dashboard
+* Fixed HR and BMI icon rendering
+* Updated demo data to cover all UI states
+
+Reason: Aligns implementation with design and improves test coverage
+```
+
+---
+
 ## Backend Conventions (Java / Spring Boot)
 
 - **DTOs** are Java `record` types. Use `@NotBlank`, `@NotNull` from `jakarta.validation`. Annotate controller params with `@Valid`.

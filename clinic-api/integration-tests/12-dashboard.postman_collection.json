@@ -1,0 +1,613 @@
+{
+  "info": {
+    "name": "12 — Dashboard",
+    "description": "DashboardController — GET /api/dashboard/{patientId}.\n\nThe dashboard aggregates 10+ FHIR resource types in one response. This collection creates a complete patient record (Practitioner, Patient, 3 Encounters, Vitals, Condition, Medication, ServiceRequest, Goal, CarePlan, Appointment) before testing the endpoint.\n\nLatest vitals: systolic 141 (above 140 warn threshold) → verifies that snapshot.alerts contains a warning and latestVitals.systolicBp.flagged is true.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "practitionerId",   "value": "" },
+    { "key": "patientId",        "value": "" },
+    { "key": "encounterId1",     "value": "" },
+    { "key": "encounterId2",     "value": "" },
+    { "key": "encounterId3",     "value": "" },
+    { "key": "serviceRequestId", "value": "" },
+    { "key": "conditionId",      "value": "" },
+    { "key": "goalId",           "value": "" }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const token = pm.environment.get('BEARER_TOKEN');",
+          "if (token) {",
+          "  pm.request.headers.add({ key: 'Authorization', value: 'Bearer ' + token });",
+          "}"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Setup — Create Practitioner",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/practitioners",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "practitioners"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"firstName\": \"Test\",\n  \"lastName\": \"Practitioner\",\n  \"specialty\": \"Internal Medicine\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('practitionerId', pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Setup — Create Patient",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/patients",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "patients"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"firstName\": \"Test\",\n  \"lastName\": \"Dashboard\",\n  \"dateOfBirth\": \"1965-03-12\",\n  \"gender\": \"male\",\n  \"phone\": \"5550001111\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('patientId', pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Setup — Create Encounter 1 (60 days ago)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/encounters",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "encounters"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"patientId\": \"{{patientId}}\",\n  \"visitDate\": \"2026-03-10\",\n  \"reason\": \"Initial evaluation\",\n  \"status\": \"finished\",\n  \"practitionerId\": \"{{practitionerId}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('encounterId1', pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Setup — Record Vitals 1 (systolic 165 — flagged)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/vitals",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "vitals"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"patientId\": \"{{patientId}}\",\n  \"encounterId\": \"{{encounterId1}}\",\n  \"effectiveDate\": \"2026-03-10\",\n  \"systolicBp\": 165,\n  \"diastolicBp\": 102,\n  \"weightKg\": 92,\n  \"spo2Percent\": 96,\n  \"heartRateBpm\": 84\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Setup — Create Encounter 2 (14 days ago)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/encounters",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "encounters"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"patientId\": \"{{patientId}}\",\n  \"visitDate\": \"2026-04-25\",\n  \"reason\": \"Medication follow-up\",\n  \"status\": \"finished\",\n  \"practitionerId\": \"{{practitionerId}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('encounterId2', pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Setup — Record Vitals 2",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/vitals",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "vitals"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"patientId\": \"{{patientId}}\",\n  \"encounterId\": \"{{encounterId2}}\",\n  \"effectiveDate\": \"2026-04-25\",\n  \"systolicBp\": 148,\n  \"diastolicBp\": 92,\n  \"weightKg\": 91,\n  \"spo2Percent\": 97,\n  \"heartRateBpm\": 78\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Setup — Create Encounter 3 (3 days ago — drives snapshot alerts)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/encounters",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "encounters"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"patientId\": \"{{patientId}}\",\n  \"visitDate\": \"2026-05-06\",\n  \"reason\": \"BP check\",\n  \"status\": \"finished\",\n  \"practitionerId\": \"{{practitionerId}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('encounterId3', pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Setup — Record Vitals 3 (systolic 141 > warn threshold → alert)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/vitals",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "vitals"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"patientId\": \"{{patientId}}\",\n  \"encounterId\": \"{{encounterId3}}\",\n  \"effectiveDate\": \"2026-05-06\",\n  \"systolicBp\": 141,\n  \"diastolicBp\": 89,\n  \"weightKg\": 90,\n  \"spo2Percent\": 97,\n  \"heartRateBpm\": 74,\n  \"temperatureCelsius\": 36.7\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Setup — Create Condition",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/conditions",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "conditions"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"patientId\": \"{{patientId}}\",\n  \"code\": \"59621000\",\n  \"display\": \"Essential hypertension\",\n  \"clinicalStatus\": \"active\",\n  \"onsetDate\": \"2024-01-15\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('conditionId', pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Setup — Create Medication",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/medications",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "medications"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"patientId\": \"{{patientId}}\",\n  \"medicationName\": \"Lisinopril 10mg\",\n  \"status\": \"active\",\n  \"dosageText\": \"Once daily\",\n  \"startDate\": \"2025-01-01\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Setup — Create Service Request (pending — stays active)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/service-requests",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "service-requests"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"patientId\": \"{{patientId}}\",\n  \"encounterId\": \"{{encounterId3}}\",\n  \"code\": \"Lipid Panel\",\n  \"category\": \"laboratory\",\n  \"status\": \"active\",\n  \"priority\": \"routine\",\n  \"authoredOn\": \"2026-05-06\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('serviceRequestId', pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Setup — Create Goal",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/goals",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "goals"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"patientId\": \"{{patientId}}\",\n  \"description\": \"Reduce systolic BP below 130\",\n  \"status\": \"active\",\n  \"targetMeasureCode\": \"8480-6\",\n  \"targetMeasureDisplay\": \"Systolic BP\",\n  \"targetValue\": 130.0,\n  \"targetUnit\": \"mm[Hg]\",\n  \"targetDate\": \"2026-09-01\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('goalId', pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Setup — Create Care Plan",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/care-plans",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "care-plans"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"patientId\": \"{{patientId}}\",\n  \"conditionIds\": [\"{{conditionId}}\"],\n  \"title\": \"Hypertension Management\",\n  \"status\": \"active\",\n  \"periodStart\": \"2026-01-01\",\n  \"goalIds\": [\"{{goalId}}\"]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Setup — Create Appointment (future)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/appointments",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "appointments"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"patientId\": \"{{patientId}}\",\n  \"practitionerId\": \"{{practitionerId}}\",\n  \"start\": \"2026-06-08T09:00:00\",\n  \"end\": \"2026-06-08T09:30:00\",\n  \"description\": \"3-month review\",\n  \"status\": \"booked\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET Dashboard — Full Response",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/dashboard/{{patientId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "dashboard", "{{patientId}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "",
+              "const body = pm.response.json();",
+              "",
+              "// Patient identity",
+              "pm.test('patient.id matches', () => pm.expect(body.patient.id).to.eql(pm.collectionVariables.get('patientId')));",
+              "pm.test('careTeam is present', () => pm.expect(body.careTeam).to.be.an('object'));",
+              "",
+              "// Snapshot — latest vitals (from enc 3, systolic 141)",
+              "pm.test('latestVitals.systolicBp.value is 141', () => {",
+              "  pm.expect(body.snapshot.latestVitals.systolicBp.value).to.eql(141);",
+              "});",
+              "pm.test('latestVitals.systolicBp.flagged is true (141 > 140 warn)', () => {",
+              "  pm.expect(body.snapshot.latestVitals.systolicBp.flagged).to.be.true;",
+              "});",
+              "pm.test('latestVitals.heartRate is present (seeded at enc 3)', () => {",
+              "  pm.expect(body.snapshot.latestVitals.heartRate.value).to.eql(74);",
+              "});",
+              "pm.test('latestVitals.temperature is present (seeded at enc 3)', () => {",
+              "  pm.expect(body.snapshot.latestVitals.temperature.value).to.eql(36.7);",
+              "});",
+              "",
+              "// Alerts — systolic 141 triggers warning",
+              "pm.test('alerts is array with at least 1 warning', () => {",
+              "  pm.expect(body.snapshot.alerts).to.be.an('array');",
+              "  pm.expect(body.snapshot.alerts.length).to.be.at.least(1);",
+              "  const sevs = body.snapshot.alerts.map(a => a.severity);",
+              "  pm.expect(sevs).to.include('warning');",
+              "});",
+              "",
+              "// Snapshot — conditions and medications",
+              "pm.test('activeConditions has at least 1 entry', () => pm.expect(body.snapshot.activeConditions.length).to.be.at.least(1));",
+              "pm.test('currentMedications has 1 entry', () => pm.expect(body.snapshot.currentMedications.length).to.eql(1));",
+              "",
+              "// Care plan",
+              "pm.test('activeCarePlan is non-null', () => pm.expect(body.activeCarePlan).to.not.be.null);",
+              "pm.test('activeCarePlan.title matches', () => pm.expect(body.activeCarePlan.title).to.eql('Hypertension Management'));",
+              "pm.test('activeCarePlan has 1 goal with progress', () => {",
+              "  pm.expect(body.activeCarePlan.goals).to.be.an('array').with.lengthOf(1);",
+              "  pm.expect(body.activeCarePlan.goals[0].progress).to.be.an('object');",
+              "});",
+              "",
+              "// Pending orders",
+              "pm.test('pendingServiceRequests has 1 entry (Lipid Panel)', () => {",
+              "  pm.expect(body.pendingServiceRequests).to.be.an('array').with.lengthOf(1);",
+              "  pm.expect(body.pendingServiceRequests[0].priority).to.eql('routine');",
+              "});",
+              "",
+              "// Upcoming appointment",
+              "pm.test('upcomingAppointment is non-null', () => pm.expect(body.upcomingAppointment).to.not.be.null);",
+              "",
+              "// warnings (partial-failure safe)",
+              "pm.test('warnings is array', () => pm.expect(body.warnings).to.be.an('array'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Error — GET Dashboard Patient Not Found",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/dashboard/nonexistent-patient-99999",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "dashboard", "nonexistent-patient-99999"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 404', () => pm.response.to.have.status(404));",
+              "",
+              "const body = pm.response.json();",
+              "pm.test('Error shape: status + message (not FHIR OperationOutcome)', () => {",
+              "  pm.expect(body.status).to.eql(404);",
+              "  pm.expect(body.message).to.be.a('string').and.not.empty;",
+              "  pm.expect(body).to.not.have.property('resourceType');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Teardown — Cascade Delete Patient",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const pid = pm.collectionVariables.get('patientId');",
+              "if (!pid) throw new Error('patientId is empty — teardown aborted');"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Patient deleted', () => pm.expect(pm.response.code).to.be.oneOf([200, 204]));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "{{fhirUrl}}/Patient/{{patientId}}?_cascade=delete",
+          "host": ["{{fhirUrl}}"],
+          "path": ["Patient", "{{patientId}}"],
+          "query": [{ "key": "_cascade", "value": "delete" }]
+        }
+      }
+    },
+    {
+      "name": "Teardown — Verify Patient Deleted",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/patients/{{patientId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "patients", "{{patientId}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Patient gone (404 or 410)', () => pm.expect(pm.response.code).to.be.oneOf([404, 410]));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Teardown — Delete Practitioner",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Practitioner deleted', () => pm.expect(pm.response.code).to.be.oneOf([200, 204]));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "{{fhirUrl}}/Practitioner/{{practitionerId}}",
+          "host": ["{{fhirUrl}}"],
+          "path": ["Practitioner", "{{practitionerId}}"]
+        }
+      }
+    }
+  ]
+}

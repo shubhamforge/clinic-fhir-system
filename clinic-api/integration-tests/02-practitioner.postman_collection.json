@@ -1,0 +1,183 @@
+{
+  "info": {
+    "name": "02 — Practitioner",
+    "description": "PractitionerController — POST /api/practitioners, GET /api/practitioners/{id}.\n\nCreates and destroys its own practitioner. No patient dependency.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "practitionerId", "value": "" }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const token = pm.environment.get('BEARER_TOKEN');",
+          "if (token) {",
+          "  pm.request.headers.add({ key: 'Authorization', value: 'Bearer ' + token });",
+          "}"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "POST Practitioner",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/practitioners",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "practitioners"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"firstName\": \"Test\",\n  \"lastName\": \"Practitioner\",\n  \"specialty\": \"Internal Medicine\",\n  \"npi\": \"1234567890\",\n  \"email\": \"test.practitioner@clinic.test\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "",
+              "const body = pm.response.json();",
+              "pm.test('resourceType is Practitioner', () => pm.expect(body.resourceType).to.eql('Practitioner'));",
+              "pm.test('Has id', () => pm.expect(body.id).to.be.a('string').and.not.empty);",
+              "pm.test('Name matches', () => {",
+              "  pm.expect(body.name[0].family).to.eql('Practitioner');",
+              "  pm.expect(body.name[0].given[0]).to.eql('Test');",
+              "});",
+              "pm.collectionVariables.set('practitionerId', body.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET Practitioner by ID",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/practitioners/{{practitionerId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "practitioners", "{{practitionerId}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "",
+              "const body = pm.response.json();",
+              "pm.test('resourceType is Practitioner', () => pm.expect(body.resourceType).to.eql('Practitioner'));",
+              "pm.test('ID matches', () => pm.expect(body.id).to.eql(pm.collectionVariables.get('practitionerId')));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Error — POST Practitioner Missing firstName",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/practitioners",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "practitioners"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"lastName\": \"Smith\",\n  \"specialty\": \"Cardiology\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 400', () => pm.response.to.have.status(400));",
+              "",
+              "const body = pm.response.json();",
+              "pm.test('Error shape: status + message', () => {",
+              "  pm.expect(body.status).to.eql(400);",
+              "  pm.expect(body.message).to.be.a('string').and.not.empty;",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Error — GET Practitioner Not Found",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/practitioners/nonexistent-practitioner-99999",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "practitioners", "nonexistent-practitioner-99999"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 404', () => pm.response.to.have.status(404));",
+              "",
+              "const body = pm.response.json();",
+              "pm.test('Error shape: status + message', () => {",
+              "  pm.expect(body.status).to.eql(404);",
+              "  pm.expect(body.message).to.be.a('string').and.not.empty;",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Teardown — Delete Practitioner",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const pid = pm.collectionVariables.get('practitionerId');",
+              "if (!pid) throw new Error('practitionerId is empty — teardown aborted');"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Practitioner deleted', () => pm.expect(pm.response.code).to.be.oneOf([200, 204]));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "{{fhirUrl}}/Practitioner/{{practitionerId}}",
+          "host": ["{{fhirUrl}}"],
+          "path": ["Practitioner", "{{practitionerId}}"]
+        }
+      }
+    }
+  ]
+}

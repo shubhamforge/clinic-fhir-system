@@ -1,0 +1,396 @@
+{
+  "info": {
+    "name": "08 — Service Request",
+    "description": "ServiceRequestController — POST /api/service-requests, GET /api/service-requests/{id}, GET /api/service-requests?patientId (with optional status filter).\n\nDependencies: Practitioner + Patient + Encounter. Tests routine and urgent priority orders.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "practitionerId",    "value": "" },
+    { "key": "patientId",         "value": "" },
+    { "key": "encounterId",       "value": "" },
+    { "key": "serviceRequestId",  "value": "" },
+    { "key": "serviceRequestId2", "value": "" }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const token = pm.environment.get('BEARER_TOKEN');",
+          "if (token) {",
+          "  pm.request.headers.add({ key: 'Authorization', value: 'Bearer ' + token });",
+          "}"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Setup — Create Practitioner",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/practitioners",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "practitioners"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"firstName\": \"Test\",\n  \"lastName\": \"Practitioner\",\n  \"specialty\": \"General Practice\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('practitionerId', pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Setup — Create Patient",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/patients",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "patients"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"firstName\": \"Test\",\n  \"lastName\": \"ServiceReq\",\n  \"dateOfBirth\": \"1958-09-30\",\n  \"gender\": \"male\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('patientId', pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Setup — Create Encounter",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/encounters",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "encounters"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"patientId\": \"{{patientId}}\",\n  \"visitDate\": \"2026-04-10\",\n  \"reason\": \"Lab order visit\",\n  \"status\": \"finished\",\n  \"practitionerId\": \"{{practitionerId}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('encounterId', pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST Service Request — Active Routine",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/service-requests",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "service-requests"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"patientId\": \"{{patientId}}\",\n  \"encounterId\": \"{{encounterId}}\",\n  \"practitionerId\": \"{{practitionerId}}\",\n  \"code\": \"Lipid Panel\",\n  \"category\": \"laboratory\",\n  \"status\": \"active\",\n  \"priority\": \"routine\",\n  \"authoredOn\": \"2026-04-10\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "",
+              "const body = pm.response.json();",
+              "pm.test('resourceType is ServiceRequest', () => pm.expect(body.resourceType).to.eql('ServiceRequest'));",
+              "pm.test('Has id', () => pm.expect(body.id).to.be.a('string').and.not.empty);",
+              "pm.test('Status is active', () => pm.expect(body.status).to.eql('active'));",
+              "pm.test('Priority is routine', () => pm.expect(body.priority).to.eql('routine'));",
+              "pm.test('Subject references patient', () => {",
+              "  pm.expect(body.subject.reference).to.include(pm.collectionVariables.get('patientId'));",
+              "});",
+              "pm.collectionVariables.set('serviceRequestId', body.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST Service Request — Active Urgent",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/service-requests",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "service-requests"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"patientId\": \"{{patientId}}\",\n  \"code\": \"Echocardiogram\",\n  \"category\": \"imaging\",\n  \"status\": \"active\",\n  \"priority\": \"urgent\",\n  \"authoredOn\": \"2026-04-10\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "",
+              "const body = pm.response.json();",
+              "pm.test('Priority is urgent', () => pm.expect(body.priority).to.eql('urgent'));",
+              "pm.collectionVariables.set('serviceRequestId2', body.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET Service Request by ID",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/service-requests/{{serviceRequestId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "service-requests", "{{serviceRequestId}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "",
+              "const body = pm.response.json();",
+              "pm.test('ID matches', () => pm.expect(body.id).to.eql(pm.collectionVariables.get('serviceRequestId')));",
+              "pm.test('Priority is routine', () => pm.expect(body.priority).to.eql('routine'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "LIST Service Requests for Patient — All",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/service-requests?patientId={{patientId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "service-requests"],
+          "query": [{ "key": "patientId", "value": "{{patientId}}" }]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('Two SRs returned', () => pm.expect(pm.response.json().entry.length).to.eql(2));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "LIST Service Requests — Status Filter (active)",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/service-requests?patientId={{patientId}}&status=active",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "service-requests"],
+          "query": [
+            { "key": "patientId", "value": "{{patientId}}" },
+            { "key": "status",    "value": "active" }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "",
+              "pm.test('All returned SRs have status active', () => {",
+              "  pm.response.json().entry.forEach(e => {",
+              "    pm.expect(e.resource.status).to.eql('active');",
+              "  });",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Error — POST Service Request Missing code",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/service-requests",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "service-requests"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"patientId\": \"{{patientId}}\",\n  \"category\": \"laboratory\",\n  \"status\": \"active\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 400', () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Error — GET Service Request Not Found",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/service-requests/nonexistent-sr-99999",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "service-requests", "nonexistent-sr-99999"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 404', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Teardown — Cascade Delete Patient",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const pid = pm.collectionVariables.get('patientId');",
+              "if (!pid) throw new Error('patientId is empty — teardown aborted');"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Patient deleted', () => pm.expect(pm.response.code).to.be.oneOf([200, 204]));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "{{fhirUrl}}/Patient/{{patientId}}?_cascade=delete",
+          "host": ["{{fhirUrl}}"],
+          "path": ["Patient", "{{patientId}}"],
+          "query": [{ "key": "_cascade", "value": "delete" }]
+        }
+      }
+    },
+    {
+      "name": "Teardown — Verify Patient Deleted",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/patients/{{patientId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "patients", "{{patientId}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Patient gone (404 or 410)', () => pm.expect(pm.response.code).to.be.oneOf([404, 410]));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Teardown — Delete Practitioner",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Practitioner deleted', () => pm.expect(pm.response.code).to.be.oneOf([200, 204]));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "{{fhirUrl}}/Practitioner/{{practitionerId}}",
+          "host": ["{{fhirUrl}}"],
+          "path": ["Practitioner", "{{practitionerId}}"]
+        }
+      }
+    }
+  ]
+}

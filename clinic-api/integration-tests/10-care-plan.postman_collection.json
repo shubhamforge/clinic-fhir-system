@@ -1,0 +1,305 @@
+{
+  "info": {
+    "name": "10 — Care Plan",
+    "description": "CarePlanController — POST /api/care-plans, GET /api/care-plans?patientId.\n\nDependencies: Patient + Condition + Goal (both created in Setup so care plan can reference real IDs). No practitioner needed.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "patientId",   "value": "" },
+    { "key": "conditionId", "value": "" },
+    { "key": "goalId",      "value": "" },
+    { "key": "carePlanId",  "value": "" },
+    { "key": "carePlanId2", "value": "" }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const token = pm.environment.get('BEARER_TOKEN');",
+          "if (token) {",
+          "  pm.request.headers.add({ key: 'Authorization', value: 'Bearer ' + token });",
+          "}"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Setup — Create Patient",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/patients",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "patients"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"firstName\": \"Test\",\n  \"lastName\": \"CarePlan\",\n  \"dateOfBirth\": \"1965-03-12\",\n  \"gender\": \"male\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('patientId', pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Setup — Create Condition",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/conditions",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "conditions"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"patientId\": \"{{patientId}}\",\n  \"code\": \"59621000\",\n  \"display\": \"Essential hypertension\",\n  \"clinicalStatus\": \"active\",\n  \"onsetDate\": \"2024-01-15\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('conditionId', pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Setup — Create Goal",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/goals",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "goals"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"patientId\": \"{{patientId}}\",\n  \"description\": \"Reduce systolic BP below 130\",\n  \"status\": \"active\",\n  \"targetMeasureCode\": \"8480-6\",\n  \"targetMeasureDisplay\": \"Systolic BP\",\n  \"targetValue\": 130.0,\n  \"targetUnit\": \"mm[Hg]\",\n  \"targetDate\": \"2026-09-01\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('goalId', pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST Care Plan — Active",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/care-plans",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "care-plans"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"patientId\": \"{{patientId}}\",\n  \"conditionIds\": [\"{{conditionId}}\"],\n  \"title\": \"Hypertension Management\",\n  \"status\": \"active\",\n  \"periodStart\": \"2026-01-01\",\n  \"goalIds\": [\"{{goalId}}\"]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "",
+              "const body = pm.response.json();",
+              "pm.test('resourceType is CarePlan', () => pm.expect(body.resourceType).to.eql('CarePlan'));",
+              "pm.test('Status is active', () => pm.expect(body.status).to.eql('active'));",
+              "pm.test('Title matches', () => pm.expect(body.title).to.eql('Hypertension Management'));",
+              "pm.test('Addresses condition', () => {",
+              "  pm.expect(body.addresses[0].reference).to.include(pm.collectionVariables.get('conditionId'));",
+              "});",
+              "pm.test('References goal', () => {",
+              "  pm.expect(body.goal[0].reference).to.include(pm.collectionVariables.get('goalId'));",
+              "});",
+              "pm.collectionVariables.set('carePlanId', body.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST Care Plan — Completed",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/care-plans",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "care-plans"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"patientId\": \"{{patientId}}\",\n  \"conditionIds\": [],\n  \"title\": \"Post-Surgical Recovery\",\n  \"status\": \"completed\",\n  \"periodStart\": \"2025-10-01\",\n  \"goalIds\": []\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "",
+              "const body = pm.response.json();",
+              "pm.test('Status is completed', () => pm.expect(body.status).to.eql('completed'));",
+              "pm.collectionVariables.set('carePlanId2', body.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "LIST Care Plans for Patient",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/care-plans?patientId={{patientId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "care-plans"],
+          "query": [{ "key": "patientId", "value": "{{patientId}}" }]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "",
+              "const body = pm.response.json();",
+              "pm.test('resourceType is Bundle', () => pm.expect(body.resourceType).to.eql('Bundle'));",
+              "pm.test('Two care plans returned', () => pm.expect(body.entry.length).to.eql(2));",
+              "",
+              "const statuses = body.entry.map(e => e.resource.status);",
+              "pm.test('Has active and completed care plans', () => {",
+              "  pm.expect(statuses).to.include('active');",
+              "  pm.expect(statuses).to.include('completed');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Error — POST Care Plan Missing title",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/care-plans",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "care-plans"]
+        },
+        "body": {
+          "mode": "raw",
+          "options": { "raw": { "language": "json" } },
+          "raw": "{\n  \"patientId\": \"{{patientId}}\",\n  \"status\": \"active\",\n  \"periodStart\": \"2026-01-01\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 400', () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Teardown — Cascade Delete Patient",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const pid = pm.collectionVariables.get('patientId');",
+              "if (!pid) throw new Error('patientId is empty — teardown aborted');"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Patient deleted', () => pm.expect(pm.response.code).to.be.oneOf([200, 204]));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "{{fhirUrl}}/Patient/{{patientId}}?_cascade=delete",
+          "host": ["{{fhirUrl}}"],
+          "path": ["Patient", "{{patientId}}"],
+          "query": [{ "key": "_cascade", "value": "delete" }]
+        }
+      }
+    },
+    {
+      "name": "Teardown — Verify Patient Deleted",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/patients/{{patientId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "patients", "{{patientId}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Patient gone (404 or 410)', () => pm.expect(pm.response.code).to.be.oneOf([404, 410]));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
