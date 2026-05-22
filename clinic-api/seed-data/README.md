@@ -16,8 +16,8 @@ seed-data/
 ## Prerequisites
 
 - Java 11+ (required to run Synthea)
-- `curl` (built into Windows 10+ and all Unix systems)
-- `bash` (Git Bash or WSL on Windows — required for `load.sh`)
+- `curl`
+- `bash`
 
 ## Generating data with Synthea
 
@@ -40,20 +40,8 @@ java -jar synthea-with-dependencies.jar -p 10 --exporter.fhir.export=true --expo
 
 Run from the project root:
 
-**Bash (Git Bash / macOS / Linux):**
 ```bash
 cp clinic-api/seed-data/synthea-output/fhir/*.json clinic-api/seed-data/patients/ && rm -rf clinic-api/seed-data/synthea-output
-```
-
-**Windows CMD:**
-```cmd
-xcopy /y clinic-api\seed-data\synthea-output\fhir\*.json clinic-api\seed-data\patients\ && rmdir /s /q clinic-api\seed-data\synthea-output
-```
-
-**Windows PowerShell:**
-```powershell
-Copy-Item clinic-api\seed-data\synthea-output\fhir\*.json clinic-api\seed-data\patients\
-Remove-Item -Recurse -Force clinic-api\seed-data\synthea-output
 ```
 
 The `synthea-output/` folder is deleted once the copy succeeds. If the copy fails the folder is left intact.
@@ -71,31 +59,14 @@ curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/fhir/metadata
 
 Then run the loader from the project root.
 
-**Bash (Git Bash / macOS / Linux):**
 ```bash
 bash clinic-api/seed-data/load.sh
 ```
 
-**Windows CMD (requires Git Bash or WSL in PATH):**
-```cmd
-bash clinic-api\seed-data\load.sh
-```
-
 To target a different FHIR server:
 
-**Bash:**
 ```bash
 FHIR_URL=http://other-host:8080/fhir bash clinic-api/seed-data/load.sh
-```
-
-**Windows CMD:**
-```cmd
-set FHIR_URL=http://other-host:8080/fhir && bash clinic-api\seed-data\load.sh
-```
-
-**Windows PowerShell:**
-```powershell
-$env:FHIR_URL = "http://other-host:8080/fhir"; bash clinic-api\seed-data\load.sh
 ```
 
 ## Notes

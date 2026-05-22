@@ -108,11 +108,7 @@ docker compose -f infra/docker-compose.yml ps
 
 **2. Backend**
 ```bash
-# Bash (Git Bash / macOS / Linux)
 cd clinic-api && ./mvnw spring-boot:run
-
-# Windows CMD / PowerShell
-cd clinic-api && mvnw.cmd spring-boot:run
 ```
 
 **3. Frontend**
@@ -138,8 +134,7 @@ To format manually:
 
 ```bash
 # Java (Google style via Spotless)
-cd clinic-api && ./mvnw spotless:apply      # Bash
-cd clinic-api && mvnw.cmd spotless:apply    # Windows
+cd clinic-api && ./mvnw spotless:apply
 
 # Angular (Prettier — run from care-platform/)
 npx nx run clinician-app:lint --fix

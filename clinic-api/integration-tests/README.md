@@ -44,17 +44,15 @@ Seed data is **not required** — every collection creates and destroys its own 
 
 ## Running via Newman
 
-```powershell
-# Install Newman (once)
+```bash
 # Run a single collection
-npx newman run 05-condition.postman_collection.json `
+npx newman run 05-condition.postman_collection.json \
   -e clinic-local.postman_environment.json
 
-# Run all collections in order (PowerShell)
-Get-ChildItem *.postman_collection.json | Sort-Object Name | ForEach-Object {
-  npx newman run $_.Name -e clinic-local.postman_environment.json
-  if ($LASTEXITCODE -ne 0) { throw "Failed: $($_.Name)" }
-}
+# Run all collections in order
+for f in $(ls *.postman_collection.json | sort); do
+  npx newman run "$f" -e clinic-local.postman_environment.json || { echo "Failed: $f"; exit 1; }
+done
 ```
 
 ## Status Codes

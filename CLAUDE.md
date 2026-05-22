@@ -116,16 +116,11 @@ docker compose -f infra/docker-compose.yml down -v  # stop + wipe data
 
 ### clinic-api (run from clinic-api/)
 ```bash
-# Linux/Mac
 ./mvnw spring-boot:run
 ./mvnw clean package
 ./mvnw test
 ./mvnw spotless:apply   # format Java (Google style)
 ./mvnw spotless:check
-
-# Windows
-mvnw.cmd spring-boot:run
-mvnw.cmd spotless:apply
 ```
 
 ### care-platform (run from care-platform/)
@@ -144,41 +139,34 @@ npx nx run seed-demo-data:seed              # idempotent Cucumber seed — 5 rea
 
 ---
 
-## Git Commit Conventions
+## Commits
 
-Always use **Conventional Commits**. No exceptions.
+This is a personal project. Keep commits lightweight.
 
-**Format:** `<type>(scope): <short summary>`
-**Types:** `feat`, `fix`, `refactor`, `chore`, `docs`, `test`
+**Default to subject-only commits, imperative mood, with Conventional Commits prefix:**
+- `feat: add dark mode toggle`
+- `fix: off-by-one in pagination`
+- `refactor: auth into hook`
+- `chore: bump deps`
+- `wip: trying new layout`
 
-1. **First line** — 50–72 chars max, describes WHAT changed (not how):
-   - `feat(vitals): add HR and temperature to LatestVitals`
-   - Never: `update stuff`, `fix things`, `changes`
+**Rules:**
+- Commit when something works, or before trying something risky. Frequency over perfection.
+- Never commit secrets (`.env`, API keys, tokens). Check `.gitignore` first.
+- Never commit `node_modules/`, build output, `.DS_Store`, or other generated files.
+- Add a one-line body only if I'd forget *why* in a week. Otherwise skip it.
+- `wip:` prefix is fine for checkpoints.
 
-2. **Body** — only when necessary; explain WHY (the diff shows what):
-   - Use bullet points for multiple changes
-   - Include context, decisions, trade-offs — no unstructured paragraphs
+**Slow down and confirm with me before:**
+- Force-pushing or rewriting history.
+- Destructive changes (migrations, deletions, `rm -rf` in scripts) — commit current state first as a safety net.
+- Committing if you spot a secret already in the repo — flag it so I can rotate it.
 
-3. **Before writing a message:**
-   - Analyze all changed files and group logically related modifications
-   - If changes are unrelated, **split into multiple commits** — prefer small focused commits
-
-4. **For UI / demo data commits**, explicitly mention:
-   - Alignment with design spec or UX behaviour
-   - Fixes for missing states (icons, empty states, flagged vitals)
-   - Demo patient purpose (e.g. "covers critical alert UI state")
-
-5. **Never add** `Co-Authored-By:` lines.
-
-```
-feat(vitals): add latest vitals card support
-
-* Introduced LatestVitalsDTO for dashboard
-* Fixed HR and BMI icon rendering
-* Updated demo data to cover all UI states
-
-Reason: Aligns implementation with design and improves test coverage
-```
+**Don't add:**
+- Co-author trailers or AI attribution.
+- Long commit bodies explaining obvious diffs.
+- Issue/ticket references.
+- Any mention of gitignored files or changes — ignore them completely, don't stage or reference them.
 
 ---
 

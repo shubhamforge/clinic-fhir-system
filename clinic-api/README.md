@@ -20,16 +20,9 @@ Spring Boot backend for the Clinic FHIR System. Exposes a REST API for clinic op
 
 ## Running
 
-**Bash (Git Bash / macOS / Linux):**
 ```bash
 cd clinic-api
 ./mvnw spring-boot:run
-```
-
-**Windows CMD / PowerShell:**
-```cmd
-cd clinic-api
-mvnw.cmd spring-boot:run
 ```
 
 API is available at `http://localhost:9090`.
@@ -49,14 +42,8 @@ fhir:
 
 To point at a different FHIR server (e.g. staging), override at runtime:
 
-**Bash:**
 ```bash
 ./mvnw spring-boot:run -Dfhir.server.url=http://staging-host:8080/fhir
-```
-
-**Windows CMD / PowerShell:**
-```cmd
-mvnw.cmd spring-boot:run -Dfhir.server.url=http://staging-host:8080/fhir
 ```
 
 ## Project Structure
@@ -90,16 +77,9 @@ clinic-api/
 
 ## Building
 
-**Bash:**
 ```bash
 ./mvnw clean package              # compile + test + package
 ./mvnw clean package -DskipTests  # skip tests
-```
-
-**Windows CMD / PowerShell:**
-```cmd
-mvnw.cmd clean package
-mvnw.cmd clean package -DskipTests
 ```
 
 The fat JAR is output to `target/clinic-api-0.0.1-SNAPSHOT.jar`.
@@ -108,28 +88,15 @@ The fat JAR is output to `target/clinic-api-0.0.1-SNAPSHOT.jar`.
 
 This project uses **Spotless** with Google Java Format (GOOGLE style).
 
-**Bash:**
 ```bash
 ./mvnw spotless:apply   # format all Java files
 ./mvnw spotless:check   # check without modifying (used in CI)
-```
-
-**Windows CMD / PowerShell:**
-```cmd
-mvnw.cmd spotless:apply
-mvnw.cmd spotless:check
 ```
 
 The pre-commit hook at the repo root runs `spotless:apply` automatically on staged `.java` files before every commit. See the root [`README`](../README.md) for hook setup.
 
 ## Running Tests
 
-**Bash:**
 ```bash
 ./mvnw test
-```
-
-**Windows CMD / PowerShell:**
-```cmd
-mvnw.cmd test
 ```

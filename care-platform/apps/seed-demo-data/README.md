@@ -46,8 +46,7 @@ docker compose -f infra/docker-compose.yml up -d
 **2. Spring Boot API** (port 9090):
 ```bash
 # from clinic-api/
-./mvnw spring-boot:run        # Linux / Mac
-mvnw.cmd spring-boot:run      # Windows
+./mvnw spring-boot:run
 ```
 
 ---
