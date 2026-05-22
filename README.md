@@ -43,6 +43,7 @@ PostgreSQL 15  (managed entirely by HAPI)
 git clone <repo-url>
 cd clinic-fhir-system
 npm install   # installs Husky pre-commit hooks
+chmod +x dev.sh clinic-api/mvnw clinic-api/seed-data/load.sh   # make scripts executable
 ```
 
 ### Start everything
