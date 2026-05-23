@@ -1,0 +1,1480 @@
+openapi: 3.0.3
+info:
+  title: Clinic FHIR API
+  description: |
+    REST API for the clinic-fhir-system Spring Boot backend.
+
+    **FHIR CRUD endpoints** return `application/fhir+json` (FHIR R4 resources).
+    **Experience API endpoints** (`/snapshot`, `/trends`, `/timeline`, `/dashboard`) return `application/json` flat DTOs.
+  version: 1.0.0
+  contact:
+    name: shubhamforge
+    url: https://github.com/shubhamforge/clinic-fhir-system
+
+servers:
+  - url: http://localhost:9090
+    description: Local development
+
+tags:
+  - name: Patients
+    description: Patient registration and search
+  - name: Encounters
+    description: Clinical visits
+  - name: Vitals
+    description: Vital sign observations
+  - name: Practitioners
+    description: Clinician registry
+  - name: Conditions
+    description: Diagnoses
+  - name: Medications
+    description: Medication statements
+  - name: Appointments
+    description: Scheduled appointments
+  - name: Service Requests
+    description: Lab and imaging orders
+  - name: Diagnostic Reports
+    description: Lab and imaging results
+  - name: Care Plans
+    description: Patient care plans
+  - name: Goals
+    description: Clinical goals
+  - name: Experience APIs
+    description: Aggregated clinical data (flat JSON, not FHIR)
+
+paths:
+
+  # ── Patients ──────────────────────────────────────────────────────────────
+
+  /api/patients:
+    post:
+      tags: [Patients]
+      summary: Register a new patient
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatientRequest'
+            example:
+              firstName: "Marcus"
+              lastName: "Webb"
+              dateOfBirth: "1978-04-15"
+              gender: "male"
+              phone: "555-0101"
+              email: "marcus.webb@example.com"
+      responses:
+        '201':
+          description: Patient created — returns FHIR R4 Patient resource
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/FhirPatient'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+    get:
+      tags: [Patients]
+      summary: Search patients
+      parameters:
+        - name: name
+          in: query
+          schema:
+            type: string
+          description: Partial name match
+          example: "Webb"
+        - name: dob
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Date of birth (ISO 8601)
+          example: "1978-04-15"
+      responses:
+        '200':
+          description: FHIR R4 Bundle (searchset) of matching patients
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/FhirBundle'
+
+  /api/patients/{id}:
+    get:
+      tags: [Patients]
+      summary: Get patient by ID
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      responses:
+        '200':
+          description: FHIR R4 Patient resource
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/FhirPatient'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/patients/{id}/summary:
+    get:
+      tags: [Patients]
+      summary: Get legacy FHIR Bundle summary (Patient + Encounters + Observations)
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      responses:
+        '200':
+          description: FHIR R4 Bundle (collection)
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/FhirBundle'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/patients/{id}/snapshot:
+    get:
+      tags: [Experience APIs]
+      summary: At-a-glance snapshot — active conditions, meds, latest vitals, alerts
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      responses:
+        '200':
+          description: Snapshot data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SnapshotResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/patients/{id}/trends:
+    get:
+      tags: [Experience APIs]
+      summary: Chart-ready vitals time series
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+        - name: type
+          in: query
+          schema:
+            type: string
+          description: "Comma-separated vital types: bp, spo2, weight, heartRate, temperature"
+          example: "bp,spo2"
+        - name: period
+          in: query
+          schema:
+            type: string
+          description: "Lookback period, e.g. 30d, 90d, 1y"
+          example: "30d"
+      responses:
+        '200':
+          description: Trends series
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrendsResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/patients/{id}/timeline:
+    get:
+      tags: [Experience APIs]
+      summary: Unified chronological event feed with cursor pagination
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+          description: Max events to return
+        - name: before
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Cursor — return events before this date
+          example: "2026-05-01"
+        - name: types
+          in: query
+          schema:
+            type: string
+          description: "Comma-separated event types: encounter, report, vital, condition"
+          example: "encounter,report"
+      responses:
+        '200':
+          description: List of timeline events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TimelineEvent'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ── Encounters ────────────────────────────────────────────────────────────
+
+  /api/encounters:
+    post:
+      tags: [Encounters]
+      summary: Record a clinical visit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EncounterRequest'
+            example:
+              patientId: "abc123"
+              visitDate: "2026-05-15"
+              reason: "Annual physical"
+              status: "finished"
+              practitionerId: "prac456"
+      responses:
+        '201':
+          description: FHIR R4 Encounter resource
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/FhirResource'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    get:
+      tags: [Encounters]
+      summary: List encounters for a patient
+      parameters:
+        - name: patientId
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "abc123"
+      responses:
+        '200':
+          description: FHIR R4 Bundle of encounters
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/FhirBundle'
+
+  /api/encounters/{id}:
+    get:
+      tags: [Encounters]
+      summary: Get encounter by ID
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      responses:
+        '200':
+          description: FHIR R4 Encounter resource
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/FhirResource'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ── Vitals ────────────────────────────────────────────────────────────────
+
+  /api/vitals:
+    post:
+      tags: [Vitals]
+      summary: Record vital signs (auto-evaluates conditions on creation)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VitalsRequest'
+            example:
+              patientId: "abc123"
+              effectiveDate: "2026-05-15"
+              systolicBp: 135
+              diastolicBp: 85
+              weightKg: 82.5
+              spo2Percent: 97.0
+              heartRateBpm: 72
+              temperatureCelsius: 36.8
+      responses:
+        '201':
+          description: FHIR R4 Bundle of created Observation resources
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/FhirBundle'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+    get:
+      tags: [Vitals]
+      summary: Get vitals for a patient
+      parameters:
+        - name: patientId
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "abc123"
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [systolic, diastolic, weight, spo2, heartRate, temperature]
+          description: Filter by vital type
+      responses:
+        '200':
+          description: FHIR R4 Bundle of Observation resources
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/FhirBundle'
+
+  # ── Practitioners ─────────────────────────────────────────────────────────
+
+  /api/practitioners:
+    post:
+      tags: [Practitioners]
+      summary: Register a practitioner
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PractitionerRequest'
+            example:
+              firstName: "Sarah"
+              lastName: "Chen"
+              specialty: "Internal Medicine"
+              npi: "1234567890"
+              email: "s.chen@clinic.example"
+      responses:
+        '201':
+          description: FHIR R4 Practitioner resource
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/FhirResource'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /api/practitioners/{id}:
+    get:
+      tags: [Practitioners]
+      summary: Get practitioner by ID
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      responses:
+        '200':
+          description: FHIR R4 Practitioner resource
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/FhirResource'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ── Conditions ────────────────────────────────────────────────────────────
+
+  /api/conditions:
+    post:
+      tags: [Conditions]
+      summary: Record a diagnosis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConditionRequest'
+            example:
+              patientId: "abc123"
+              code: "44054006"
+              display: "Type 2 Diabetes Mellitus"
+              clinicalStatus: "active"
+              onsetDate: "2020-01-10"
+      responses:
+        '201':
+          description: FHIR R4 Condition resource
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/FhirResource'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+    get:
+      tags: [Conditions]
+      summary: List conditions for a patient
+      parameters:
+        - name: patientId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: FHIR R4 Bundle of conditions
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/FhirBundle'
+
+  /api/conditions/{id}:
+    get:
+      tags: [Conditions]
+      summary: Get condition by ID
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      responses:
+        '200':
+          description: FHIR R4 Condition resource
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/FhirResource'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ── Medications ───────────────────────────────────────────────────────────
+
+  /api/medications:
+    post:
+      tags: [Medications]
+      summary: Record a medication statement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MedicationRequest'
+            example:
+              patientId: "abc123"
+              medicationName: "Metformin 500mg"
+              status: "active"
+              dosageText: "1 tablet twice daily with meals"
+              startDate: "2020-02-01"
+      responses:
+        '201':
+          description: FHIR R4 MedicationStatement resource
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/FhirResource'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+    get:
+      tags: [Medications]
+      summary: List medications for a patient
+      parameters:
+        - name: patientId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: FHIR R4 Bundle of MedicationStatements
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/FhirBundle'
+
+  # ── Appointments ──────────────────────────────────────────────────────────
+
+  /api/appointments:
+    post:
+      tags: [Appointments]
+      summary: Schedule an appointment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentRequest'
+            example:
+              patientId: "abc123"
+              practitionerId: "prac456"
+              start: "2026-06-10T09:00:00"
+              end: "2026-06-10T09:30:00"
+              description: "Follow-up — diabetes management"
+              status: "booked"
+      responses:
+        '201':
+          description: FHIR R4 Appointment resource
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/FhirResource'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+    get:
+      tags: [Appointments]
+      summary: List appointments for a patient
+      parameters:
+        - name: patientId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: FHIR R4 Bundle of appointments
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/FhirBundle'
+
+  # ── Service Requests ──────────────────────────────────────────────────────
+
+  /api/service-requests:
+    post:
+      tags: [Service Requests]
+      summary: Place a lab or imaging order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceRequestRequest'
+            example:
+              patientId: "abc123"
+              code: "HbA1c"
+              category: "Laboratory"
+              status: "active"
+              priority: "routine"
+              authoredOn: "2026-05-15"
+      responses:
+        '201':
+          description: FHIR R4 ServiceRequest resource
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/FhirResource'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+    get:
+      tags: [Service Requests]
+      summary: List orders for a patient
+      parameters:
+        - name: patientId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, completed, revoked]
+          description: Optional status filter
+      responses:
+        '200':
+          description: FHIR R4 Bundle of ServiceRequests
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/FhirBundle'
+
+  /api/service-requests/{id}:
+    get:
+      tags: [Service Requests]
+      summary: Get order by ID
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      responses:
+        '200':
+          description: FHIR R4 ServiceRequest resource
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/FhirResource'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ── Diagnostic Reports ────────────────────────────────────────────────────
+
+  /api/diagnostic-reports:
+    post:
+      tags: [Diagnostic Reports]
+      summary: Create a report (auto-marks linked ServiceRequest as completed)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiagnosticReportRequest'
+            example:
+              patientId: "abc123"
+              serviceRequestId: "sr789"
+              title: "HbA1c Result"
+              status: "final"
+              issued: "2026-05-16"
+              conclusion: "HbA1c 7.2% — well-controlled"
+      responses:
+        '201':
+          description: FHIR R4 DiagnosticReport resource
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/FhirResource'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+    get:
+      tags: [Diagnostic Reports]
+      summary: List reports for a patient
+      parameters:
+        - name: patientId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: FHIR R4 Bundle of DiagnosticReports
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/FhirBundle'
+
+  # ── Care Plans ────────────────────────────────────────────────────────────
+
+  /api/care-plans:
+    post:
+      tags: [Care Plans]
+      summary: Create a care plan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CarePlanRequest'
+            example:
+              patientId: "abc123"
+              conditionIds: ["cond001"]
+              title: "Diabetes Management Plan"
+              status: "active"
+              periodStart: "2026-01-01"
+              goalIds: ["goal001"]
+      responses:
+        '201':
+          description: FHIR R4 CarePlan resource
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/FhirResource'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+    get:
+      tags: [Care Plans]
+      summary: List care plans for a patient
+      parameters:
+        - name: patientId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: FHIR R4 Bundle of CarePlans
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/FhirBundle'
+
+  # ── Goals ─────────────────────────────────────────────────────────────────
+
+  /api/goals:
+    post:
+      tags: [Goals]
+      summary: Create a clinical goal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoalRequest'
+            example:
+              patientId: "abc123"
+              description: "Reduce HbA1c below 7.0%"
+              status: "active"
+              targetMeasureCode: "4548-4"
+              targetMeasureDisplay: "HbA1c"
+              targetValue: 7.0
+              targetUnit: "%"
+              targetDate: "2026-12-31"
+      responses:
+        '201':
+          description: FHIR R4 Goal resource
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/FhirResource'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+    get:
+      tags: [Goals]
+      summary: List goals for a patient
+      parameters:
+        - name: patientId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: FHIR R4 Bundle of Goals
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/FhirBundle'
+
+  # ── Dashboard ─────────────────────────────────────────────────────────────
+
+  /api/dashboard/{patientId}:
+    get:
+      tags: [Experience APIs]
+      summary: Full clinical dashboard — partial-failure safe
+      description: |
+        Aggregates all clinical data for a patient into a single response.
+        If a section fails to load, it is omitted and a warning is added to `_warnings[]`.
+      parameters:
+        - name: patientId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "abc123"
+      responses:
+        '200':
+          description: Dashboard data (may include warnings for degraded sections)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+# ── Components ──────────────────────────────────────────────────────────────
+
+components:
+
+  parameters:
+    ResourceId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: HAPI FHIR resource ID
+      example: "abc123"
+
+  responses:
+    ValidationError:
+      description: Request body failed validation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            status: 400
+            message: "firstName must not be blank"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            status: 404
+            message: "Patient abc123 not found"
+
+  schemas:
+
+    # ── Error ──────────────────────────────────────────────────────────────
+
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 404
+        message:
+          type: string
+          example: "Patient abc123 not found"
+
+    # ── FHIR stubs ─────────────────────────────────────────────────────────
+    # Full FHIR R4 schema is defined at https://hl7.org/fhir/R4/
+    # These are placeholder representations only.
+
+    FhirResource:
+      type: object
+      description: FHIR R4 resource (application/fhir+json)
+      properties:
+        resourceType:
+          type: string
+          example: "Encounter"
+        id:
+          type: string
+          example: "abc123"
+      additionalProperties: true
+
+    FhirPatient:
+      type: object
+      description: FHIR R4 Patient resource
+      properties:
+        resourceType:
+          type: string
+          example: "Patient"
+        id:
+          type: string
+          example: "abc123"
+        name:
+          type: array
+          items:
+            type: object
+        birthDate:
+          type: string
+          format: date
+        gender:
+          type: string
+          enum: [male, female, other, unknown]
+        telecom:
+          type: array
+          items:
+            type: object
+      additionalProperties: true
+
+    FhirBundle:
+      type: object
+      description: FHIR R4 Bundle resource
+      properties:
+        resourceType:
+          type: string
+          example: "Bundle"
+        type:
+          type: string
+          enum: [searchset, collection]
+        total:
+          type: integer
+        entry:
+          type: array
+          items:
+            type: object
+      additionalProperties: true
+
+    # ── Request DTOs ───────────────────────────────────────────────────────
+
+    PatientRequest:
+      type: object
+      required: [firstName, lastName, dateOfBirth, gender]
+      properties:
+        firstName:
+          type: string
+          example: "Marcus"
+        lastName:
+          type: string
+          example: "Webb"
+        dateOfBirth:
+          type: string
+          format: date
+          example: "1978-04-15"
+        gender:
+          type: string
+          example: "male"
+        phone:
+          type: string
+          example: "555-0101"
+        email:
+          type: string
+          format: email
+          example: "marcus.webb@example.com"
+
+    EncounterRequest:
+      type: object
+      required: [patientId, visitDate, status]
+      properties:
+        patientId:
+          type: string
+          example: "abc123"
+        visitDate:
+          type: string
+          format: date
+          example: "2026-05-15"
+        reason:
+          type: string
+          example: "Annual physical"
+        status:
+          type: string
+          example: "finished"
+        practitionerId:
+          type: string
+          example: "prac456"
+        note:
+          type: string
+          example: "Patient reports fatigue over the past two weeks."
+
+    VitalsRequest:
+      type: object
+      required: [patientId, effectiveDate]
+      properties:
+        patientId:
+          type: string
+          example: "abc123"
+        encounterId:
+          type: string
+          example: "enc789"
+        effectiveDate:
+          type: string
+          format: date
+          example: "2026-05-15"
+        systolicBp:
+          type: integer
+          example: 135
+        diastolicBp:
+          type: integer
+          example: 85
+        weightKg:
+          type: number
+          format: double
+          example: 82.5
+        spo2Percent:
+          type: number
+          format: double
+          example: 97.0
+        heartRateBpm:
+          type: integer
+          example: 72
+        temperatureCelsius:
+          type: number
+          format: double
+          example: 36.8
+
+    PractitionerRequest:
+      type: object
+      required: [firstName, lastName, specialty]
+      properties:
+        firstName:
+          type: string
+          example: "Sarah"
+        lastName:
+          type: string
+          example: "Chen"
+        specialty:
+          type: string
+          example: "Internal Medicine"
+        npi:
+          type: string
+          example: "1234567890"
+        email:
+          type: string
+          format: email
+          example: "s.chen@clinic.example"
+
+    ConditionRequest:
+      type: object
+      required: [patientId, code, display, clinicalStatus, onsetDate]
+      properties:
+        patientId:
+          type: string
+          example: "abc123"
+        encounterId:
+          type: string
+          example: "enc789"
+        code:
+          type: string
+          description: SNOMED CT or ICD-10 code
+          example: "44054006"
+        display:
+          type: string
+          example: "Type 2 Diabetes Mellitus"
+        clinicalStatus:
+          type: string
+          enum: [active, recurrence, relapse, inactive, remission, resolved]
+          example: "active"
+        onsetDate:
+          type: string
+          format: date
+          example: "2020-01-10"
+
+    MedicationRequest:
+      type: object
+      required: [patientId, medicationName, status, startDate]
+      properties:
+        patientId:
+          type: string
+          example: "abc123"
+        medicationName:
+          type: string
+          example: "Metformin 500mg"
+        status:
+          type: string
+          enum: [active, completed, entered-in-error, intended, stopped, on-hold, unknown, not-taken]
+          example: "active"
+        dosageText:
+          type: string
+          example: "1 tablet twice daily with meals"
+        startDate:
+          type: string
+          format: date
+          example: "2020-02-01"
+
+    AppointmentRequest:
+      type: object
+      required: [patientId, start, end, status]
+      properties:
+        patientId:
+          type: string
+          example: "abc123"
+        practitionerId:
+          type: string
+          example: "prac456"
+        start:
+          type: string
+          format: date-time
+          example: "2026-06-10T09:00:00"
+        end:
+          type: string
+          format: date-time
+          example: "2026-06-10T09:30:00"
+        description:
+          type: string
+          example: "Follow-up — diabetes management"
+        status:
+          type: string
+          enum: [proposed, pending, booked, arrived, fulfilled, cancelled, noshow, entered-in-error, checked-in, waitlist]
+          example: "booked"
+
+    ServiceRequestRequest:
+      type: object
+      required: [patientId, code, category, status, priority, authoredOn]
+      properties:
+        patientId:
+          type: string
+          example: "abc123"
+        encounterId:
+          type: string
+          example: "enc789"
+        practitionerId:
+          type: string
+          example: "prac456"
+        code:
+          type: string
+          example: "HbA1c"
+        category:
+          type: string
+          example: "Laboratory"
+        status:
+          type: string
+          enum: [draft, active, on-hold, revoked, completed, entered-in-error, unknown]
+          example: "active"
+        priority:
+          type: string
+          enum: [routine, urgent, asap, stat]
+          example: "routine"
+        authoredOn:
+          type: string
+          format: date
+          example: "2026-05-15"
+
+    DiagnosticReportRequest:
+      type: object
+      required: [patientId, title, status, issued]
+      properties:
+        patientId:
+          type: string
+          example: "abc123"
+        encounterId:
+          type: string
+          example: "enc789"
+        serviceRequestId:
+          type: string
+          description: If set, the linked ServiceRequest is auto-marked as completed
+          example: "sr789"
+        title:
+          type: string
+          example: "HbA1c Result"
+        status:
+          type: string
+          enum: [registered, partial, preliminary, final, amended, corrected, appended, cancelled, entered-in-error, unknown]
+          example: "final"
+        issued:
+          type: string
+          format: date
+          example: "2026-05-16"
+        conclusion:
+          type: string
+          example: "HbA1c 7.2% — well-controlled"
+        resultIds:
+          type: array
+          items:
+            type: string
+          description: Observation resource IDs to link as results
+
+    CarePlanRequest:
+      type: object
+      required: [patientId, title, status, periodStart]
+      properties:
+        patientId:
+          type: string
+          example: "abc123"
+        conditionIds:
+          type: array
+          items:
+            type: string
+          example: ["cond001"]
+        title:
+          type: string
+          example: "Diabetes Management Plan"
+        status:
+          type: string
+          enum: [draft, active, on-hold, revoked, completed, entered-in-error, unknown]
+          example: "active"
+        periodStart:
+          type: string
+          format: date
+          example: "2026-01-01"
+        goalIds:
+          type: array
+          items:
+            type: string
+          example: ["goal001"]
+
+    GoalRequest:
+      type: object
+      required: [patientId, description, status]
+      properties:
+        patientId:
+          type: string
+          example: "abc123"
+        description:
+          type: string
+          example: "Reduce HbA1c below 7.0%"
+        status:
+          type: string
+          enum: [proposed, planned, accepted, active, on-hold, completed, cancelled, entered-in-error, rejected]
+          example: "active"
+        targetMeasureCode:
+          type: string
+          description: LOINC code
+          example: "4548-4"
+        targetMeasureDisplay:
+          type: string
+          example: "HbA1c"
+        targetValue:
+          type: number
+          format: double
+          example: 7.0
+        targetUnit:
+          type: string
+          example: "%"
+        targetDate:
+          type: string
+          format: date
+          example: "2026-12-31"
+
+    # ── Experience API response schemas ────────────────────────────────────
+
+    VitalReading:
+      type: object
+      properties:
+        value:
+          type: number
+          format: double
+          example: 135.0
+        unit:
+          type: string
+          example: "mm[Hg]"
+        date:
+          type: string
+          format: date
+          example: "2026-05-15"
+        flagged:
+          type: boolean
+          example: false
+
+    LatestVitals:
+      type: object
+      properties:
+        systolicBp:
+          $ref: '#/components/schemas/VitalReading'
+        diastolicBp:
+          $ref: '#/components/schemas/VitalReading'
+        weightKg:
+          $ref: '#/components/schemas/VitalReading'
+        spo2Percent:
+          $ref: '#/components/schemas/VitalReading'
+        heartRate:
+          $ref: '#/components/schemas/VitalReading'
+        temperature:
+          $ref: '#/components/schemas/VitalReading'
+
+    AlertItem:
+      type: object
+      properties:
+        severity:
+          type: string
+          enum: [warning, critical]
+          example: "warning"
+        type:
+          type: string
+          example: "ELEVATED_BLOOD_PRESSURE"
+        message:
+          type: string
+          example: "Systolic BP 135 mm[Hg] — above warning threshold (140)"
+        resourceId:
+          type: string
+          example: "obs456"
+
+    SnapshotResponse:
+      type: object
+      properties:
+        activeConditions:
+          type: array
+          items:
+            type: object
+          description: Active FHIR Condition summaries
+        currentMedications:
+          type: array
+          items:
+            type: object
+          description: Active MedicationStatement summaries
+        latestVitals:
+          $ref: '#/components/schemas/LatestVitals'
+        alerts:
+          type: array
+          items:
+            $ref: '#/components/schemas/AlertItem'
+
+    DataPoint:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+          example: "2026-05-15"
+        value:
+          type: number
+          format: double
+          example: 135.0
+
+    BpSeries:
+      type: object
+      properties:
+        systolic:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataPoint'
+        diastolic:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataPoint'
+        referenceRange:
+          type: object
+          additionalProperties:
+            type: integer
+          example:
+            warnSystolic: 140
+            critSystolic: 180
+            warnDiastolic: 90
+            critDiastolic: 120
+
+    SimpleSeries:
+      type: object
+      properties:
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataPoint'
+        unit:
+          type: string
+          example: "%"
+        referenceRange:
+          type: object
+          additionalProperties: true
+
+    TrendsResponse:
+      type: object
+      properties:
+        period:
+          type: string
+          example: "30d"
+        from:
+          type: string
+          format: date
+          example: "2026-04-23"
+        to:
+          type: string
+          format: date
+          example: "2026-05-23"
+        series:
+          type: object
+          description: "Keys are vital type names (bp, spo2, weight, heartRate, temperature). bp → BpSeries; others → SimpleSeries"
+          additionalProperties: true
+
+    GroupedObservation:
+      type: object
+      properties:
+        type:
+          type: string
+          example: "systolicBp"
+        display:
+          type: string
+          example: "Systolic BP"
+        value:
+          type: number
+          format: double
+          example: 135.0
+        unit:
+          type: string
+          example: "mm[Hg]"
+        flagged:
+          type: boolean
+          example: false
+
+    TimelineEvent:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "enc789"
+        type:
+          type: string
+          enum: [encounter, report, vital, condition]
+          example: "encounter"
+        date:
+          type: string
+          format: date
+          example: "2026-05-15"
+        title:
+          type: string
+          example: "Office Visit"
+        subtitle:
+          type: string
+          example: "Annual physical"
+        status:
+          type: string
+          example: "finished"
+        resourceId:
+          type: string
+          example: "enc789"
+        metadata:
+          type: object
+          additionalProperties: true
+        chiefComplaint:
+          type: string
+          example: "Fatigue"
+        note:
+          type: string
+          example: "Patient reports fatigue over the past two weeks."
+        groupedObservations:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupedObservation'
+        linkedTo:
+          type: string
+          description: Resource ID this event is linked to (e.g. DiagnosticReport → ServiceRequest)
+          example: "sr789"
+        linkedFrom:
+          type: string
+          description: Resource ID linked back to this event
+          example: "dr001"
+
+    GoalProgress:
+      type: object
+      properties:
+        currentValue:
+          type: number
+          format: double
+          example: 7.2
+        targetValue:
+          type: number
+          format: double
+          example: 7.0
+        baselineValue:
+          type: number
+          format: double
+          example: 8.5
+        onTrack:
+          type: boolean
+          example: true
+        percentToGoal:
+          type: integer
+          example: 87
+        message:
+          type: string
+          example: "0.2 units from target"
+
+    PatientSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "abc123"
+        firstName:
+          type: string
+          example: "Marcus"
+        lastName:
+          type: string
+          example: "Webb"
+        dob:
+          type: string
+          format: date
+          example: "1978-04-15"
+        gender:
+          type: string
+          example: "male"
+        mrn:
+          type: string
+          example: "MRN-0001"
+        phone:
+          type: string
+          example: "555-0101"
+        email:
+          type: string
+          example: "marcus.webb@example.com"
+
+    DashboardResponse:
+      type: object
+      properties:
+        patient:
+          $ref: '#/components/schemas/PatientSummary'
+        careTeam:
+          type: object
+          additionalProperties: true
+          description: Active care team members
+        snapshot:
+          $ref: '#/components/schemas/SnapshotResponse'
+        upcomingAppointment:
+          type: object
+          additionalProperties: true
+          description: Next scheduled appointment, or null
+        recentEncounters:
+          type: array
+          items:
+            type: object
+          description: Most recent encounters
+        pendingServiceRequests:
+          type: array
+          items:
+            type: object
+          description: Active orders not yet fulfilled
+        activeCarePlan:
+          type: object
+          additionalProperties: true
+          description: Current active care plan, or null
+        recentDiagnosticReport:
+          type: object
+          additionalProperties: true
+          description: Most recent diagnostic report, or null
+        warnings:
+          type: array
+          items:
+            type: string
+          description: Non-fatal section failures — section is omitted if it appears here
+          example: ["careTeam: failed to load"]

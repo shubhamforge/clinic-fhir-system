@@ -45,6 +45,23 @@ anything_running() {
     || [ -f "$PID_FILE" ]
 }
 
+log_with_ts() {
+  awk '{ print strftime("[%Y-%m-%d %H:%M:%S]"), $0; fflush() }' > "$1"
+}
+
+check_docker() {
+  if ! command -v docker &> /dev/null; then
+    err "Docker is not installed or not on PATH"
+    echo -e "  Install Docker Desktop from https://www.docker.com/products/docker-desktop"
+    exit 1
+  fi
+  if ! docker info &> /dev/null; then
+    err "Docker daemon is not running"
+    echo -e "  Start Docker Desktop and try again."
+    exit 1
+  fi
+}
+
 # ── Ctrl+C handler ────────────────────────────────────────────────────────────
 on_exit() {
   echo ""
@@ -68,7 +85,7 @@ teardown() {
     rm -f "$PID_FILE"
   fi
 
-  for port in 9090 4200; do  # add 4201 when patient-app is enabled
+  for port in 9090 4200 8081; do  # add 4201 when patient-app is enabled
     kill_port "$port"
   done
 
@@ -78,6 +95,7 @@ teardown() {
 
 # ── Startup ───────────────────────────────────────────────────────────────────
 startup() {
+  check_docker
   mkdir -p "$LOG_DIR"
   > "$PID_FILE"
   rm -f "$LOG_DIR"/*.log
@@ -114,7 +132,7 @@ startup() {
   if $IS_WINDOWS; then
     cmd //c mvnw.cmd spring-boot:run "-Dspring.output.ansi.enabled=NEVER" > "$LOG_DIR/clinic-api.log" 2>&1 &
   else
-    ./mvnw spring-boot:run -Dspring.output.ansi.enabled=NEVER > "$LOG_DIR/clinic-api.log" 2>&1 &
+    ./mvnw spring-boot:run -Dspring.output.ansi.enabled=NEVER 2>&1 | log_with_ts "$LOG_DIR/clinic-api.log" &
   fi
   SPRING_PID=$!
   echo "$SPRING_PID" >> "$PID_FILE"
@@ -142,7 +160,7 @@ startup() {
 
   cd "$SCRIPT_DIR/care-platform"
 
-  NO_COLOR=1 npx nx serve clinician-app --port=4200 > "$LOG_DIR/clinician-app.log" 2>&1 &
+  NO_COLOR=1 npx nx serve clinician-app --port=4200 2>&1 | log_with_ts "$LOG_DIR/clinician-app.log" &
   CLINICIAN_PID=$!
   echo "$CLINICIAN_PID" >> "$PID_FILE"
   ok "clinician-app starting → http://localhost:4200 (PID $CLINICIAN_PID, logs → logs/clinician-app.log)"
@@ -154,12 +172,24 @@ startup() {
 
   cd "$SCRIPT_DIR"
 
+  # 4. Swagger UI
+  info "Swagger UI (:8081)"
+
+  docker run --rm -p 8081:8080 \
+    -e SWAGGER_JSON=/spec/openapi.yaml \
+    -v "$SCRIPT_DIR/docs/openapi.yaml:/spec/openapi.yaml:ro" \
+    swaggerapi/swagger-ui 2>&1 | log_with_ts "$LOG_DIR/swagger.log" &
+  SWAGGER_PID=$!
+  echo "$SWAGGER_PID" >> "$PID_FILE"
+  ok "Swagger UI starting → http://localhost:8081 (PID $SWAGGER_PID, logs → logs/swagger.log)"
+
   echo ""
   echo -e "${BOLD}All services started.${NC}"
   echo -e "  Postgres      → localhost:5432"
   echo -e "  HAPI FHIR     → http://localhost:8080/fhir"
   echo -e "  clinic-api    → http://localhost:9090"
   echo -e "  clinician-app → http://localhost:4200"
+  echo -e "  Swagger UI    → http://localhost:8081"
   # echo -e "  patient-app   → http://localhost:4201"
   echo ""
   echo -e "Logs are in ${CYAN}./logs/${NC} — tail any service in a separate terminal:"

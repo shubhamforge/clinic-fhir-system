@@ -43,7 +43,7 @@ PostgreSQL 15  (managed entirely by HAPI)
 git clone <repo-url>
 cd clinic-fhir-system
 npm install   # installs Husky pre-commit hooks
-chmod +x dev.sh clinic-api/mvnw clinic-api/seed-data/load.sh   # make scripts executable
+chmod +x dev.sh swagger.sh clinic-api/mvnw clinic-api/seed-data/load.sh   # make scripts executable
 ```
 
 ### Start everything
@@ -63,6 +63,7 @@ Services start in the correct order, each waiting for the previous to be healthy
 | HAPI FHIR JPA Server | `http://localhost:8080/fhir` |
 | clinic-api (Spring Boot) | `http://localhost:9090` |
 | clinician-app (Angular) | `http://localhost:4200` |
+| Swagger UI | `http://localhost:8081` |
 
 > **First boot:** HAPI FHIR takes up to ~5 minutes to initialize on a fresh volume. Subsequent starts are much faster.
 
