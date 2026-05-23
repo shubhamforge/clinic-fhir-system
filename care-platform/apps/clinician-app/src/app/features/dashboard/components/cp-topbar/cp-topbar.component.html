@@ -24,30 +24,18 @@
         class="cp-topbar__nav-item"
         routerLink="/patients"
         routerLinkActive="cp-topbar__nav-item--active"
+        [routerLinkActiveOptions]="{ exact: true }"
         >Patients</a
       >
-      <a class="cp-topbar__nav-item">Schedule</a>
-      <a class="cp-topbar__nav-item">Orders</a>
-      <a class="cp-topbar__nav-item">
+      <a class="cp-topbar__nav-item" (click)="placeholder('Schedule')"
+        >Schedule</a
+      >
+      <a class="cp-topbar__nav-item" (click)="placeholder('Orders')">Orders</a>
+      <a class="cp-topbar__nav-item" (click)="placeholder('Inbox')">
         Inbox
         <span class="cp-topbar__nav-badge">3</span>
       </a>
     </nav>
-  </div>
-
-  <div class="cp-topbar__center">
-    <div class="cp-topbar__search">
-      <mat-icon class="cp-topbar__search-icon" aria-hidden="true"
-        >search</mat-icon
-      >
-      <input
-        class="cp-topbar__search-input"
-        type="search"
-        placeholder="Search patients, orders, MRN…"
-        aria-label="Search"
-      />
-      <kbd class="cp-topbar__search-kbd">⌘K</kbd>
-    </div>
   </div>
 
   <div class="cp-topbar__right">

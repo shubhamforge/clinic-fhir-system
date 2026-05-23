@@ -13,12 +13,8 @@ import { Router } from '@angular/router';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSortModule, MatSort } from '@angular/material/sort';
 import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
   Subject,
@@ -49,12 +45,8 @@ import { PatientListItem } from '../models/patient-list-item.model';
     MatTableModule,
     MatSortModule,
     MatPaginatorModule,
-    MatFormFieldModule,
-    MatInputModule,
     MatIconModule,
     MatButtonModule,
-    MatProgressSpinnerModule,
-    MatCardModule,
     MatTooltipModule,
   ],
   templateUrl: './patient-roster.component.html',
@@ -161,5 +153,18 @@ export class PatientRosterComponent implements AfterViewInit {
 
   viewPatient(id: string): void {
     this.router.navigate(['/patients', id]);
+  }
+
+  initials(name: string): string {
+    return name
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((s) => s[0])
+      .join('')
+      .toUpperCase();
+  }
+
+  onNewPatient(): void {
+    // placeholder — no form yet
   }
 }

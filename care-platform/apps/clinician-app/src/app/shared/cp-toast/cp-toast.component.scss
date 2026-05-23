@@ -1,0 +1,18 @@
+.cp-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  white-space: nowrap;
+  padding: 10px 20px;
+  border-radius: 999px;
+  background: var(--px-surface);
+  border: 1px solid var(--px-border);
+  box-shadow: var(--px-shadow-lg);
+  font-family: var(--px-sans);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--px-text-muted);
+  pointer-events: none;
+}

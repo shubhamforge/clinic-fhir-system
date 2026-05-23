@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { ThemeService } from '../../../../theme.service';
+import { ToastService } from '../../../../toast.service';
 
 @Component({
   selector: 'cp-topbar',
@@ -12,4 +13,9 @@ import { ThemeService } from '../../../../theme.service';
 })
 export class CpTopbarComponent {
   protected readonly theme = inject(ThemeService);
+  private readonly toastService = inject(ToastService);
+
+  placeholder(label: string): void {
+    this.toastService.show(`${label} is a placeholder in this prototype`);
+  }
 }
