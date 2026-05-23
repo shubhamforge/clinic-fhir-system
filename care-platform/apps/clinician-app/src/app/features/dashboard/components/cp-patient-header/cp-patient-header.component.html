@@ -32,11 +32,24 @@
     </div>
   </div>
   <div class="cp-patient-header__actions">
-    <button class="cp-patient-header__btn" type="button">+ New order</button>
-    <button class="cp-patient-header__btn" type="button">+ Note</button>
+    <button
+      class="cp-patient-header__btn"
+      type="button"
+      (click)="placeholder('New order')"
+    >
+      + New order
+    </button>
+    <button
+      class="cp-patient-header__btn"
+      type="button"
+      (click)="placeholder('Note')"
+    >
+      + Note
+    </button>
     <button
       class="cp-patient-header__btn cp-patient-header__btn--primary"
       type="button"
+      (click)="placeholder('Open chart')"
     >
       Open chart
     </button>

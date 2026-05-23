@@ -2,10 +2,12 @@ import {
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
+  inject,
   Input,
   Output,
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { ToastService } from '../../../../toast.service';
 import {
   BpSeries,
   DataPoint,
@@ -95,6 +97,12 @@ export class CpTimelineEventComponent {
   @Input() expanded = false;
   @Input() density: 'compact' | 'comfortable' = 'comfortable';
   @Output() select = new EventEmitter<string>();
+
+  private readonly toastService = inject(ToastService);
+
+  onAction(label: string): void {
+    this.toastService.show(`${label} is a placeholder in this prototype`);
+  }
 
   get meta(): { label: string; color: string; icon: string } {
     return (

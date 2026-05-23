@@ -149,6 +149,7 @@
           @for (action of actions; track action.label) {
             <button
               [class]="action.primary ? 'tl-btn-primary' : 'tl-btn-ghost'"
+              (click)="onAction(action.label); $event.stopPropagation()"
             >
               {{ action.label }}
             </button>

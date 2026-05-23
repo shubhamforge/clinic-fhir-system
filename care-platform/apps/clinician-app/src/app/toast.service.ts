@@ -2,7 +2,7 @@ import { Injectable, signal } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class ToastService {
-  readonly message = signal<string | null>(null);
+  readonly message = signal<string | null>(null, { equal: () => false });
 
   private timer: ReturnType<typeof setTimeout> | null = null;
 
