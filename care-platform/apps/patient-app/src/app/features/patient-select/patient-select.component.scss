@@ -1,0 +1,132 @@
+.pa-app {
+  min-height: 100dvh;
+  background:
+    radial-gradient(
+      120% 60% at 50% 0%,
+      color-mix(in srgb, var(--px-accent) 14%, transparent),
+      transparent 60%
+    ),
+    var(--px-bg);
+}
+
+.pa-select-screen {
+  display: flex;
+  flex-direction: column;
+  padding: 70px 24px 40px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.pa-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+}
+
+.pa-brand-mark {
+  width: 28px;
+  height: 28px;
+  background: var(--px-accent);
+  color: white;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pa-brand-sub {
+  color: var(--px-text-subtle);
+  font-weight: 500;
+  font-size: 13px;
+  margin-left: 2px;
+}
+
+.pa-select-hero {
+  margin-top: 36px;
+
+  h1 {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  p {
+    margin: 8px 0 0;
+    color: var(--px-text-muted);
+    font-size: 15px;
+  }
+}
+
+.pa-select-list {
+  margin-top: 20px;
+  background: var(--px-surface);
+  border: 1px solid var(--px-border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.pa-select-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--px-border);
+  width: 100%;
+  text-align: left;
+  color: var(--px-text);
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+  &:active {
+    background: var(--px-surface-2);
+  }
+  &.selected {
+    background: color-mix(in srgb, var(--px-accent) 8%, transparent);
+  }
+
+  &--shimmer {
+    cursor: default;
+    &:active {
+      background: transparent;
+    }
+  }
+}
+
+.pa-select-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.pa-select-name {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.pa-select-meta {
+  font-size: 12.5px;
+  color: var(--px-text-subtle);
+  margin-top: 2px;
+  text-transform: capitalize;
+}
+
+.pa-select-chev {
+  color: var(--px-text-subtle);
+  flex-shrink: 0;
+}
+
+.pa-select-footer {
+  margin-top: 18px;
+  text-align: center;
+  color: var(--px-text-subtle);
+  font-size: 12px;
+}

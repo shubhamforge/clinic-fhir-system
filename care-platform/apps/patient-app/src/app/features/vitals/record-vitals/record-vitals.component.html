@@ -1,0 +1,277 @@
+<!-- Success state -->
+@if (step() === 4) {
+  <div class="pa-app">
+    <div class="pa-success">
+      <div class="pa-success-icon">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
+          <path
+            d="M5 12l5 5 9-11"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </div>
+      <h2>Saved. Great job!</h2>
+      <p>Your readings are in. Taking you to your history.</p>
+    </div>
+  </div>
+} @else {
+  <div class="pa-app">
+    <!-- Modal header -->
+    <div class="pa-modal-header">
+      <button
+        class="pa-icon-btn"
+        (click)="goBack()"
+        [attr.aria-label]="step() === 0 ? 'Close' : 'Back'"
+      >
+        @if (step() === 0) {
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M6 6l12 12M18 6L6 18"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+          </svg>
+        } @else {
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M15 6l-6 6 6 6"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        }
+      </button>
+      <div class="pa-modal-title">Record vitals</div>
+      <div style="width: 40px"></div>
+    </div>
+
+    <!-- Progress bars -->
+    <div class="pa-step-progress">
+      @for (bar of progressBars(); track $index) {
+        <div
+          class="pa-step-bar"
+          [class.done]="bar.done"
+          [class.active]="bar.active"
+        ></div>
+      }
+    </div>
+
+    <!-- Stepper content -->
+    <div class="pa-stepper">
+      @if (step() === 0) {
+        <div>
+          <div class="pa-step-eyebrow">Step 1 of 4</div>
+          <h1 class="pa-step-title">What was your blood pressure?</h1>
+          <p class="pa-step-help">
+            Enter the two numbers from your cuff. The top number is the bigger
+            one.
+          </p>
+
+          <form [formGroup]="bpForm">
+            <div class="pa-step-row">
+              <div class="pa-field">
+                <label for="systolic">Systolic (top)</label>
+                <div class="pa-input-wrap">
+                  <input
+                    id="systolic"
+                    type="number"
+                    inputmode="numeric"
+                    formControlName="systolic"
+                  />
+                  <span class="suffix">mmHg</span>
+                </div>
+              </div>
+              <div class="pa-field">
+                <label for="diastolic">Diastolic (bottom)</label>
+                <div class="pa-input-wrap">
+                  <input
+                    id="diastolic"
+                    type="number"
+                    inputmode="numeric"
+                    formControlName="diastolic"
+                  />
+                  <span class="suffix">mmHg</span>
+                </div>
+              </div>
+            </div>
+          </form>
+
+          @if (bpHigh()) {
+            <div class="pa-step-warn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="9"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                />
+                <path
+                  d="M12 11v6M12 7.5h.01"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </svg>
+              That's a bit high — we'll flag it for your care team.
+            </div>
+          }
+        </div>
+      }
+
+      @if (step() === 1) {
+        <div>
+          <div class="pa-step-eyebrow">Step 2 of 4</div>
+          <h1 class="pa-step-title">How much did you weigh?</h1>
+          <p class="pa-step-help">
+            Use your home scale, ideally first thing in the morning.
+          </p>
+
+          <div class="pa-bignum">
+            <button
+              class="pa-bignum-btn"
+              (click)="adjustWeight(-0.1)"
+              aria-label="Decrease"
+            >
+              −
+            </button>
+            <div class="pa-bignum-display">
+              <span class="pa-bignum-val">{{ weight().toFixed(1) }}</span>
+              <span class="pa-bignum-unit">kg</span>
+            </div>
+            <button
+              class="pa-bignum-btn"
+              (click)="adjustWeight(0.1)"
+              aria-label="Increase"
+            >
+              +
+            </button>
+          </div>
+          <div class="pa-step-hint">Tap − or + to nudge by 0.1 kg.</div>
+        </div>
+      }
+
+      @if (step() === 2) {
+        <div>
+          <div class="pa-step-eyebrow">Step 3 of 4</div>
+          <h1 class="pa-step-title">What was your oxygen reading?</h1>
+          <p class="pa-step-help">
+            Use a fingertip oximeter. Wait for the number to settle before
+            recording.
+          </p>
+
+          <div class="pa-bignum">
+            <button
+              class="pa-bignum-btn"
+              (click)="adjustSpo2(-1)"
+              aria-label="Decrease"
+            >
+              −
+            </button>
+            <div class="pa-bignum-display">
+              <span class="pa-bignum-val">{{ spo2() }}</span>
+              <span class="pa-bignum-unit">%</span>
+            </div>
+            <button
+              class="pa-bignum-btn"
+              (click)="adjustSpo2(1)"
+              aria-label="Increase"
+            >
+              +
+            </button>
+          </div>
+          <div class="pa-step-hint" style="text-align: center">
+            Healthy is 95% or higher.
+          </div>
+
+          @if (spo2Low()) {
+            <div
+              class="pa-step-warn"
+              style="justify-content: center; margin-top: 12px"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="9"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                />
+                <path
+                  d="M12 11v6M12 7.5h.01"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </svg>
+              If you feel short of breath, please call your care team.
+            </div>
+          }
+        </div>
+      }
+
+      @if (step() === 3) {
+        <div>
+          <div class="pa-step-eyebrow">Final step</div>
+          <h1 class="pa-step-title">Does this look right?</h1>
+          <p class="pa-step-help">
+            Review your readings before saving them to your record.
+          </p>
+
+          <div class="pa-confirm-list">
+            <div class="pa-confirm-row">
+              <span class="pa-confirm-label">Blood pressure</span>
+              <span class="pa-confirm-value">
+                {{ bpForm.value.systolic }}/{{ bpForm.value.diastolic }}
+                <span class="pa-confirm-unit">mmHg</span>
+              </span>
+            </div>
+            <div class="pa-confirm-row">
+              <span class="pa-confirm-label">Weight</span>
+              <span class="pa-confirm-value">
+                {{ weight().toFixed(1) }}<span class="pa-confirm-unit">kg</span>
+              </span>
+            </div>
+            <div class="pa-confirm-row">
+              <span class="pa-confirm-label">Oxygen</span>
+              <span class="pa-confirm-value">
+                {{ spo2() }}<span class="pa-confirm-unit">%</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Footer buttons -->
+      <div class="pa-step-footer">
+        <button
+          class="pa-btn pa-btn-primary pa-btn-fullwidth"
+          (click)="goNext()"
+          [disabled]="saving()"
+        >
+          @if (saving()) {
+            Saving…
+          } @else if (step() === 3) {
+            Save my readings
+          } @else {
+            Continue
+          }
+        </button>
+        @if (step() > 0) {
+          <button
+            class="pa-btn pa-btn-ghost pa-btn-fullwidth"
+            (click)="goBack()"
+          >
+            Back
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+}

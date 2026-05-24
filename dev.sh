@@ -85,7 +85,7 @@ teardown() {
     rm -f "$PID_FILE"
   fi
 
-  for port in 9090 4200 8081; do  # add 4201 when patient-app is enabled
+  for port in 9090 4200 4201 8081; do
     kill_port "$port"
   done
 
@@ -165,10 +165,10 @@ startup() {
   echo "$CLINICIAN_PID" >> "$PID_FILE"
   ok "clinician-app starting → http://localhost:4200 (PID $CLINICIAN_PID, logs → logs/clinician-app.log)"
 
-  # NO_COLOR=1 npx nx serve patient-app --port=4201 > "$LOG_DIR/patient-app.log" 2>&1 &
-  # PATIENT_PID=$!
-  # echo "$PATIENT_PID" >> "$PID_FILE"
-  # ok "patient-app starting → http://localhost:4201 (PID $PATIENT_PID, logs → logs/patient-app.log)"
+  NO_COLOR=1 npx nx serve patient-app --port=4201 2>&1 | log_with_ts "$LOG_DIR/patient-app.log" &
+  PATIENT_PID=$!
+  echo "$PATIENT_PID" >> "$PID_FILE"
+  ok "patient-app starting  → http://localhost:4201 (PID $PATIENT_PID, logs → logs/patient-app.log)"
 
   cd "$SCRIPT_DIR"
 
@@ -189,8 +189,8 @@ startup() {
   echo -e "  HAPI FHIR     → http://localhost:8080/fhir"
   echo -e "  clinic-api    → http://localhost:9090"
   echo -e "  clinician-app → http://localhost:4200"
+  echo -e "  patient-app   → http://localhost:4201"
   echo -e "  Swagger UI    → http://localhost:8081"
-  # echo -e "  patient-app   → http://localhost:4201"
   echo ""
   echo -e "Logs are in ${CYAN}./logs/${NC} — tail any service in a separate terminal:"
   echo -e "  tail -f logs/clinic-api.log"

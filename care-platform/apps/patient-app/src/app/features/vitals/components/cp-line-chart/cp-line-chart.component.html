@@ -1,0 +1,88 @@
+@if (hasData()) {
+  <svg
+    class="pa-chart-svg"
+    [attr.viewBox]="'0 0 ' + W_ + ' ' + H_"
+    preserveAspectRatio="none"
+    role="img"
+    [attr.aria-label]="unitLabel() + ' chart'"
+  >
+    <defs>
+      <linearGradient [attr.id]="gradId()" x1="0" x2="0" y1="0" y2="1">
+        <stop offset="0%" [attr.stop-color]="color()" stop-opacity="0.35" />
+        <stop offset="100%" [attr.stop-color]="color()" stop-opacity="0" />
+      </linearGradient>
+    </defs>
+
+    <!-- Danger zone -->
+    @if (dangerRect()) {
+      <rect
+        [attr.x]="padL_"
+        [attr.y]="dangerRect()!.y"
+        [attr.width]="W_ - padL_ - padR_"
+        [attr.height]="dangerRect()!.h"
+        fill="color-mix(in srgb, var(--px-crit), transparent 92%)"
+      />
+    }
+
+    <!-- Grid -->
+    @for (tick of ticks(); track tick.t) {
+      <line
+        [attr.x1]="padL_"
+        [attr.x2]="W_ - padR_"
+        [attr.y1]="tick.y"
+        [attr.y2]="tick.y"
+        stroke="var(--px-border)"
+        stroke-width="0.5"
+        opacity="0.5"
+      />
+      <text
+        [attr.x]="padL_ - 6"
+        [attr.y]="tick.y + 3"
+        font-size="9"
+        fill="var(--px-text-subtle)"
+        text-anchor="end"
+        font-family="JetBrains Mono, monospace"
+      >
+        {{ tick.t }}
+      </text>
+    }
+
+    @for (xl of xLabels(); track xl.i) {
+      <text
+        [attr.x]="xl.x"
+        [attr.y]="H_ - 8"
+        font-size="9"
+        fill="var(--px-text-subtle)"
+        text-anchor="middle"
+        font-family="JetBrains Mono, monospace"
+      >
+        {{ xl.label }}
+      </text>
+    }
+
+    <!-- Area fill -->
+    <path [attr.d]="areaD()" [attr.fill]="'url(#' + gradId() + ')'" />
+
+    <!-- Line -->
+    <path
+      [attr.d]="lineD()"
+      [attr.stroke]="color()"
+      stroke-width="2"
+      fill="none"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- Dots -->
+    @for (dot of dots(); track $index) {
+      <circle
+        [attr.cx]="dot.x"
+        [attr.cy]="dot.y"
+        [attr.r]="dot.r"
+        [attr.fill]="color()"
+      >
+        <title>{{ dot.label }}</title>
+      </circle>
+    }
+  </svg>
+}

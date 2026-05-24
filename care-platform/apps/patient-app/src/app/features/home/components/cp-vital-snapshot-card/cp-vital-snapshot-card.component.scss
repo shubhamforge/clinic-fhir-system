@@ -1,0 +1,90 @@
+.pa-vsnap {
+  background: var(--px-surface);
+  border: 1px solid var(--px-border);
+  border-radius: 14px;
+  padding: 12px 13px;
+  position: relative;
+  overflow: hidden;
+  min-height: 110px;
+  display: flex;
+  flex-direction: column;
+
+  &.flagged {
+    background: color-mix(in srgb, var(--px-surface), var(--px-warn) 5%);
+    border-color: color-mix(in srgb, var(--px-border), var(--px-warn) 25%);
+
+    .pa-vsnap-num {
+      color: var(--px-warn);
+    }
+  }
+}
+
+.pa-vsnap-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--px-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pa-vsnap-icon {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pa-vsnap-value {
+  margin-top: 6px;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.pa-vsnap-num {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+
+  &--empty {
+    color: var(--px-text-subtle);
+  }
+}
+
+.pa-vsnap-unit {
+  font-size: 12px;
+  color: var(--px-text-muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.pa-vsnap-foot {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--px-text-subtle);
+  padding-top: 6px;
+  min-width: 0;
+
+  .pa-pill {
+    min-width: 0;
+    flex: 0 1 auto;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.pa-vsnap-spark {
+  width: 56px;
+  height: 18px;
+  flex: 0 0 56px;
+}

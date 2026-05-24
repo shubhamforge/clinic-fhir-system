@@ -1,0 +1,212 @@
+<div class="pa-app">
+  <!-- Header -->
+  <div class="pa-header">
+    <div>
+      <div class="pa-header-title">Your vitals</div>
+      <div class="pa-header-sub">A friendlier look at your numbers.</div>
+    </div>
+    <button
+      class="pa-header-action"
+      (click)="goRecord()"
+      aria-label="Record vitals"
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <path
+          d="M12 5v14M5 12h14"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
+      </svg>
+    </button>
+  </div>
+
+  <div class="pa-scroll">
+    <!-- Period toggle -->
+    <div class="pa-period" style="margin-bottom: 14px">
+      @for (p of periods; track p.value) {
+        <button
+          class="pa-period-btn"
+          [class.active]="period() === p.value"
+          (click)="period.set(p.value)"
+        >
+          {{ p.label }}
+        </button>
+      }
+    </div>
+
+    @if (isLoading()) {
+      <div class="pa-stack-lg">
+        @for (_ of [1, 2, 3]; track $index) {
+          <div
+            class="pa-shimmer"
+            style="height: 220px; border-radius: 16px"
+          ></div>
+        }
+      </div>
+    } @else {
+      <div class="pa-stack-lg">
+        <!-- Blood pressure card -->
+        <div class="pa-card pa-chart-card">
+          <div class="pa-chart-head">
+            <div class="pa-chart-titles">
+              <h3><span class="label-dot"></span> Blood pressure</h3>
+              <div class="pa-chart-sub">Target under 130/80</div>
+            </div>
+            @if (latestVitals()?.systolicBp?.value) {
+              <div class="pa-chart-latest">
+                <span class="v"
+                  >{{ latestVitals()!.systolicBp!.value }}/{{
+                    latestVitals()!.diastolicBp?.value
+                  }}</span
+                >
+                <span class="u">mmHg</span>
+                <div class="d">
+                  {{ relativeDate(latestVitals()?.systolicBp?.date) }}
+                </div>
+              </div>
+            }
+          </div>
+          <cp-bp-chart [systolic]="sysSeries()" [diastolic]="diaSeries()" />
+          <div class="pa-chart-legend">
+            <span class="lg" style="color: var(--px-accent)">
+              <span class="lg-dot"></span>Systolic (top)
+            </span>
+            <span class="lg" style="color: var(--px-accent)">
+              <span class="lg-dot dashed"></span>Diastolic (bottom)
+            </span>
+            <span class="lg" style="color: var(--px-ok)">
+              <span class="lg-dot band"></span>Healthy range
+            </span>
+          </div>
+          <details class="pa-explainer">
+            <summary>
+              <span>What does this mean?</span>
+              <svg
+                class="chev"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+              >
+                <path
+                  d="M9 6l6 6-6 6"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </summary>
+            <div class="pa-explainer-body">
+              Your blood pressure has two numbers. The top number (systolic) is
+              the pressure when your heart beats; the bottom (diastolic) is
+              between beats. Under 130/80 is great. Above 140/90 is high — your
+              doctor may suggest changes if you stay there.
+            </div>
+          </details>
+        </div>
+
+        <!-- SpO2 card -->
+        <div class="pa-card pa-chart-card">
+          <div class="pa-chart-head">
+            <div class="pa-chart-titles">
+              <h3>
+                <span class="label-dot" style="background: #0891b2"></span>
+                Oxygen
+              </h3>
+              <div class="pa-chart-sub">Aim for 95% or higher</div>
+            </div>
+            @if (latestVitals()?.spo2Percent?.value) {
+              <div class="pa-chart-latest">
+                <span class="v">{{ latestVitals()!.spo2Percent!.value }}</span>
+                <span class="u">%</span>
+                <div class="d">
+                  {{ relativeDate(latestVitals()?.spo2Percent?.date) }}
+                </div>
+              </div>
+            }
+          </div>
+          <cp-line-chart
+            [data]="spo2Series()"
+            color="#0891b2"
+            [yMin]="92"
+            [yMax]="100"
+            [dangerBelow]="94"
+            unitLabel="%"
+          />
+          <div class="pa-chart-legend">
+            <span class="lg" style="color: #0891b2"
+              ><span class="lg-dot"></span>Oxygen</span
+            >
+            <span class="lg" style="color: var(--px-crit)">
+              <span
+                class="lg-dot band"
+                style="
+                  background: color-mix(
+                    in srgb,
+                    var(--px-crit),
+                    transparent 88%
+                  );
+                "
+              ></span>
+              Below 94%
+            </span>
+          </div>
+          <details class="pa-explainer">
+            <summary>
+              <span>What does this mean?</span>
+              <svg
+                class="chev"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+              >
+                <path
+                  d="M9 6l6 6-6 6"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </summary>
+            <div class="pa-explainer-body">
+              Oxygen saturation tells you how much oxygen your blood is
+              carrying. Healthy is 95% or higher. If yours drops below 94% and
+              you feel short of breath, let your care team know.
+            </div>
+          </details>
+        </div>
+
+        <!-- Weight card -->
+        <div class="pa-card pa-chart-card">
+          <div class="pa-chart-head">
+            <div class="pa-chart-titles">
+              <h3>
+                <span class="label-dot" style="background: #7c4dff"></span>
+                Weight
+              </h3>
+              <div class="pa-chart-sub">Tracking your progress</div>
+            </div>
+            @if (latestVitals()?.weightKg?.value) {
+              <div class="pa-chart-latest">
+                <span class="v">{{ latestVitals()!.weightKg!.value }}</span>
+                <span class="u">kg</span>
+                <div class="d">
+                  {{ relativeDate(latestVitals()?.weightKg?.date) }}
+                </div>
+              </div>
+            }
+          </div>
+          <cp-line-chart
+            [data]="weightSeries()"
+            color="#7c4dff"
+            unitLabel="kg"
+          />
+        </div>
+      </div>
+    }
+  </div>
+</div>

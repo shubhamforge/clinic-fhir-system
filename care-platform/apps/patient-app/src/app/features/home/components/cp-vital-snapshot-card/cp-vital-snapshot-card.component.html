@@ -1,0 +1,31 @@
+<div class="pa-vsnap" [class.flagged]="isFlagged()">
+  <div class="pa-vsnap-head">
+    <span class="pa-vsnap-icon" [style.color]="iconColor()">
+      <ng-content />
+    </span>
+    {{ label() }}
+  </div>
+  @if (value() !== null) {
+    <div class="pa-vsnap-value">
+      <span class="pa-vsnap-num">{{ value() }}</span>
+      <span class="pa-vsnap-unit">{{ unit() }}</span>
+    </div>
+  } @else {
+    <div class="pa-vsnap-value">
+      <span class="pa-vsnap-num pa-vsnap-num--empty">—</span>
+    </div>
+  }
+  <div class="pa-vsnap-foot">
+    <span class="pa-pill" [ngClass]="pill().cls">
+      <span class="pa-pill-dot"></span>{{ pill().text }}
+    </span>
+    <div class="pa-vsnap-spark">
+      <cp-mini-spark
+        [values]="sparkData()"
+        [color]="sparkColor()"
+        [width]="56"
+        [height]="18"
+      />
+    </div>
+  </div>
+</div>
