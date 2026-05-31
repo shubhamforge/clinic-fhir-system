@@ -1,22 +1,37 @@
-.app-main {
-  padding-bottom: 84px;
+// ── Root shell ──────────────────────────────────────────────────────────────
+.pa-root {
+  display: flex;
+  flex-direction: column;
   min-height: 100dvh;
+  background: var(--px-bg);
 }
 
+// ── Main content area ────────────────────────────────────────────────────────
+.pa-content {
+  flex: 1;
+  min-height: 0;
+}
+
+// ── Sidebar: hidden on mobile ────────────────────────────────────────────────
+.pa-sidebar {
+  display: none;
+}
+
+// ── Bottom nav ───────────────────────────────────────────────────────────────
 .pa-bottom-nav {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 84px;
-  padding: 8px 0 env(safe-area-inset-bottom, 34px);
+  height: 72px;
+  padding: 6px 0 calc(6px + env(safe-area-inset-bottom, 0px));
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   background: color-mix(in srgb, var(--px-surface) 94%, transparent);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-top: 1px solid var(--px-border);
-  z-index: 30;
+  z-index: 60;
 }
 
 .pa-tab {
@@ -24,7 +39,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 3px;
   background: transparent;
   border: 0;
   color: var(--px-text-subtle);
@@ -58,5 +73,185 @@
       background: var(--px-accent);
       border-radius: 0 0 3px 3px;
     }
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// DESKTOP  (≥ 900px)
+// ════════════════════════════════════════════════════════════════════════════
+@media (min-width: 900px) {
+  .pa-root {
+    flex-direction: row;
+    min-height: 100dvh;
+  }
+
+  .pa-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .pa-bottom-nav {
+    display: none;
+  }
+
+  // ── Sidebar ──────────────────────────────────────────────────────────────
+  .pa-sidebar {
+    display: flex;
+    flex-direction: column;
+    width: 268px;
+    flex: 0 0 268px;
+    min-height: 100dvh;
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+    background: var(--px-surface);
+    border-right: 1px solid var(--px-border);
+    padding: 22px 14px 18px;
+    z-index: 40;
+  }
+
+  // Brand
+  .pa-side-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: -0.01em;
+    padding: 6px 10px 4px;
+
+    .sub {
+      color: var(--px-text-subtle);
+      font-weight: 500;
+      font-size: 12px;
+    }
+  }
+
+  .pa-brand-mark {
+    width: 30px;
+    height: 30px;
+    background: var(--px-accent);
+    color: white;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  // Side nav
+  .pa-side-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 22px;
+    flex: 1;
+  }
+
+  .pa-nav-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--px-text-subtle);
+    padding: 4px 14px 8px;
+  }
+
+  .pa-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    text-align: left;
+    padding: 11px 14px;
+    border-radius: 12px;
+    border: 0;
+    background: transparent;
+    color: var(--px-text-muted);
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 500;
+    font-size: 15px;
+    letter-spacing: -0.005em;
+    cursor: pointer;
+    transition:
+      background 120ms,
+      color 120ms;
+
+    .ico {
+      width: 24px;
+      height: 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    &:hover {
+      background: var(--px-surface-3);
+      color: var(--px-text);
+    }
+
+    &.active {
+      background: color-mix(in srgb, var(--px-accent), transparent 88%);
+      color: var(--px-accent);
+      font-weight: 600;
+    }
+  }
+
+  // Patient switcher card at bottom
+  .pa-side-patient {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    width: 100%;
+    text-align: left;
+    padding: 10px 12px;
+    border-radius: 14px;
+    border: 1px solid var(--px-border);
+    background: var(--px-surface-2);
+    color: inherit;
+    cursor: pointer;
+    transition:
+      background 120ms,
+      border-color 120ms;
+
+    &:hover {
+      background: var(--px-surface-3);
+    }
+  }
+
+  .pa-side-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+    background: var(--px-accent);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+
+  .pa-side-patient-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .pa-side-patient-nm {
+    font-size: 13.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--px-text);
+  }
+
+  .pa-side-patient-mt {
+    font-size: 11.5px;
+    color: var(--px-text-subtle);
+    margin-top: 1px;
   }
 }

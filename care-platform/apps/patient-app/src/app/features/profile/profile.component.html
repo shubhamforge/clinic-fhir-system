@@ -41,92 +41,102 @@
       </div>
     </div>
 
-    <!-- About you -->
-    <div class="pa-section-title">About you</div>
-    <div class="pa-card">
-      <div class="pa-profile-row">
-        <span class="pa-profile-label">Date of birth</span>
-        <span class="pa-profile-value">{{ formattedDob() }}</span>
-      </div>
-      <div class="pa-profile-row">
-        <span class="pa-profile-label">Gender</span>
-        <span class="pa-profile-value">{{ formattedGender() }}</span>
-      </div>
-      <div class="pa-profile-row">
-        <span class="pa-profile-label">Patient ID</span>
-        <span class="pa-profile-value cp-font-mono" style="font-size: 13px">{{
-          patient()?.id ?? '—'
-        }}</span>
-      </div>
-    </div>
-
-    <!-- Appearance -->
-    <div class="pa-section-title">Appearance</div>
-    <div class="pa-card">
-      <div class="pa-profile-row">
-        <div>
-          <div class="pa-profile-row-title">Dark mode</div>
-          <div class="pa-profile-row-sub">Easier on the eyes at night.</div>
+    <!-- 2-col grid on desktop -->
+    <div class="pa-profile-grid">
+      <!-- Left column: About you -->
+      <div class="pa-profile-col">
+        <div class="pa-section-title">About you</div>
+        <div class="pa-card">
+          <div class="pa-profile-row">
+            <span class="pa-profile-label">Date of birth</span>
+            <span class="pa-profile-value">{{ formattedDob() }}</span>
+          </div>
+          <div class="pa-profile-row">
+            <span class="pa-profile-label">Gender</span>
+            <span class="pa-profile-value">{{ formattedGender() }}</span>
+          </div>
+          <div class="pa-profile-row">
+            <span class="pa-profile-label">Patient ID</span>
+            <span
+              class="pa-profile-value cp-font-mono"
+              style="font-size: 13px"
+              >{{ patient()?.id ?? '—' }}</span
+            >
+          </div>
         </div>
-        <mat-slide-toggle
-          [checked]="isDark"
-          (change)="toggleTheme($event.checked)"
-          color="primary"
-        />
       </div>
-    </div>
 
-    <!-- Account -->
-    <div class="pa-section-title">Account</div>
-    <div class="pa-card">
-      <button class="pa-profile-action" (click)="switchProfile()">
-        <div class="pa-profile-action-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M17 8l4 4-4 4M7 12h14M3 5v14"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+      <!-- Right column: Appearance + Account -->
+      <div class="pa-profile-col">
+        <div class="pa-section-title">Appearance</div>
+        <div class="pa-card">
+          <div class="pa-profile-row">
+            <div>
+              <div class="pa-profile-row-title">Dark mode</div>
+              <div class="pa-profile-row-sub">Easier on the eyes at night.</div>
+            </div>
+            <mat-slide-toggle
+              [checked]="isDark"
+              (change)="toggleTheme($event.checked)"
+              color="primary"
             />
-          </svg>
+          </div>
         </div>
-        <div class="pa-profile-action-text">
-          <div class="pa-profile-row-title">Switch profile</div>
-          <div class="pa-profile-row-sub">Return to the profile selector.</div>
-        </div>
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          class="pa-profile-chevron"
-        >
-          <path
-            d="M9 18l6-6-6-6"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
-      </button>
 
-      <div class="pa-profile-action pa-profile-action--danger">
-        <div class="pa-profile-action-icon pa-profile-action-icon--danger">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </div>
-        <div class="pa-profile-action-text">
-          <div class="pa-profile-row-title">Sign out</div>
-          <div class="pa-profile-row-sub">Coming soon.</div>
+        <div class="pa-section-title">Account</div>
+        <div class="pa-card">
+          <button class="pa-profile-action" (click)="switchProfile()">
+            <div class="pa-profile-action-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M17 8l4 4-4 4M7 12h14M3 5v14"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </div>
+            <div class="pa-profile-action-text">
+              <div class="pa-profile-row-title">Switch profile</div>
+              <div class="pa-profile-row-sub">
+                Return to the profile selector.
+              </div>
+            </div>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              class="pa-profile-chevron"
+            >
+              <path
+                d="M9 18l6-6-6-6"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+
+          <div class="pa-profile-action pa-profile-action--danger">
+            <div class="pa-profile-action-icon pa-profile-action-icon--danger">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </div>
+            <div class="pa-profile-action-text">
+              <div class="pa-profile-row-title">Sign out</div>
+              <div class="pa-profile-row-sub">Coming soon.</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

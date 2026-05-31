@@ -11,30 +11,27 @@
     var(--px-bg);
 }
 
-.pa-header {
+.pa-page-head {
   flex: 0 0 auto;
   padding: 56px 20px 8px;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 12px;
-  max-width: 640px;
-  width: 100%;
-  margin: 0 auto;
 }
 
-.pa-header-title {
+.pa-eyebrow {
+  font-size: 13px;
+  color: var(--px-text-muted);
+  margin-bottom: 2px;
+}
+
+.pa-page-title {
+  margin: 0;
   font-size: 28px;
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.1;
-}
-
-.pa-header-sub {
-  font-size: 13px;
-  color: var(--px-text-muted);
-  margin-top: 0;
-  margin-bottom: 2px;
 }
 
 .pa-scroll {
@@ -43,10 +40,24 @@
   overflow-y: auto;
   overflow-x: hidden;
   padding: 8px 16px 100px;
-  max-width: 640px;
-  width: 100%;
-  margin: 0 auto;
   box-sizing: border-box;
+}
+
+.pa-dash {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.pa-dash-main {
+  display: flex;
+  flex-direction: column;
+}
+
+.pa-dash-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .pa-vitals-grid {
@@ -58,7 +69,7 @@
 }
 
 .pa-cta-row {
-  margin-top: 18px;
+  margin-top: 4px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -113,4 +124,46 @@
   font-size: 12.5px;
   color: var(--px-text-muted);
   margin-top: 2px;
+}
+
+// ── Desktop (≥ 900px) ────────────────────────────────────────────────────────
+@media (min-width: 900px) {
+  .pa-app {
+    min-height: 100%;
+  }
+
+  .pa-page-head {
+    padding: 36px 32px 12px;
+    max-width: none;
+  }
+
+  .pa-page-title {
+    font-size: 32px;
+  }
+
+  .pa-scroll {
+    padding: 0 32px 48px;
+    overflow-y: visible;
+  }
+
+  .pa-dash {
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) minmax(300px, 1fr);
+    gap: 24px;
+    align-items: start;
+    padding-top: 8px;
+  }
+
+  .pa-dash-main {
+    min-width: 0;
+  }
+
+  .pa-dash-rail {
+    gap: 0;
+    padding-top: 40px;
+  }
+
+  .pa-cta-row {
+    margin-top: 0;
+  }
 }

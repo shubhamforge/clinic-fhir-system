@@ -36,18 +36,19 @@
     </div>
 
     @if (isLoading()) {
-      <div class="pa-stack-lg">
+      <div class="pa-vitals-charts">
         @for (_ of [1, 2, 3]; track $index) {
           <div
             class="pa-shimmer"
+            [class.span-2]="$index === 0"
             style="height: 220px; border-radius: 16px"
           ></div>
         }
       </div>
     } @else {
-      <div class="pa-stack-lg">
+      <div class="pa-vitals-charts">
         <!-- Blood pressure card -->
-        <div class="pa-card pa-chart-card">
+        <div class="pa-card pa-chart-card span-2">
           <div class="pa-chart-head">
             <div class="pa-chart-titles">
               <h3><span class="label-dot"></span> Blood pressure</h3>
@@ -108,7 +109,7 @@
         </div>
 
         <!-- SpO2 card -->
-        <div class="pa-card pa-chart-card">
+        <div class="pa-card pa-chart-card" style="min-width: 0">
           <div class="pa-chart-head">
             <div class="pa-chart-titles">
               <h3>
@@ -181,7 +182,7 @@
         </div>
 
         <!-- Weight card -->
-        <div class="pa-card pa-chart-card">
+        <div class="pa-card pa-chart-card" style="min-width: 0">
           <div class="pa-chart-head">
             <div class="pa-chart-titles">
               <h3>

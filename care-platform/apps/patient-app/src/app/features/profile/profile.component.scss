@@ -194,3 +194,42 @@
   color: var(--px-text-subtle);
   text-align: center;
 }
+
+.pa-profile-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.pa-profile-col {
+  display: flex;
+  flex-direction: column;
+}
+
+// ── Desktop (≥ 900px) ────────────────────────────────────────────────────────
+@media (min-width: 900px) {
+  .pa-app {
+    min-height: 100%;
+  }
+
+  .pa-header {
+    padding: 36px 32px 12px;
+  }
+
+  .pa-header-title {
+    font-size: 32px;
+  }
+
+  .pa-scroll {
+    padding: 16px 32px 48px;
+    overflow-y: visible;
+  }
+
+  .pa-profile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 24px;
+    align-items: start;
+    margin-top: 4px;
+  }
+}

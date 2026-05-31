@@ -321,7 +321,7 @@ body {
   background: color-mix(in srgb, var(--px-surface), var(--px-ok) 7%);
   border: 1px solid color-mix(in srgb, var(--px-border), var(--px-ok) 30%);
   border-radius: 14px;
-  padding: 12px 14px;
+  padding: 14px 16px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -335,22 +335,32 @@ body {
       border-color: color-mix(in srgb, var(--px-border), var(--px-warn) 30%);
     }
   }
+
+  &.info {
+    background: color-mix(in srgb, var(--px-surface), var(--px-accent) 6%);
+    border-color: color-mix(in srgb, var(--px-border), var(--px-accent) 30%);
+
+    .pa-status-icon {
+      color: var(--px-accent);
+      border-color: color-mix(in srgb, var(--px-border), var(--px-accent) 30%);
+    }
+  }
 }
 .pa-status-icon {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: var(--px-surface);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--px-ok);
-  flex: 0 0 32px;
+  flex: 0 0 36px;
   border: 1px solid color-mix(in srgb, var(--px-border), var(--px-ok) 30%);
 }
 .pa-status-text {
-  font-size: 13.5px;
-  line-height: 1.4;
+  font-size: 14px;
+  line-height: 1.45;
   strong {
     font-weight: 600;
   }
