@@ -119,12 +119,28 @@ interface FhirSearchBundle {
 }
 
 class ApiClient {
+  // Node's fetch reuses pooled connections that the server may have already
+  // closed, throwing "TypeError: fetch failed". A retry opens a fresh one.
+  private async fetchWithRetry(
+    url: string,
+    init: RequestInit,
+    retries = 2,
+  ): Promise<Response> {
+    for (let attempt = 0; ; attempt++) {
+      try {
+        return await fetch(url, init);
+      } catch (e) {
+        if (attempt >= retries || !(e instanceof TypeError)) throw e;
+      }
+    }
+  }
+
   private async post<T>(
     url: string,
     body: unknown,
     contentType = 'application/json',
   ): Promise<T> {
-    const response = await fetch(url, {
+    const response = await this.fetchWithRetry(url, {
       method: 'POST',
       headers: { 'Content-Type': contentType },
       body: JSON.stringify(body),
@@ -139,7 +155,7 @@ class ApiClient {
   }
 
   private async put(url: string, body: object): Promise<void> {
-    const response = await fetch(url, {
+    const response = await this.fetchWithRetry(url, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/fhir+json' },
       body: JSON.stringify(body),
@@ -157,8 +173,12 @@ class ApiClient {
     query?: string,
   ): Promise<string[]> {
     const qs = query ? `&${query}` : '';
-    const response = await fetch(
-      `${HAPI_FHIR}/fhir/${resourceType}?_count=1000&_elements=id${qs}`,
+    // _count=1000 silently returns zero entries for several resource types when
+    // combined with the synthetic `patient` search param (HAPI FHIR v7.4.0 quirk,
+    // confirmed broken at exactly 1000, fine at 999 and below). Seed patients
+    // never have anywhere near 100 resources of one type.
+    const response = await this.fetchWithRetry(
+      `${HAPI_FHIR}/fhir/${resourceType}?_count=100&_elements=id${qs}`,
       {
         headers: { Accept: 'application/fhir+json' },
       },
@@ -173,9 +193,10 @@ class ApiClient {
     resourceType: string,
     id: string,
   ): Promise<void> {
-    const response = await fetch(`${HAPI_FHIR}/fhir/${resourceType}/${id}`, {
-      method: 'DELETE',
-    });
+    const response = await this.fetchWithRetry(
+      `${HAPI_FHIR}/fhir/${resourceType}/${id}`,
+      { method: 'DELETE' },
+    );
     if (!response.ok && response.status !== 404) {
       throw new Error(
         `DELETE /fhir/${resourceType}/${id} failed [${response.status}]`,
